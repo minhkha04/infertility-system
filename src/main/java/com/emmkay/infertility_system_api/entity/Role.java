@@ -1,4 +1,4 @@
-package entity;
+package com.emmkay.infertility_system_api.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
