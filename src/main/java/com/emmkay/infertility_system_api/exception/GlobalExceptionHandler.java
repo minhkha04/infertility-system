@@ -3,6 +3,7 @@ package com.emmkay.infertility_system_api.exception;
 import com.emmkay.infertility_system_api.dto.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -28,6 +29,17 @@ public class GlobalExceptionHandler {
                 ApiResponse.<Void>builder()
                         .code(errorCode.getCode())
                         .message(errorCode.getMessage())
+                        .build()
+        );
+    }
+
+    @ExceptionHandler(value = AccessDeniedException.class)
+    ResponseEntity<ApiResponse<Void>> handleAccessDeniedException(AccessDeniedException exception) {
+        log.error("AccessDeniedException: {}", exception.getMessage());
+        return ResponseEntity.badRequest().body(
+                ApiResponse.<Void>builder()
+                        .code(ErrorCode.UNAUTHORIZED.getCode())
+                        .message(ErrorCode.UNAUTHORIZED.getMessage())
                         .build()
         );
     }
