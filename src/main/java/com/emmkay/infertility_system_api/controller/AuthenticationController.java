@@ -1,6 +1,7 @@
 package com.emmkay.infertility_system_api.controller;
 
 import com.emmkay.infertility_system_api.dto.request.AuthenticationRequest;
+import com.emmkay.infertility_system_api.dto.request.GoogleLoginRequest;
 import com.emmkay.infertility_system_api.dto.request.IntrospectRequest;
 import com.emmkay.infertility_system_api.dto.request.UserCreationRequest;
 import com.emmkay.infertility_system_api.dto.response.ApiResponse;
@@ -12,6 +13,7 @@ import com.nimbusds.jose.JOSEException;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.text.ParseException;
 
+@Slf4j
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
@@ -45,6 +48,13 @@ public class AuthenticationController {
     public ApiResponse<IntrospectResponse> introspect(@RequestBody IntrospectRequest request) throws ParseException, JOSEException {
         return ApiResponse.<IntrospectResponse>builder()
                 .result(authenticationService.introspect(request))
+                .build();
+    }
+
+    @PostMapping("/login-google")
+    public ApiResponse<AuthenticationResponse> loginGoogle(@RequestBody GoogleLoginRequest request) throws JOSEException {
+        return ApiResponse.<AuthenticationResponse>builder()
+                .result(authenticationService.loginGoogle(request))
                 .build();
     }
 }

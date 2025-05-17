@@ -17,6 +17,8 @@ public enum ErrorCode {
     UNAUTHORIZED(1005, "You don't have permission", HttpStatus.FORBIDDEN),
     UNAUTHENTICATED(1006, "Unauthenticated", HttpStatus.UNAUTHORIZED),
     USER_NOT_ACTIVE(1007, "Your account has been deactivated. Please contact support at 0346810167", HttpStatus.FORBIDDEN),
+    INVALID_GOOGLE_TOKEN(1008, "Invalid google token", HttpStatus.UNAUTHORIZED),
+    EMAIL_EXISTED(1009, "Email has been existed", HttpStatus.BAD_REQUEST),
     ;
     int code;
     String message;

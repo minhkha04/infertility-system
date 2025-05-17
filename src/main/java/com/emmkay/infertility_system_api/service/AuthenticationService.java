@@ -1,6 +1,7 @@
 package com.emmkay.infertility_system_api.service;
 
 import com.emmkay.infertility_system_api.dto.request.AuthenticationRequest;
+import com.emmkay.infertility_system_api.dto.request.GoogleLoginRequest;
 import com.emmkay.infertility_system_api.dto.request.IntrospectRequest;
 import com.emmkay.infertility_system_api.dto.request.UserCreationRequest;
 import com.emmkay.infertility_system_api.dto.response.AuthenticationResponse;
@@ -13,6 +14,10 @@ import com.emmkay.infertility_system_api.exception.ErrorCode;
 import com.emmkay.infertility_system_api.mapper.UserMapper;
 import com.emmkay.infertility_system_api.repository.RoleRepository;
 import com.emmkay.infertility_system_api.repository.UserRepository;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.jackson2.JacksonFactory;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
@@ -28,7 +33,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
+import java.util.Collections;
 import java.util.Date;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -45,6 +52,10 @@ public class AuthenticationService {
     @NonFinal
     @Value("${jwt.signerKey}")
     String SIGNER_KEY;
+
+    @NonFinal
+    @Value("${google.clientId}")
+    String GOOGLE_CLIENT_ID;
 
     String generateToken(User user) throws JOSEException {
         JWSHeader jwsHeader = new JWSHeader(JWSAlgorithm.HS512);
@@ -68,7 +79,7 @@ public class AuthenticationService {
 
     public AuthenticationResponse login(AuthenticationRequest request) throws JOSEException {
         // find user by username
-        User user = userRepository.findByUsername((request.getUsername()))
+        User user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         // check a user is active
         if (user.getIsRemoved()) {
@@ -84,8 +95,16 @@ public class AuthenticationService {
     }
 
     public UserResponse register(UserCreationRequest request) {
-        if (userRepository.existsByUsername((request.getUsername()))) {
+        Optional<User> userOptional = userRepository.findByUsername(request.getUsername());
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            if (user.getIsRemoved()) {
+                throw new AppException(ErrorCode.USER_NOT_ACTIVE);
+            }
             throw new AppException(ErrorCode.USERNAME_EXISTED);
+        }
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new AppException(ErrorCode.EMAIL_EXISTED);
         }
         User user = userMapper.toUser(request);
         Role role = roleRepository.findById("CUSTOMER").orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_EXISTED));
@@ -94,7 +113,6 @@ public class AuthenticationService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         userRepository.save(user);
         return userMapper.toUserResponse(user);
-
     }
 
     public IntrospectResponse introspect(IntrospectRequest request) throws ParseException, JOSEException {
@@ -104,5 +122,48 @@ public class AuthenticationService {
         return IntrospectResponse.builder()
                 .valid(verified && expirationTime.after(new Date()))
                 .build();
+    }
+
+    public AuthenticationResponse loginGoogle(GoogleLoginRequest request) {
+        try {
+            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
+                    new NetHttpTransport(), JacksonFactory.getDefaultInstance())
+                    .setAudience(Collections.singletonList(GOOGLE_CLIENT_ID))
+                    .build();
+            GoogleIdToken idToken = verifier.verify(request.getIdToken());
+            if (idToken == null) {
+                throw new AppException(ErrorCode.INVALID_GOOGLE_TOKEN);
+            } else {
+                GoogleIdToken.Payload payload = idToken.getPayload();
+                String name = (String) payload.get("name");
+                String email = payload.getEmail();
+                Optional<User> existingUserOpt = userRepository.findByEmail(email);
+                User user;
+                if (existingUserOpt.isPresent()) {
+                    user = existingUserOpt.get();
+                    if (user.getIsRemoved()) {
+                        throw new AppException(ErrorCode.USER_NOT_ACTIVE);
+                    }
+                } else {
+                    Role role = roleRepository.findById("CUSTOMER")
+                            .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_EXISTED));
+                    user = User.builder()
+                            .username(email)
+                            .fullName(name)
+                            .email(email)
+                            .isRemoved(false)
+                            .password("")
+                            .roleName(role)
+                            .build();
+                    userRepository.save(user);
+                }
+                String token = generateToken(user);
+                return AuthenticationResponse.builder()
+                        .token(token)
+                        .build();
+            }
+        } catch (Exception e) {
+            throw new AppException(ErrorCode.INVALID_GOOGLE_TOKEN);
+        }
     }
 }
