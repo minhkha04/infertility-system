@@ -1,8 +1,10 @@
 package com.emmkay.infertility_system_api.controller;
 
 import com.emmkay.infertility_system_api.dto.request.AuthenticationRequest;
+import com.emmkay.infertility_system_api.dto.request.UserCreationRequest;
 import com.emmkay.infertility_system_api.dto.response.ApiResponse;
 import com.emmkay.infertility_system_api.dto.response.AuthenticationResponse;
+import com.emmkay.infertility_system_api.dto.response.UserResponse;
 import com.emmkay.infertility_system_api.service.AuthenticationService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,13 @@ public class AuthenticationController {
     public ApiResponse<AuthenticationResponse> login(@RequestBody AuthenticationRequest request) {
         return ApiResponse.<AuthenticationResponse>builder()
                 .result(authenticationService.login(request))
+                .build();
+    }
+
+    @PostMapping("/register")
+    public ApiResponse<UserResponse> register(@RequestBody UserCreationRequest request) {
+        return ApiResponse.<UserResponse>builder()
+                .result(authenticationService.register(request))
                 .build();
     }
 }

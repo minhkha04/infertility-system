@@ -15,7 +15,7 @@ import java.time.LocalDate;
 @Builder
 public class User {
     @Id
-    @ColumnDefault("(uuid())")
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false, length = 36)
     private String id;
 
@@ -44,7 +44,6 @@ public class User {
     @JoinColumn(name = "role_name", nullable = false)
     private Role roleName;
 
-    @ColumnDefault("0")
     @Column(name = "is_removed")
     private Boolean isRemoved;
 

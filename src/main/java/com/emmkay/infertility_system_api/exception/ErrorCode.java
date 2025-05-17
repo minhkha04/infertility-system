@@ -16,6 +16,7 @@ public enum ErrorCode {
     PASSWORD_ERROR(1004, "Password not correct", HttpStatus.UNAUTHORIZED),
     UNAUTHORIZED(1005, "You don't have permission", HttpStatus.FORBIDDEN),
     UNAUTHENTICATED(1006, "Unauthenticated", HttpStatus.UNAUTHORIZED),
+    USER_NOT_ACTIVE(1007, "Your account has been deactivated. Please contact support at 0346810167", HttpStatus.FORBIDDEN),
     ;
     int code;
     String message;
