@@ -15,6 +15,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -22,9 +23,11 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthenticationService {
+
     UserRepository userRepository;
     RoleRepository roleRepository;
     UserMapper userMapper;
+    PasswordEncoder passwordEncoder;
 
 
     public AuthenticationResponse login(AuthenticationRequest request) {
@@ -32,14 +35,13 @@ public class AuthenticationService {
         // find user by username
         User user = userRepository.findByUsername((request.getUsername()))
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-        log.warn(user.getIsRemoved().toString());
         // check a user is active
         if (user.getIsRemoved()) {
             throw new AppException(ErrorCode.USER_NOT_ACTIVE);
         }
 
         // check a user's password
-        if (!user.getPassword().equals(request.getPassword())) {
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
            throw new AppException(ErrorCode.PASSWORD_ERROR);
         }
 
@@ -56,6 +58,7 @@ public class AuthenticationService {
         Role role = roleRepository.findById("CUSTOMER").orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_EXISTED));
         user.setRoleName(role);
         user.setIsRemoved(false);
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
         userRepository.save(user);
         return userMapper.toUserResponse(user);
 
