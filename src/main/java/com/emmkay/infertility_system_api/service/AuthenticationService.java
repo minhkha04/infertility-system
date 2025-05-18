@@ -111,6 +111,7 @@ public class AuthenticationService {
         user.setRoleName(role);
         user.setIsRemoved(false);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setIsVerified(false);
         userRepository.save(user);
         return userMapper.toUserResponse(user);
     }
@@ -154,6 +155,7 @@ public class AuthenticationService {
                             .isRemoved(false)
                             .password("")
                             .roleName(role)
+                            .isVerified(true)
                             .build();
                     userRepository.save(user);
                 }

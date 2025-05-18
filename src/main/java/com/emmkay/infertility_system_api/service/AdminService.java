@@ -81,6 +81,7 @@ public class AdminService {
                 .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_EXISTED));
         user.setRoleName(role);
         user.setIsRemoved(false);
+        user.setIsVerified(true);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         userRepository.save(user);
         return userMapper.toAdminUserResponse(user);

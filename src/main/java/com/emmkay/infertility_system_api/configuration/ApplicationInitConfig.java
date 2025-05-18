@@ -30,6 +30,7 @@ public class ApplicationInitConfig {
                        .password(passwordEncoder.encode("admin"))
                        .roleName(role)
                        .isRemoved(false)
+                       .isVerified(true)
                        .build();
                 userRepository.save(user);
                 log.warn("Admin user has been created!");

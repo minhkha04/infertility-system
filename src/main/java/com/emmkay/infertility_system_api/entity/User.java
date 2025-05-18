@@ -47,4 +47,8 @@ public class User {
     @Column(name = "is_removed")
     private Boolean isRemoved;
 
+    @ColumnDefault("0")
+    @Column(name = "is_verified")
+    private Boolean isVerified;
+
 }
