@@ -4,19 +4,12 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 
-import java.time.LocalDate;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class UserCreationRequest {
-    String username;
-    String password;
-    String fullName;
-    String email;
-    String phoneNumber;
-    String gender;
-    LocalDate dateOfBirth;
+@EqualsAndHashCode(callSuper = true)
+public class AdminUserCreationRequest extends UserCreationRequest{
+    String roleName;
 }

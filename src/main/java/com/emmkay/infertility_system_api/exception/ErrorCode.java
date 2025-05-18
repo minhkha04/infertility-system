@@ -19,6 +19,7 @@ public enum ErrorCode {
     USER_NOT_ACTIVE(1007, "Your account has been deactivated. Please contact support at 0346810167", HttpStatus.FORBIDDEN),
     INVALID_GOOGLE_TOKEN(1008, "Invalid google token", HttpStatus.UNAUTHORIZED),
     EMAIL_EXISTED(1009, "Email has been existed", HttpStatus.BAD_REQUEST),
+    USER_ALREADY_ACTIVE(1010, "User already active", HttpStatus.BAD_REQUEST),
     ;
     int code;
     String message;
