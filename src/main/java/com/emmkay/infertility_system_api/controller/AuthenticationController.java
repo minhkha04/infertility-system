@@ -69,4 +69,20 @@ public class AuthenticationController {
                 .build();
     }
 
+    @PostMapping("/forgot-password")
+    public ApiResponse<String> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        authenticationService.forgotPassword(request);
+        return ApiResponse.<String>builder()
+                .result("OTP sent to your email!")
+                .build();
+    }
+
+    @PostMapping("/reset-password")
+    public ApiResponse<String> resetPassword(@RequestBody ResetPasswordRequest request) {
+        authenticationService.resetPassword(request);
+        return ApiResponse.<String>builder()
+                .result("Password reset successfully!")
+                .build();
+    }
+
 }

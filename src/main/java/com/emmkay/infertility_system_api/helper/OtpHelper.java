@@ -18,7 +18,7 @@ public class OtpHelper {
     EmailOtpRepository emailOtpRepository;
     EmailService emailService;
 
-    public  void generateAndSendOtp(String email) {
+    public  void generateAndSendOtp(String email,String type) {
         emailOtpRepository.deleteById(email);
         String otp = String.format("%06d", new Random().nextInt(999999));
         emailOtpRepository.save(EmailOtp.builder()
@@ -26,6 +26,8 @@ public class OtpHelper {
                 .otp(otp)
                 .expiryTime(LocalDateTime.now().plusMinutes(5))
                 .build());
-        emailService.sendEmail(email, otp);
+        emailService.sendEmail(email, "OTP for " + type, "Your OTP is: " + otp + "\nIt is valid for 5 minutes.");
     }
+
+
 }

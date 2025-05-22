@@ -51,6 +51,17 @@ public class AuthenticationService {
         }
     }
 
+    void validateOtp(String email, String otp) {
+        EmailOtp emailOtp = emailOtpRepository.findById(email)
+                .orElseThrow(() -> new AppException(ErrorCode.OTP_NOT_FOUND));
+        if (!emailOtp.getOtp().equals(otp)) {
+            throw new AppException(ErrorCode.OTP_INVALID);
+        }
+        if (emailOtp.getExpiryTime().isBefore(LocalDateTime.now())) {
+            throw new AppException(ErrorCode.OTP_EXPIRED);
+        }
+    }
+
     public AuthenticationResponse login(AuthenticationRequest request) {
         // find user by username
         User user = userRepository.findByUsername(request.getUsername())
@@ -112,7 +123,7 @@ public class AuthenticationService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setIsVerified(false);
         userRepository.save(user);
-        otpHelper.generateAndSendOtp(request.getEmail());
+        otpHelper.generateAndSendOtp(request.getEmail(), "register");
         return userMapper.toUserResponse(user);
     }
 
@@ -123,14 +134,7 @@ public class AuthenticationService {
     }
 
     public void verifyOtp(VerifyOtpRequest request) {
-        EmailOtp emailOtp = emailOtpRepository.findById(request.getEmail())
-                .orElseThrow(() -> new AppException(ErrorCode.OTP_NOT_FOUND));
-        if (!emailOtp.getOtp().equals(request.getOtp())) {
-            throw new AppException(ErrorCode.OTP_INVALID);
-        }
-        if (emailOtp.getExpiryTime().isBefore(LocalDateTime.now())) {
-            throw new AppException(ErrorCode.OTP_EXPIRED);
-        }
+        validateOtp(request.getEmail(), request.getOtp());
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         user.setIsVerified(true);
@@ -145,7 +149,24 @@ public class AuthenticationService {
         if (user.getIsVerified()) {
             throw new AppException(ErrorCode.USER_ALREADY_ACTIVE);
         }
-        otpHelper.generateAndSendOtp(email);
+        otpHelper.generateAndSendOtp(email, "verify");
+    }
+
+    public void forgotPassword(ForgotPasswordRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        validateUserIsActiveAndVerified(user);
+        otpHelper.generateAndSendOtp(request.getEmail(), "reset password");
+    }
+
+    public void resetPassword(ResetPasswordRequest request) {
+        validateOtp(request.getEmail(), request.getOtp());
+
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        userRepository.save(user);
+        emailOtpRepository.deleteById(request.getEmail());
     }
 }
 

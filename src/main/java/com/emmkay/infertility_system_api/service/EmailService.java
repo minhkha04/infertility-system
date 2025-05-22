@@ -13,11 +13,11 @@ import org.springframework.stereotype.Service;
 public class EmailService {
     JavaMailSender mailSender;
 
-    public void sendEmail(String toEmail, String otp) {
+    public void sendEmail(String toEmail, String subject, String text) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(toEmail);
-        message.setSubject("OTP for Registration");
-        message.setText("Your OTP for registration is: " + otp + "\nExpires in 5 minutes");
+        message.setSubject(subject);
+        message.setText(text);
         mailSender.send(message);
     }
 }
