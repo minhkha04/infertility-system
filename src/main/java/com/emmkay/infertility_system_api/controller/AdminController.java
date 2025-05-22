@@ -4,6 +4,7 @@ import com.emmkay.infertility_system_api.dto.request.AdminUserCreationRequest;
 import com.emmkay.infertility_system_api.dto.response.AdminUserResponse;
 import com.emmkay.infertility_system_api.dto.response.ApiResponse;
 import com.emmkay.infertility_system_api.service.AdminService;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -49,7 +50,7 @@ public class AdminController {
     }
 
     @PostMapping("/create-user")
-    public ApiResponse<AdminUserResponse> createUser(@RequestBody AdminUserCreationRequest request) {
+    public ApiResponse<AdminUserResponse> createUser(@RequestBody @Valid AdminUserCreationRequest request) {
         return ApiResponse.<AdminUserResponse>builder()
                 .result(adminService.createUser(request))
                 .build();

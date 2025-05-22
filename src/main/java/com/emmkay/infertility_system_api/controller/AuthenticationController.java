@@ -6,6 +6,7 @@ import com.emmkay.infertility_system_api.dto.response.AuthenticationResponse;
 import com.emmkay.infertility_system_api.dto.response.IntrospectResponse;
 import com.emmkay.infertility_system_api.dto.response.UserResponse;
 import com.emmkay.infertility_system_api.service.AuthenticationService;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -26,35 +27,35 @@ public class AuthenticationController {
     AuthenticationService authenticationService;
 
     @PostMapping("/login")
-    public ApiResponse<AuthenticationResponse> login(@RequestBody AuthenticationRequest request) {
+    public ApiResponse<AuthenticationResponse> login(@RequestBody @Valid AuthenticationRequest request) {
         return ApiResponse.<AuthenticationResponse>builder()
                 .result(authenticationService.login(request))
                 .build();
     }
 
     @PostMapping("/register")
-    public ApiResponse<UserResponse> register(@RequestBody UserCreationRequest request) {
+    public ApiResponse<UserResponse> register(@RequestBody @Valid UserCreationRequest request) {
         return ApiResponse.<UserResponse>builder()
                 .result(authenticationService.register(request))
                 .build();
     }
 
     @PostMapping("/introspect")
-    public ApiResponse<IntrospectResponse> introspect(@RequestBody IntrospectRequest request) {
+    public ApiResponse<IntrospectResponse> introspect(@RequestBody @Valid IntrospectRequest request) {
         return ApiResponse.<IntrospectResponse>builder()
                 .result(authenticationService.introspect(request))
                 .build();
     }
 
     @PostMapping("/login-google")
-    public ApiResponse<AuthenticationResponse> loginGoogle(@RequestBody GoogleLoginRequest request) {
+    public ApiResponse<AuthenticationResponse> loginGoogle(@RequestBody @Valid GoogleLoginRequest request) {
         return ApiResponse.<AuthenticationResponse>builder()
                 .result(authenticationService.loginGoogle(request))
                 .build();
     }
 
     @PostMapping("/verify-otp")
-    public ApiResponse<String> verifyOtp(@RequestBody VerifyOtpRequest request) {
+    public ApiResponse<String> verifyOtp(@RequestBody @Valid VerifyOtpRequest request) {
         authenticationService.verifyOtp(request);
         return ApiResponse.<String>builder()
                 .result("Email verified successfully!")
@@ -62,7 +63,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/resend-otp")
-    public ApiResponse<String> resendOtp(@RequestBody ResendOtpRequest request) {
+    public ApiResponse<String> resendOtp(@RequestBody @Valid ResendOtpRequest request) {
         authenticationService.resendOtp(request.getEmail());
         return ApiResponse.<String>builder()
                 .result("OTP resent successfully!")
@@ -70,7 +71,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/forgot-password")
-    public ApiResponse<String> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+    public ApiResponse<String> forgotPassword(@RequestBody @Valid ForgotPasswordRequest request) {
         authenticationService.forgotPassword(request);
         return ApiResponse.<String>builder()
                 .result("OTP sent to your email!")
@@ -78,7 +79,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/reset-password")
-    public ApiResponse<String> resetPassword(@RequestBody ResetPasswordRequest request) {
+    public ApiResponse<String> resetPassword(@RequestBody @Valid ResetPasswordRequest request) {
         authenticationService.resetPassword(request);
         return ApiResponse.<String>builder()
                 .result("Password reset successfully!")

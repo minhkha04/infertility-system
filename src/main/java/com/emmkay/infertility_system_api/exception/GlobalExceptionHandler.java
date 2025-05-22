@@ -4,8 +4,11 @@ import com.emmkay.infertility_system_api.dto.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+
+import java.util.Objects;
 
 @ControllerAdvice
 @Slf4j
@@ -43,5 +46,16 @@ public class GlobalExceptionHandler {
                         .build()
         );
     }
+
+    @ExceptionHandler(value = MethodArgumentNotValidException.class)
+    ResponseEntity<ApiResponse<Void>> handleValidation(MethodArgumentNotValidException exception) {
+        return ResponseEntity.badRequest().body(
+                ApiResponse.<Void>builder()
+                        .code(2000)
+                        .message(Objects.requireNonNull(exception.getFieldError()).getDefaultMessage())
+                        .build()
+        );
+    }
+
 
 }

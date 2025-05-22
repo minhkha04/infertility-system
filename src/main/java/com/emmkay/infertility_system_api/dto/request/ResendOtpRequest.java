@@ -1,5 +1,7 @@
 package com.emmkay.infertility_system_api.dto.request;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,5 +15,8 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ResendOtpRequest {
+
+    @NotBlank(message = "{validation.required}")
+    @Email(message = "{invalid.email}")
     String email;
 }
