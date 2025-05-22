@@ -6,7 +6,6 @@ import com.emmkay.infertility_system_api.dto.response.AuthenticationResponse;
 import com.emmkay.infertility_system_api.dto.response.IntrospectResponse;
 import com.emmkay.infertility_system_api.dto.response.UserResponse;
 import com.emmkay.infertility_system_api.service.AuthenticationService;
-import com.nimbusds.jose.JOSEException;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -16,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.text.ParseException;
 
 @Slf4j
 @RestController
