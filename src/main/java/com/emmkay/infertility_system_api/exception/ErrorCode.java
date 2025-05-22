@@ -20,6 +20,10 @@ public enum ErrorCode {
     INVALID_GOOGLE_TOKEN(1008, "Invalid google token", HttpStatus.UNAUTHORIZED),
     EMAIL_EXISTED(1009, "Email has been existed", HttpStatus.BAD_REQUEST),
     USER_ALREADY_ACTIVE(1010, "User already active", HttpStatus.BAD_REQUEST),
+    OTP_NOT_FOUND(1011, "OTP not existed", HttpStatus.NOT_FOUND),
+    OTP_EXPIRED(1012, "OTP expired", HttpStatus.BAD_REQUEST),
+    OTP_INVALID(1013, "OTP not matched", HttpStatus.BAD_REQUEST),
+    EMAIL_NOT_VERIFIED(1014, "Email not verified", HttpStatus.BAD_REQUEST),
     ;
     int code;
     String message;

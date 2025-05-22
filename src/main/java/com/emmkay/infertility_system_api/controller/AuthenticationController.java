@@ -1,9 +1,6 @@
 package com.emmkay.infertility_system_api.controller;
 
-import com.emmkay.infertility_system_api.dto.request.AuthenticationRequest;
-import com.emmkay.infertility_system_api.dto.request.GoogleLoginRequest;
-import com.emmkay.infertility_system_api.dto.request.IntrospectRequest;
-import com.emmkay.infertility_system_api.dto.request.UserCreationRequest;
+import com.emmkay.infertility_system_api.dto.request.*;
 import com.emmkay.infertility_system_api.dto.response.ApiResponse;
 import com.emmkay.infertility_system_api.dto.response.AuthenticationResponse;
 import com.emmkay.infertility_system_api.dto.response.IntrospectResponse;
@@ -27,11 +24,11 @@ import java.text.ParseException;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthenticationController {
+
     AuthenticationService authenticationService;
 
-
     @PostMapping("/login")
-    public ApiResponse<AuthenticationResponse> login(@RequestBody AuthenticationRequest request) throws JOSEException {
+    public ApiResponse<AuthenticationResponse> login(@RequestBody AuthenticationRequest request) {
         return ApiResponse.<AuthenticationResponse>builder()
                 .result(authenticationService.login(request))
                 .build();
@@ -45,16 +42,33 @@ public class AuthenticationController {
     }
 
     @PostMapping("/introspect")
-    public ApiResponse<IntrospectResponse> introspect(@RequestBody IntrospectRequest request) throws ParseException, JOSEException {
+    public ApiResponse<IntrospectResponse> introspect(@RequestBody IntrospectRequest request) {
         return ApiResponse.<IntrospectResponse>builder()
                 .result(authenticationService.introspect(request))
                 .build();
     }
 
     @PostMapping("/login-google")
-    public ApiResponse<AuthenticationResponse> loginGoogle(@RequestBody GoogleLoginRequest request) throws JOSEException {
+    public ApiResponse<AuthenticationResponse> loginGoogle(@RequestBody GoogleLoginRequest request) {
         return ApiResponse.<AuthenticationResponse>builder()
                 .result(authenticationService.loginGoogle(request))
                 .build();
     }
+
+    @PostMapping("/verify-otp")
+    public ApiResponse<String> verifyOtp(@RequestBody VerifyOtpRequest request) {
+        authenticationService.verifyOtp(request);
+        return ApiResponse.<String>builder()
+                .result("Email verified successfully!")
+                .build();
+    }
+
+    @PostMapping("/resend-otp")
+    public ApiResponse<String> resendOtp(@RequestBody ResendOtpRequest request) {
+        authenticationService.resendOtp(request.getEmail());
+        return ApiResponse.<String>builder()
+                .result("OTP resent successfully!")
+                .build();
+    }
+
 }
