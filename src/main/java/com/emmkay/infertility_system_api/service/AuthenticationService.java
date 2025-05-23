@@ -24,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.text.Normalizer;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -62,6 +63,16 @@ public class AuthenticationService {
         }
     }
 
+    String generateUsername(String name) {
+        String normalized = Normalizer.normalize(name, Normalizer.Form.NFD)
+                .replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
+                .replaceAll("đ", "d")
+                .replaceAll("Đ", "D");
+        String cleanName = normalized.toLowerCase().replaceAll("\\s+", "_");
+        String timestamp = String.valueOf(new Date().getTime());
+        return cleanName + "_" + timestamp;
+    }
+
     public AuthenticationResponse login(AuthenticationRequest request) {
         // find user by username
         User user = userRepository.findByUsername(request.getUsername())
@@ -89,7 +100,7 @@ public class AuthenticationService {
             Role role = roleRepository.findById("CUSTOMER")
                     .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_EXISTED));
             user = User.builder()
-                    .username(email)
+                    .username(generateUsername(payload.get("given_name").toString()))
                     .fullName(name)
                     .email(email)
                     .isRemoved(false)
@@ -100,7 +111,6 @@ public class AuthenticationService {
             userRepository.save(user);
         }
         String token = jwtHelper.generateToken(user);
-        log.info(token);
         return AuthenticationResponse.builder()
                 .token(token)
                 .build();
