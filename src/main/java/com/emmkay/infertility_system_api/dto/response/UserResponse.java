@@ -20,4 +20,5 @@ public class UserResponse {
     String gender;
     LocalDate dateOfBirth;
     RoleResponse roleName;
+    String address;
 }

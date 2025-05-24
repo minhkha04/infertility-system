@@ -1,6 +1,7 @@
 package com.emmkay.infertility_system_api.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
@@ -50,5 +51,9 @@ public class User {
     @ColumnDefault("0")
     @Column(name = "is_verified")
     private Boolean isVerified;
+
+    @Size(max = 255)
+    @Column(name = "address")
+    private String address;
 
 }

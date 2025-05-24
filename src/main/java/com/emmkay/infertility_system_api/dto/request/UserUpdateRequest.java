@@ -39,4 +39,7 @@ public class UserUpdateRequest {
     @JsonFormat(pattern = "yyyy-MM-dd")
     @Past(message = "{invalid.dateOfBirth.past}")
     LocalDate dateOfBirth;
+
+    @NotBlank(message = "{validation.required}")
+    String address;
 }

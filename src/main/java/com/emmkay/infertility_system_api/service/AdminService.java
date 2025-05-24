@@ -73,9 +73,6 @@ public class AdminService {
             }
             throw new AppException(ErrorCode.USERNAME_EXISTED);
         }
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new AppException(ErrorCode.EMAIL_EXISTED);
-        }
         User user = userMapper.toUser(request);
         Role role = roleRepository.findById(request.getRoleName().toUpperCase())
                 .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_EXISTED));
