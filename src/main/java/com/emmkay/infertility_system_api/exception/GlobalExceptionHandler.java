@@ -2,12 +2,15 @@ package com.emmkay.infertility_system_api.exception;
 
 import com.emmkay.infertility_system_api.dto.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import java.sql.SQLException;
 import java.util.Objects;
 
 @ControllerAdvice
@@ -16,7 +19,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = Exception.class)
     ResponseEntity<ApiResponse<Void>> handleException(RuntimeException exception) {
         log.error("Exception: {}", exception.getMessage());
-        return ResponseEntity.badRequest().body(
+        return ResponseEntity.status(ErrorCode.UNCATEGORIZED_EXCEPTION.getHttpStatus()).body(
                 ApiResponse.<Void>builder()
                         .code(ErrorCode.UNCATEGORIZED_EXCEPTION.getCode())
                         .message(ErrorCode.UNCATEGORIZED_EXCEPTION.getMessage())
@@ -39,7 +42,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = AccessDeniedException.class)
     ResponseEntity<ApiResponse<Void>> handleAccessDeniedException(AccessDeniedException exception) {
         log.error("AccessDeniedException: {}", exception.getMessage());
-        return ResponseEntity.badRequest().body(
+        return ResponseEntity.status(ErrorCode.UNAUTHORIZED.getHttpStatus()).body(
                 ApiResponse.<Void>builder()
                         .code(ErrorCode.UNAUTHORIZED.getCode())
                         .message(ErrorCode.UNAUTHORIZED.getMessage())
@@ -57,5 +60,23 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(value = DataIntegrityViolationException.class)
+    ResponseEntity<ApiResponse<Void>> handleSqlException(DataIntegrityViolationException exception) {
+        log.error("SQL Exception: {}", exception.getMessage());
+        if (exception.getMessage().contains("a foreign key constraint fails")) {
+            return ResponseEntity.status(ErrorCode.FOREIGN_KEY_CONFLICT.getHttpStatus())
+                    .body(ApiResponse.<Void>builder()
+                            .code(ErrorCode.FOREIGN_KEY_CONFLICT.getCode())
+                            .message(ErrorCode.FOREIGN_KEY_CONFLICT.getMessage())
+                            .build()
+                    );
+        }
+        return ResponseEntity.status(ErrorCode.UNCATEGORIZED_EXCEPTION.getHttpStatus()).body(
+                ApiResponse.<Void>builder()
+                        .code(ErrorCode.UNCATEGORIZED_EXCEPTION.getCode())
+                        .message(ErrorCode.UNCATEGORIZED_EXCEPTION.getMessage())
+                        .build()
+        );
+    }
 
 }

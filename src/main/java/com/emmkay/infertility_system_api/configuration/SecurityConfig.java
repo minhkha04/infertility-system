@@ -29,7 +29,7 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    private static final String[] PUBLIC_URLS = {"/auth/login", "/auth/register", "/auth/introspect", "/auth/login-google", "/auth/verify-otp", "/auth/resend-otp" , "/auth/forgot-password", "/auth/reset-password", "/swagger-ui/**", "v3/api-docs/**", "/v3/api-docs.yaml"};
+    private static final String[] PUBLIC_URLS = {"/auth/login", "/auth/register", "/auth/introspect", "/auth/login-google", "/auth/verify-otp", "/auth/resend-otp" , "/auth/forgot-password", "/auth/reset-password", "/swagger-ui/**", "v3/api-docs/**", "/v3/api-docs.yaml", "/treatment-type"};
     @Value("${jwt.signerKey}")
     private String signerKey;
 

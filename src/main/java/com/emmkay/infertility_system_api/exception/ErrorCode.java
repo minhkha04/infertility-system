@@ -24,6 +24,9 @@ public enum ErrorCode {
     OTP_EXPIRED(1012, "OTP expired", HttpStatus.BAD_REQUEST),
     OTP_INVALID(1013, "OTP not matched", HttpStatus.BAD_REQUEST),
     EMAIL_NOT_VERIFIED(1014, "Email not verified", HttpStatus.BAD_REQUEST),
+    TREATMENT_TYPE_IS_EXISTED(1015, "Treatment type is existed", HttpStatus.BAD_REQUEST),
+    TREATMENT_TYPE_NOT_EXISTED(1016, "Treatment type not found", HttpStatus.NOT_FOUND),
+    FOREIGN_KEY_CONFLICT(1017, "Deletion failed: The record is currently referenced by another table", HttpStatus.CONFLICT),
     ;
     int code;
     String message;
