@@ -27,6 +27,9 @@ public enum ErrorCode {
     TREATMENT_TYPE_IS_EXISTED(1015, "Treatment type is existed", HttpStatus.BAD_REQUEST),
     TREATMENT_TYPE_NOT_EXISTED(1016, "Treatment type not found", HttpStatus.NOT_FOUND),
     FOREIGN_KEY_CONFLICT(1017, "Deletion failed: The record is currently referenced by another table", HttpStatus.CONFLICT),
+    TREATMENT_STAGE_IS_EXISTED(1018, "Treatment stage is existed", HttpStatus.BAD_REQUEST),
+    TREATMENT_STAGE_NOT_EXISTED(1019, "Treatment stage not found", HttpStatus.NOT_FOUND),
+
     ;
     int code;
     String message;
