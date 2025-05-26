@@ -46,17 +46,13 @@ public class TreatmentStageService {
 
     @PreAuthorize("hasRole('MANAGER')")
     public TreatmentStageResponse createTreatmentStages(TreatmentStageCreateRequest request) {
-
-
         TreatmentType type = treatmentTypeRepository.findById(request.getTypeId())
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_TYPE_NOT_EXISTED));
-
         if (treatmentStageRepository.existsByNameAndTypeIdAndOrderIndexAndDescription(request.getName(), request.getTypeId(), request.getOrderIndex(), request.getDescription())) {
             throw new AppException(ErrorCode.TREATMENT_STAGE_IS_EXISTED);
         }
         TreatmentStage treatmentStage = treatmentStageMapper.toTreatmentStage(request);
         treatmentStage.setType(type);
-
         treatmentStageRepository.save(treatmentStage);
         return treatmentStageMapper.toTreatmentStageResponse(treatmentStage);
     }
@@ -65,17 +61,20 @@ public class TreatmentStageService {
     public TreatmentStageResponse updateTreatmentStage(Integer id, TreatmentStageUpdateRequest request) {
         TreatmentStage treatmentStage = treatmentStageRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_STAGE_NOT_EXISTED));
-
         TreatmentType type = treatmentTypeRepository.findById(request.getTypeId())
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_TYPE_NOT_EXISTED));
-
-        if (treatmentStageRepository.existsByNameAndTypeIdAndOrderIndexAndDescription(request.getName(), request.getTypeId(), request.getOrderIndex(), request.getDescription())) {
+        if (treatmentStageRepository.existsByNameAndTypeIdAndOrderIndexAndDescriptionAndIdNot(request.getName(), request.getTypeId(), request.getOrderIndex(), request.getDescription(), id)) {
             throw new AppException(ErrorCode.TREATMENT_STAGE_IS_EXISTED);
         }
-
         treatmentStage.setType(type);
-
         treatmentStageMapper.updateTreatmentStage(treatmentStage, request);
         return treatmentStageMapper.toTreatmentStageResponse(treatmentStageRepository.save(treatmentStage));
+    }
+
+    @PreAuthorize("hasRole('MANAGER')")
+    public void deleteTreatmentStage(Integer id) {
+        treatmentStageRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_STAGE_NOT_EXISTED));
+        treatmentStageRepository.deleteById(id);
     }
 }

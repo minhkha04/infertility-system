@@ -1,6 +1,7 @@
 package com.emmkay.infertility_system_api.controller;
 
 import com.emmkay.infertility_system_api.dto.request.TreatmentStageCreateRequest;
+import com.emmkay.infertility_system_api.dto.request.TreatmentStageUpdateRequest;
 import com.emmkay.infertility_system_api.dto.response.ApiResponse;
 import com.emmkay.infertility_system_api.dto.response.TreatmentStageResponse;
 import com.emmkay.infertility_system_api.service.TreatmentStageService;
@@ -37,6 +38,21 @@ public class TreatmentStageController {
     public ApiResponse<TreatmentStageResponse> createTreatmentStage(@RequestBody TreatmentStageCreateRequest request) {
         return ApiResponse.<TreatmentStageResponse>builder()
                 .result(treatmentStageService.createTreatmentStages(request))
+                .build();
+    }
+
+    @PutMapping("/{id}")
+    public ApiResponse<TreatmentStageResponse> updateTreatmentStage(@PathVariable Integer id, @RequestBody TreatmentStageUpdateRequest request) {
+        return ApiResponse.<TreatmentStageResponse>builder()
+                .result(treatmentStageService.updateTreatmentStage(id, request))
+                .build();
+    }
+
+    @DeleteMapping("/{id}")
+    public ApiResponse<Void> deleteTreatmentStage(@PathVariable Integer id) {
+        treatmentStageService.deleteTreatmentStage(id);
+        return ApiResponse.<Void>builder()
+                .message("Treatment stage deleted successfully")
                 .build();
     }
 }
