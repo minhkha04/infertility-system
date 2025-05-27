@@ -37,13 +37,12 @@ public class UserService {
                 .build();
     }
 
-    @PreAuthorize("#userId == authentication.name or hasRole('ADMIN')")
+    @PreAuthorize("#userId == authentication.name")
     public UserResponse updateUser(String userId, UserUpdateRequest request) {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         userMapper.updateUser(user, request);
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
 
         return userMapper.toUserResponse(userRepository.save(user));
     }

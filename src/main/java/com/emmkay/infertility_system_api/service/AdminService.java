@@ -2,7 +2,6 @@ package com.emmkay.infertility_system_api.service;
 
 import com.emmkay.infertility_system_api.dto.request.AdminUserCreationRequest;
 import com.emmkay.infertility_system_api.dto.response.AdminUserResponse;
-import com.emmkay.infertility_system_api.dto.response.UserResponse;
 import com.emmkay.infertility_system_api.entity.Role;
 import com.emmkay.infertility_system_api.entity.User;
 import com.emmkay.infertility_system_api.exception.AppException;

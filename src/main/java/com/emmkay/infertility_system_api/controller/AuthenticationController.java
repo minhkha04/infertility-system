@@ -86,4 +86,12 @@ public class AuthenticationController {
                 .build();
     }
 
+    @PostMapping("/change-password")
+    public ApiResponse<String> changePassword(@RequestBody @Valid ChangePasswordOtpRequest request) {
+        authenticationService.changePassword(request);
+        return ApiResponse.<String>builder()
+                .result("OTP sent to your email for password change!")
+                .build();
+    }
+
 }

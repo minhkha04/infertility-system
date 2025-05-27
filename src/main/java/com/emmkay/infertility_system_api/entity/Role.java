@@ -1,6 +1,7 @@
 package com.emmkay.infertility_system_api.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
@@ -11,14 +12,16 @@ import java.util.Set;
 @Setter
 @Entity
 @Table(name = "roles")
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Role {
     @Id
+    @Size(max = 50)
     @Column(name = "name", nullable = false, length = 50)
     private String name;
 
+    @Size(max = 255)
     @Column(name = "description")
     private String description;
 
