@@ -17,10 +17,6 @@ import java.time.LocalDate;
 public class UserUpdateRequest {
 
     @NotBlank(message = "{validation.required}")
-    @Size(min = 8, max = 20, message = "{validation.password.size}")
-    String password;
-
-    @NotBlank(message = "{validation.required}")
     @Pattern(regexp = "^[a-zA-ZÀ-ỹ\\s]+$", message = "{validation.fullName.pattern}")
     String fullName;
 
