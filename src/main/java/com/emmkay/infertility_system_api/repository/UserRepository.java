@@ -26,5 +26,5 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     List<User> findAllByIsRemovedTrueAndRoleName(Role roleName);
 
-    Optional<Object> findByIdAndIsRemovedTrue(String userId);
+    boolean existsByEmailAndIdNot(String email, String id);
 }

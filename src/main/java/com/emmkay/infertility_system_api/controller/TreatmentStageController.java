@@ -49,10 +49,10 @@ public class TreatmentStageController {
     }
 
     @DeleteMapping("/{id}")
-    public ApiResponse<Void> deleteTreatmentStage(@PathVariable Integer id) {
+    public ApiResponse<String> deleteTreatmentStage(@PathVariable Integer id) {
         treatmentStageService.deleteTreatmentStage(id);
-        return ApiResponse.<Void>builder()
-                .message("Treatment stage deleted successfully")
+        return ApiResponse.<String>builder()
+                .result("Treatment stage deleted successfully")
                 .build();
     }
 }

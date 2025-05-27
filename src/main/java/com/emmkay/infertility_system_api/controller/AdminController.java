@@ -1,6 +1,8 @@
 package com.emmkay.infertility_system_api.controller;
 
 import com.emmkay.infertility_system_api.dto.request.AdminUserCreationRequest;
+import com.emmkay.infertility_system_api.dto.request.AdminUserUpdatePasswordRequest;
+import com.emmkay.infertility_system_api.dto.request.AdminUserUpdateRequest;
 import com.emmkay.infertility_system_api.dto.response.AdminUserResponse;
 import com.emmkay.infertility_system_api.dto.response.ApiResponse;
 import com.emmkay.infertility_system_api.service.AdminService;
@@ -25,7 +27,7 @@ public class AdminController {
 
     @GetMapping("/get-users")
     public ApiResponse<List<AdminUserResponse>> getAllUsers(@RequestParam(required = false) String role) {
-        if(role == null) {
+        if (role == null) {
             return ApiResponse.<List<AdminUserResponse>>builder()
                     .result(adminService.getAllUsersIsRemovedFalse())
                     .build();
@@ -38,7 +40,7 @@ public class AdminController {
 
     @GetMapping("/get-users-removed")
     public ApiResponse<List<AdminUserResponse>> getAllUsersRemoved(@RequestParam(required = false) String role) {
-        if(role == null) {
+        if (role == null) {
             return ApiResponse.<List<AdminUserResponse>>builder()
                     .result(adminService.getAllUsersIsRemovedTrue())
                     .build();
@@ -57,18 +59,18 @@ public class AdminController {
     }
 
     @DeleteMapping("/remove-user/{userId}")
-    public ApiResponse<Void> removeUser(@PathVariable String userId) {
+    public ApiResponse<String> removeUser(@PathVariable String userId) {
         adminService.removeUser(userId);
-        return ApiResponse.<Void>builder()
-                .message("User has been removed successfully!")
+        return ApiResponse.<String>builder()
+                .result("User has been removed successfully!")
                 .build();
     }
 
     @PutMapping("/restore-user/{userId}")
-    public ApiResponse<Void> restoreUser(@PathVariable String userId) {
+    public ApiResponse<String> restoreUser(@PathVariable String userId) {
         adminService.restoreUser(userId);
-        return ApiResponse.<Void>builder()
-                .message("User has been restored successfully!")
+        return ApiResponse.<String>builder()
+                .result("User has been restored successfully!")
                 .build();
     }
 
@@ -92,4 +94,21 @@ public class AdminController {
                 .result(adminService.getUserByEmail(email))
                 .build();
     }
+
+    @PutMapping("/update-user/{userId}")
+    public ApiResponse<AdminUserResponse> updateUser(@PathVariable String userId, @RequestBody @Valid AdminUserUpdateRequest request) {
+        return ApiResponse.<AdminUserResponse>builder()
+                .result(adminService.updateUser(userId, request))
+                .build();
+    }
+
+    @PutMapping("/update-user-password/{userId}")
+    public ApiResponse<String> updateUserPassword(@PathVariable String userId, @RequestBody @Valid AdminUserUpdatePasswordRequest request) {
+        adminService.updateUserPassword(userId, request);
+
+        return ApiResponse.<String>builder()
+                .result("User password has been updated successfully!")
+                .build();
+    }
+
 }

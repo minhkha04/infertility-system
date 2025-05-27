@@ -1,5 +1,6 @@
 package com.emmkay.infertility_system_api.mapper;
 
+import com.emmkay.infertility_system_api.dto.request.AdminUserUpdateRequest;
 import com.emmkay.infertility_system_api.dto.request.AdminUserCreationRequest;
 import com.emmkay.infertility_system_api.dto.request.UserCreationRequest;
 import com.emmkay.infertility_system_api.dto.request.UserUpdateRequest;
@@ -23,6 +24,8 @@ public interface UserMapper {
 
     AdminUserResponse toAdminUserResponse(User user);
 
-    @Mapping(target = "roleName", ignore = true)
     void updateUser(@MappingTarget User user, UserUpdateRequest request);
+
+    @Mapping(target = "password", ignore = true)
+    void adminUpdateUser(@MappingTarget User user, AdminUserUpdateRequest request);
 }

@@ -1,5 +1,7 @@
 package com.emmkay.infertility_system_api.service;
 
+import com.emmkay.infertility_system_api.dto.request.AdminUserUpdatePasswordRequest;
+import com.emmkay.infertility_system_api.dto.request.AdminUserUpdateRequest;
 import com.emmkay.infertility_system_api.dto.request.AdminUserCreationRequest;
 import com.emmkay.infertility_system_api.dto.response.AdminUserResponse;
 import com.emmkay.infertility_system_api.entity.Doctor;
@@ -42,7 +44,7 @@ public class AdminService {
     public List<AdminUserResponse> getAllUsersIsRemovedFalseAndRoleName(String roleName) {
         Role role = roleRepository.findById(roleName.toUpperCase())
                 .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_EXISTED)
-        );
+                );
         return userRepository.findAllByIsRemovedFalseAndRoleName(role)
                 .stream()
                 .map(userMapper::toAdminUserResponse)
@@ -95,7 +97,7 @@ public class AdminService {
 
     public void removeUser(String userId) {
         User user = userRepository.findById(userId)
-                        .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         if (user.getIsRemoved()) {
             throw new AppException(ErrorCode.USER_NOT_ACTIVE);
         }
@@ -133,4 +135,24 @@ public class AdminService {
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         return userMapper.toAdminUserResponse(user);
     }
+
+    public AdminUserResponse updateUser(String userId, AdminUserUpdateRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        if (userRepository.existsByEmailAndIdNot(request.getEmail(), userId)) {
+            throw new AppException(ErrorCode.EMAIL_EXISTED);
+        }
+
+        userMapper.adminUpdateUser(user, request);
+        return userMapper.toAdminUserResponse(userRepository.save(user));
+    }
+
+
+    public void updateUserPassword(String userId, AdminUserUpdatePasswordRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        userRepository.save(user);
+    }
+
 }

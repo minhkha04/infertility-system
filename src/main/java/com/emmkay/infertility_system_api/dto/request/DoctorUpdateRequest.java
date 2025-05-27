@@ -1,10 +1,7 @@
 package com.emmkay.infertility_system_api.dto.request;
 
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
@@ -31,5 +28,7 @@ public class DoctorUpdateRequest extends UserUpdateRequest {
     @Min(value = 0, message = "{invalid.experienceYears}")
     Integer experienceYears;
 
+    @NotBlank(message = "{validation.required}")
+    @Email(message = "{invalid.email}")
     String email;
 }

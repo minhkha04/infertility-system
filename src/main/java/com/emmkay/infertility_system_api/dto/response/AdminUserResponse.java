@@ -12,4 +12,5 @@ import lombok.experimental.SuperBuilder;
 @EqualsAndHashCode(callSuper = true)
 public class AdminUserResponse extends UserResponse{
     boolean isRemoved;
+    boolean isVerified;
 }
