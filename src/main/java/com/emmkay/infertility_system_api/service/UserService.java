@@ -37,7 +37,7 @@ public class UserService {
                 .build();
     }
 
-    @PreAuthorize("#userId == authentication.name or hasRole('ADMIN')")
+    @PreAuthorize("#userId == authentication.name")
     public UserResponse updateUser(String userId, UserUpdateRequest request) {
 
         User user = userRepository.findById(userId)

@@ -1,15 +1,15 @@
 package com.emmkay.infertility_system_api.controller;
 
 
+import com.emmkay.infertility_system_api.dto.request.DoctorUpdateRequest;
 import com.emmkay.infertility_system_api.dto.response.ApiResponse;
 import com.emmkay.infertility_system_api.dto.response.DoctorResponse;
 import com.emmkay.infertility_system_api.service.DoctorService;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -26,6 +26,22 @@ public class DoctorController {
         List<DoctorResponse> doctors = doctorService.getAllDoctors();
         return ApiResponse.<List<DoctorResponse>>builder()
                 .result(doctors)
+                .build();
+    }
+
+    @GetMapping("/{id}")
+    public ApiResponse<DoctorResponse> getDoctorById(@PathVariable String id) {
+        DoctorResponse doctor = doctorService.getDoctorById(id);
+        return ApiResponse.<DoctorResponse>builder()
+                .result(doctor)
+                .build();
+    }
+
+    @PutMapping()
+    public ApiResponse<DoctorResponse> updateDoctor(@RequestBody @Valid DoctorUpdateRequest request, String id) {
+        DoctorResponse updatedDoctor = doctorService.updateDoctor(id, request);
+        return ApiResponse.<DoctorResponse>builder()
+                .result(updatedDoctor)
                 .build();
     }
 }

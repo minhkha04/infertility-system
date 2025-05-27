@@ -22,7 +22,7 @@ public class DoctorUpdateRequest extends UserUpdateRequest {
     @NotBlank(message = "{validation.required}")
     String qualifications;
 
-    @NotBlank(message = "{validation.required}")
+    @NotNull(message = "{validation.required}")
     @Min(value = 1950, message = "{invalid.graduationYear.min}")
     @Max(value = 2100, message = "{invalid.graduationYear.max}")
     Integer graduationYear;
