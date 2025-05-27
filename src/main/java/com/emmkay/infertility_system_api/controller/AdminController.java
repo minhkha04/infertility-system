@@ -92,5 +92,4 @@ public class AdminController {
                 .result(adminService.getUserByEmail(email))
                 .build();
     }
-
 }

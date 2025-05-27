@@ -25,10 +25,6 @@ public class UserUpdateRequest {
     String fullName;
 
     @NotBlank(message = "{validation.required}")
-    @Email(message = "{invalid.email}")
-    String email;
-
-    @NotBlank(message = "{validation.required}")
     @Pattern(regexp = "^(0|\\+84)[1-9][0-9]{8}$", message = "{invalid.phone}")
     String phoneNumber;
 
