@@ -178,5 +178,12 @@ public class AuthenticationService {
         userRepository.save(user);
         emailOtpRepository.deleteById(request.getEmail());
     }
+
+    public void changePassword(ChangePasswordOtpRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        validateUserIsActiveAndVerified(user);
+        otpHelper.generateAndSendOtp(request.getEmail(), "change password");
+    }
 }
 
