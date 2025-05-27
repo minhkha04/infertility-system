@@ -2,11 +2,13 @@ package com.emmkay.infertility_system_api.service;
 
 import com.emmkay.infertility_system_api.dto.request.AdminUserCreationRequest;
 import com.emmkay.infertility_system_api.dto.response.AdminUserResponse;
+import com.emmkay.infertility_system_api.entity.Doctor;
 import com.emmkay.infertility_system_api.entity.Role;
 import com.emmkay.infertility_system_api.entity.User;
 import com.emmkay.infertility_system_api.exception.AppException;
 import com.emmkay.infertility_system_api.exception.ErrorCode;
 import com.emmkay.infertility_system_api.mapper.UserMapper;
+import com.emmkay.infertility_system_api.repository.DoctorRepository;
 import com.emmkay.infertility_system_api.repository.RoleRepository;
 import com.emmkay.infertility_system_api.repository.UserRepository;
 import lombok.AccessLevel;
@@ -28,6 +30,7 @@ public class AdminService {
     UserMapper userMapper;
     RoleRepository roleRepository;
     PasswordEncoder passwordEncoder;
+    DoctorRepository doctorRepository;
 
     public List<AdminUserResponse> getAllUsersIsRemovedFalse() {
         return userRepository.findAllByIsRemovedFalse()
@@ -79,7 +82,14 @@ public class AdminService {
         user.setIsRemoved(false);
         user.setIsVerified(true);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        userRepository.save(user);
+
+        user = userRepository.save(user);
+        if (user.getRoleName().getName().equals("DOCTOR")) {
+            Doctor doctor = Doctor.builder()
+                    .users(user)
+                    .build();
+            doctorRepository.save(doctor);
+        }
         return userMapper.toAdminUserResponse(user);
     }
 

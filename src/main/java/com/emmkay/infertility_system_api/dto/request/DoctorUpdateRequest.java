@@ -30,4 +30,6 @@ public class DoctorUpdateRequest extends UserUpdateRequest {
     @NotNull(message = "{validation.required}")
     @Min(value = 0, message = "{invalid.experienceYears}")
     Integer experienceYears;
+
+    String email;
 }

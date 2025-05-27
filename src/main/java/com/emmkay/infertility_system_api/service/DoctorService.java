@@ -48,6 +48,10 @@ public class DoctorService {
 
         User user = userRepository.findById(doctor.getId())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new AppException(ErrorCode.EMAIL_EXISTED);
+        }
         userMapper.updateUser(user, request);
         doctorMapper.updateDoctor(doctor, request);
 
