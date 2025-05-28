@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -42,7 +43,7 @@ public class TreatmentService {
     private BigDecimal price;
 
     @Column(name = "duration")
-    private Integer duration;
+    private int duration;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.SET_NULL)
@@ -54,5 +55,9 @@ public class TreatmentService {
 
     @OneToMany(mappedBy = "service")
     private Set<TreatmentRecord> treatmentRecords = new LinkedHashSet<>();
+
+    @ColumnDefault("0")
+    @Column(name = "is_remove")
+    private Boolean isRemove;
 
 }

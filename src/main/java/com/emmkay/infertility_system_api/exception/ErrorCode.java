@@ -30,6 +30,8 @@ public enum ErrorCode {
     TREATMENT_STAGE_IS_EXISTED(1018, "Treatment stage is existed", HttpStatus.BAD_REQUEST),
     TREATMENT_STAGE_NOT_EXISTED(1019, "Treatment stage not found", HttpStatus.NOT_FOUND),
     DOCTOR_NOT_EXISTED(1020, "Doctor not found", HttpStatus.NOT_FOUND),
+    TREATMENT_SERVICE_IS_EXISTED(1021, "Treatment service is existed", HttpStatus.BAD_REQUEST),
+    TREATMENT_SERVICE_NOT_EXISTED(1022, "Treatment service not found", HttpStatus.NOT_FOUND),
     ;
     int code;
     String message;
