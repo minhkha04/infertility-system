@@ -1,6 +1,8 @@
 package com.emmkay.infertility_system_api.helper;
 
 import com.emmkay.infertility_system_api.entity.User;
+import com.emmkay.infertility_system_api.exception.AppException;
+import com.emmkay.infertility_system_api.exception.ErrorCode;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
@@ -51,14 +53,18 @@ public class JwtHelper {
 
     }
 
-    public boolean verifyToken(String token) {
+    public SignedJWT verifyToken(String token) {
         try {
             SignedJWT signedJWT = SignedJWT.parse(token);
             boolean verified = signedJWT.verify(new MACVerifier(SIGNER_KEY.getBytes()));
             Date expirationTime = signedJWT.getJWTClaimsSet().getExpirationTime();
-            return verified && expirationTime.after(new Date());
+            boolean isValid = verified && expirationTime.after(new Date());
+            if (!isValid) {
+                throw new AppException(ErrorCode.UNAUTHENTICATED);
+            }
+            return signedJWT;
         } catch (JOSEException | ParseException e) {
-            throw new RuntimeException(e);
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
     }
 }

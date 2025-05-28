@@ -32,6 +32,7 @@ public enum ErrorCode {
     DOCTOR_NOT_EXISTED(1020, "Doctor not found", HttpStatus.NOT_FOUND),
     TREATMENT_SERVICE_IS_EXISTED(1021, "Treatment service is existed", HttpStatus.BAD_REQUEST),
     TREATMENT_SERVICE_NOT_EXISTED(1022, "Treatment service not found", HttpStatus.NOT_FOUND),
+    TOKEN_INVALID(1023, "Token is invalid", HttpStatus.UNAUTHORIZED),
     ;
     int code;
     String message;
