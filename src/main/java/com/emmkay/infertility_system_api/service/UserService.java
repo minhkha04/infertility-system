@@ -1,5 +1,6 @@
 package com.emmkay.infertility_system_api.service;
 
+import com.emmkay.infertility_system_api.dto.request.ManagerUpdateRequest;
 import com.emmkay.infertility_system_api.dto.request.UserUpdateRequest;
 import com.emmkay.infertility_system_api.dto.response.ApiResponse;
 import com.emmkay.infertility_system_api.dto.response.UserResponse;
@@ -25,7 +26,6 @@ public class UserService {
 
     UserRepository userRepository;
     UserMapper userMapper;
-    PasswordEncoder passwordEncoder;
 
 
     public ApiResponse<UserResponse> getMyInfo() {
@@ -46,4 +46,6 @@ public class UserService {
 
         return userMapper.toUserResponse(userRepository.save(user));
     }
+
+
 }
