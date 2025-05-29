@@ -22,7 +22,6 @@ import java.util.List;
 public class DoctorController {
 
     DoctorService  doctorService;
-    CloudinaryService cloudinaryService;
 
     @GetMapping()
     public ApiResponse<List<DoctorResponse>> getAllDoctors() {
@@ -48,11 +47,5 @@ public class DoctorController {
                 .build();
     }
 
-    @PutMapping("/upload-image")
-    public ApiResponse<DoctorResponse> uploadImage(@ModelAttribute @Valid UploadImageRequest request) {
-        String imageUrl = cloudinaryService.uploadImage(request.getFile(), "avt_", request.getUserId());
-        return ApiResponse.<DoctorResponse>builder()
-                .result(doctorService.uploadAvatar(request.getUserId(), imageUrl))
-                .build();
-    }
+
 }

@@ -28,9 +28,6 @@ public class Doctor {
     @JoinColumn(name = "id", nullable = false)
     private User users;
 
-    @Size(max = 255)
-    @Column(name = "avatar_url")
-    private String avatarUrl;
 
     @Lob
     @Column(name = "qualifications")

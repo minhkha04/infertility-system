@@ -1,8 +1,8 @@
 package com.emmkay.infertility_system_api.service;
 
-import com.emmkay.infertility_system_api.dto.request.ManagerUpdateRequest;
 import com.emmkay.infertility_system_api.dto.request.UserUpdateRequest;
 import com.emmkay.infertility_system_api.dto.response.ApiResponse;
+import com.emmkay.infertility_system_api.dto.response.DoctorResponse;
 import com.emmkay.infertility_system_api.dto.response.UserResponse;
 import com.emmkay.infertility_system_api.entity.User;
 import com.emmkay.infertility_system_api.exception.AppException;
@@ -15,7 +15,6 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -45,6 +44,16 @@ public class UserService {
         userMapper.updateUser(user, request);
 
         return userMapper.toUserResponse(userRepository.save(user));
+    }
+
+    @PreAuthorize("#userId == authentication.name")
+    public UserResponse uploadAvatar(String userId, String imageUrl) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_NOT_EXISTED));
+
+        user.setAvatarUrl(imageUrl);
+        User updateUser = userRepository.save(user);
+        return userMapper.toUserResponse(updateUser);
     }
 
 

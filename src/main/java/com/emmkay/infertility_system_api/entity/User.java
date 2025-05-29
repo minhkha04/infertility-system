@@ -97,4 +97,7 @@ public class User {
     @OneToMany(mappedBy = "createdBy")
     private Set<TreatmentService> treatmentServices = new LinkedHashSet<>();
 
+    @Size(max = 255)
+    @Column(name = "avatar_url")
+    private String avatarUrl;
 }

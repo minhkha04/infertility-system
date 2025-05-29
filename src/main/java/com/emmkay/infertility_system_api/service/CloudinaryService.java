@@ -39,7 +39,7 @@ public class CloudinaryService {
 
             String publicId = prefix + "_" + slug;
 
-            Map<String, Object> options = ObjectUtils.asMap(
+            Map options = ObjectUtils.asMap(
                     "folder", "uploads",
                     "public_id", publicId,
                     "overwrite", true
