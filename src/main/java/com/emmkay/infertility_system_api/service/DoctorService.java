@@ -60,4 +60,13 @@ public class DoctorService {
         return doctorMapper.toDoctorResponse(updatedDoctor);
     }
 
+    @PreAuthorize("#doctorId == authentication.name")
+    public DoctorResponse uploadAvatar(String doctorId, String imageUrl) {
+        Doctor doctor = doctorRepository.findById(doctorId)
+                .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_NOT_EXISTED));
+
+        doctor.setAvatarUrl(imageUrl);
+        Doctor updatedDoctor = doctorRepository.save(doctor);
+        return doctorMapper.toDoctorResponse(updatedDoctor);
+    }
 }

@@ -33,6 +33,7 @@ public enum ErrorCode {
     TREATMENT_SERVICE_IS_EXISTED(1021, "Treatment service is existed", HttpStatus.BAD_REQUEST),
     TREATMENT_SERVICE_NOT_EXISTED(1022, "Treatment service not found", HttpStatus.NOT_FOUND),
     TOKEN_INVALID(1023, "Token is invalid", HttpStatus.UNAUTHORIZED),
+    UPLOAD_IMAGE_FAILED(1024, "Upload image failed", HttpStatus.INTERNAL_SERVER_ERROR),
     ;
     int code;
     String message;

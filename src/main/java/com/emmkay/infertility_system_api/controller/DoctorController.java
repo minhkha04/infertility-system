@@ -2,8 +2,10 @@ package com.emmkay.infertility_system_api.controller;
 
 
 import com.emmkay.infertility_system_api.dto.request.DoctorUpdateRequest;
+import com.emmkay.infertility_system_api.dto.request.UploadImageRequest;
 import com.emmkay.infertility_system_api.dto.response.ApiResponse;
 import com.emmkay.infertility_system_api.dto.response.DoctorResponse;
+import com.emmkay.infertility_system_api.service.CloudinaryService;
 import com.emmkay.infertility_system_api.service.DoctorService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -20,6 +22,7 @@ import java.util.List;
 public class DoctorController {
 
     DoctorService  doctorService;
+    CloudinaryService cloudinaryService;
 
     @GetMapping()
     public ApiResponse<List<DoctorResponse>> getAllDoctors() {
@@ -42,6 +45,14 @@ public class DoctorController {
         DoctorResponse updatedDoctor = doctorService.updateDoctor(id, request);
         return ApiResponse.<DoctorResponse>builder()
                 .result(updatedDoctor)
+                .build();
+    }
+
+    @PutMapping("/upload-image")
+    public ApiResponse<DoctorResponse> uploadImage(@ModelAttribute @Valid UploadImageRequest request) {
+        String imageUrl = cloudinaryService.uploadImage(request.getFile(), "avt_", request.getUserId());
+        return ApiResponse.<DoctorResponse>builder()
+                .result(doctorService.uploadAvatar(request.getUserId(), imageUrl))
                 .build();
     }
 }
