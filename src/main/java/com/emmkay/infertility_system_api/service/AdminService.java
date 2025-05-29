@@ -147,7 +147,6 @@ public class AdminService {
         return userMapper.toAdminUserResponse(userRepository.save(user));
     }
 
-
     public void updateUserPassword(String userId, AdminUserUpdatePasswordRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
@@ -155,4 +154,9 @@ public class AdminService {
         userRepository.save(user);
     }
 
+    public void deleteUserFromDatabase(String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        userRepository.delete(user);
+    }
 }

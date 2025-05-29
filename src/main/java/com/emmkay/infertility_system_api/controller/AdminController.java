@@ -111,4 +111,12 @@ public class AdminController {
                 .build();
     }
 
+
+    @DeleteMapping("/delete-user-database/{userId}")
+    public ApiResponse<String> deleteUserFromDatabase(@PathVariable String userId) {
+        adminService.deleteUserFromDatabase(userId);
+        return ApiResponse.<String>builder()
+                .result("User has been deleted from the database successfully!")
+                .build();
+    }
 }
