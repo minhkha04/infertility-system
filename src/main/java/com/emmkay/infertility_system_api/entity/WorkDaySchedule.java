@@ -2,22 +2,18 @@ package com.emmkay.infertility_system_api.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import java.time.Instant;
 import java.time.LocalTime;
 
 @Getter
 @Setter
 @Entity
-@Table(name = "doctor_work_schedule")
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
-public class DoctorWorkSchedule {
+@Table(name = "work_day_schedule")
+public class WorkDaySchedule {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -26,8 +22,8 @@ public class DoctorWorkSchedule {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "doctor_id", nullable = false)
-    private Doctor doctor;
+    @JoinColumn(name = "week_id", nullable = false)
+    private WorkWeek week;
 
     @NotNull
     @Lob
@@ -41,14 +37,5 @@ public class DoctorWorkSchedule {
     @NotNull
     @Column(name = "end_time", nullable = false)
     private LocalTime endTime;
-
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "created_by", nullable = false)
-    private User createdBy;
-
-    @ColumnDefault("CURRENT_TIMESTAMP")
-    @Column(name = "created_at")
-    private Instant createdAt;
 
 }

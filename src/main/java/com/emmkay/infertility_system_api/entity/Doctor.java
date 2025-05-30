@@ -43,12 +43,12 @@ public class Doctor {
     private Set<Appointment> appointments = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "doctor")
-    private Set<DoctorWorkSchedule> doctorWorkSchedules = new LinkedHashSet<>();
-
-    @OneToMany(mappedBy = "doctor")
     private Set<Feedback> feedbacks = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "doctor")
     private Set<TreatmentRecord> treatmentRecords = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "doctor")
+    private Set<WorkWeek> workWeeks = new LinkedHashSet<>();
 
 }

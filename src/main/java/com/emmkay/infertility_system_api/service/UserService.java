@@ -2,7 +2,6 @@ package com.emmkay.infertility_system_api.service;
 
 import com.emmkay.infertility_system_api.dto.request.UserUpdateRequest;
 import com.emmkay.infertility_system_api.dto.response.ApiResponse;
-import com.emmkay.infertility_system_api.dto.response.DoctorResponse;
 import com.emmkay.infertility_system_api.dto.response.UserResponse;
 import com.emmkay.infertility_system_api.entity.User;
 import com.emmkay.infertility_system_api.exception.AppException;
@@ -49,7 +48,7 @@ public class UserService {
     @PreAuthorize("#userId == authentication.name")
     public UserResponse uploadAvatar(String userId, String imageUrl) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_NOT_EXISTED));
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         user.setAvatarUrl(imageUrl);
         User updateUser = userRepository.save(user);

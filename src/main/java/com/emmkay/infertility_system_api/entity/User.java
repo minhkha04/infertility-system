@@ -76,9 +76,6 @@ public class User {
     @OneToMany(mappedBy = "author")
     private Set<Blog> blogs = new LinkedHashSet<>();
 
-    @OneToMany(mappedBy = "createdBy")
-    private Set<DoctorWorkSchedule> doctorWorkSchedules = new LinkedHashSet<>();
-
     @OneToOne(mappedBy = "users")
     private Doctor doctor;
 
@@ -100,4 +97,8 @@ public class User {
     @Size(max = 255)
     @Column(name = "avatar_url")
     private String avatarUrl;
+
+    @OneToMany(mappedBy = "createdBy")
+    private Set<WorkWeek> workWeeks = new LinkedHashSet<>();
+
 }
