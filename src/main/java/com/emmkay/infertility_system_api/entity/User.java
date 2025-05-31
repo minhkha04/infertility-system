@@ -98,7 +98,8 @@ public class User {
     @Column(name = "avatar_url")
     private String avatarUrl;
 
+
     @OneToMany(mappedBy = "createdBy")
-    private Set<WorkWeek> workWeeks = new LinkedHashSet<>();
+    private Set<WorkSchedule> workSchedules = new LinkedHashSet<>();
 
 }

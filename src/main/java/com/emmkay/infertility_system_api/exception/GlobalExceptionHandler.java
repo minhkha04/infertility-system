@@ -4,6 +4,7 @@ import com.emmkay.infertility_system_api.dto.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -50,10 +51,16 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
     ResponseEntity<ApiResponse<Void>> handleValidation(MethodArgumentNotValidException exception) {
+        String message = exception.getBindingResult()
+                .getAllErrors()
+                .stream()
+                .findFirst()
+                .map(error -> error.getDefaultMessage())
+                .orElse("Validation error");
         return ResponseEntity.badRequest().body(
                 ApiResponse.<Void>builder()
                         .code(2000)
-                        .message(Objects.requireNonNull(exception.getFieldError()).getDefaultMessage())
+                        .message(message)
                         .build()
         );
     }
@@ -76,5 +83,19 @@ public class GlobalExceptionHandler {
                         .build()
         );
     }
+
+
+    @ExceptionHandler(value = HttpMessageNotReadableException.class)
+    ResponseEntity<ApiResponse<Void>> handleMissingRequestBody(HttpMessageNotReadableException exception) {
+        log.error("HttpMessageNotReadableException: {}", exception.getMessage());
+        return ResponseEntity.status(ErrorCode.MISSING_REQUEST_BODY.getHttpStatus()).body(
+                ApiResponse.<Void>builder()
+                        .code(ErrorCode.MISSING_REQUEST_BODY.getCode())
+                        .message(ErrorCode.MISSING_REQUEST_BODY.getMessage())
+                        .build()
+        );
+
+    }
+
 
 }

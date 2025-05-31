@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public enum ErrorCode {
+    MISSING_REQUEST_BODY(6969, "GỌI API NGU, XEM LẠI SWAGGER", HttpStatus.BAD_REQUEST),
     UNCATEGORIZED_EXCEPTION(9999, "Uncategorized exception", HttpStatus.INTERNAL_SERVER_ERROR),
     USERNAME_EXISTED(1001, "Username has been existed", HttpStatus.BAD_REQUEST),
     ROLE_NOT_EXISTED(1002, "Role not found", HttpStatus.NOT_FOUND),
@@ -32,8 +33,11 @@ public enum ErrorCode {
     DOCTOR_NOT_EXISTED(1020, "Doctor not found", HttpStatus.NOT_FOUND),
     TREATMENT_SERVICE_IS_EXISTED(1021, "Treatment service is existed", HttpStatus.BAD_REQUEST),
     TREATMENT_SERVICE_NOT_EXISTED(1022, "Treatment service not found", HttpStatus.NOT_FOUND),
-    TOKEN_INVALID(1023, "Token is invalid", HttpStatus.UNAUTHORIZED),
+    WORK_SCHEDULE_EXISTED(1023, "Work schedule for doctor on date already exists", HttpStatus.BAD_REQUEST),
     UPLOAD_IMAGE_FAILED(1024, "Upload image failed", HttpStatus.INTERNAL_SERVER_ERROR),
+    WORK_SCHEDULE_NOT_EXISTED(1025, "Work schedule not found", HttpStatus.NOT_FOUND),
+    DATE_OUT_OF_RANGE(1026, "The selected date must be within 14 days from today", HttpStatus.BAD_REQUEST),
+    INVALID_SHIFT_VALUE(1027, "Invalid shift value. Must be 'morning', 'afternoon'", HttpStatus.BAD_REQUEST),
     ;
     int code;
     String message;

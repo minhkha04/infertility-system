@@ -49,6 +49,6 @@ public class Doctor {
     private Set<TreatmentRecord> treatmentRecords = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "doctor")
-    private Set<WorkWeek> workWeeks = new LinkedHashSet<>();
+    private Set<WorkSchedule> workSchedules = new LinkedHashSet<>();
 
 }
