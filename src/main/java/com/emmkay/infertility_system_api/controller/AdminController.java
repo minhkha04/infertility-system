@@ -74,13 +74,6 @@ public class AdminController {
                 .build();
     }
 
-    @PutMapping("/update-role/{userId}")
-    public ApiResponse<AdminUserResponse> updateRole(@PathVariable String userId, @RequestParam String roleName) {
-        return ApiResponse.<AdminUserResponse>builder()
-                .result(adminService.updateRole(userId, roleName))
-                .build();
-    }
-
     @GetMapping("/get-user/{userId}")
     public ApiResponse<AdminUserResponse> getUserById(@PathVariable String userId) {
         return ApiResponse.<AdminUserResponse>builder()

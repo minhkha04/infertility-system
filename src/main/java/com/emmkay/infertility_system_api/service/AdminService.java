@@ -115,15 +115,6 @@ public class AdminService {
         userRepository.save(user);
     }
 
-    public AdminUserResponse updateRole(String userId, String roleName) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-        Role role = roleRepository.findById(roleName.toUpperCase())
-                .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_EXISTED));
-        user.setRoleName(role);
-        return userMapper.toAdminUserResponse(userRepository.save(user));
-    }
-
     public AdminUserResponse getUserById(String userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
