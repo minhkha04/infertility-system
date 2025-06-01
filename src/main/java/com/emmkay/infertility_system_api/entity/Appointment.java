@@ -8,7 +8,7 @@ import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import java.time.Instant;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -21,7 +21,7 @@ public class Appointment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
-    private Integer id;
+    private Long id;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -37,15 +37,33 @@ public class Appointment {
 
     @NotNull
     @Column(name = "appointment_date", nullable = false)
-    private Instant appointmentDate;
+    private LocalDate appointmentDate;
+
+    @Size(max = 20)
+    @NotNull
+    @Column(name = "shift", nullable = false, length = 20)
+    private String shift;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
+    @JoinColumn(name = "treatment_step_id")
+    private TreatmentStep treatmentStep;
 
     @Size(max = 255)
     @Column(name = "purpose")
     private String purpose;
 
+    @Size(max = 50)
     @ColumnDefault("'Pending'")
-    @Lob
-    @Column(name = "status")
+    @Column(name = "status", length = 50)
     private String status;
+
+    @Lob
+    @Column(name = "notes")
+    private String notes;
+
+    @ColumnDefault("CURRENT_TIMESTAMP")
+    @Column(name = "created_at")
+    private LocalDate createdAt;
 
 }

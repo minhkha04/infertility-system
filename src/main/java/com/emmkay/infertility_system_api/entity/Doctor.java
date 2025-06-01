@@ -39,8 +39,7 @@ public class Doctor {
     @Column(name = "experience_years")
     private Integer experienceYears;
 
-    @OneToMany(mappedBy = "doctor")
-    private Set<Appointment> appointments = new LinkedHashSet<>();
+
 
     @OneToMany(mappedBy = "doctor")
     private Set<Feedback> feedbacks = new LinkedHashSet<>();
@@ -50,5 +49,8 @@ public class Doctor {
 
     @OneToMany(mappedBy = "doctor")
     private Set<WorkSchedule> workSchedules = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "doctor")
+    private Set<Appointment> appointments = new LinkedHashSet<>();
 
 }

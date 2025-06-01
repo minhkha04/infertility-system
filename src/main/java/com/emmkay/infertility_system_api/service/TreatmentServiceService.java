@@ -1,6 +1,7 @@
 package com.emmkay.infertility_system_api.service;
 
 import com.emmkay.infertility_system_api.dto.request.TreatmentServiceCreationRequest;
+import com.emmkay.infertility_system_api.dto.request.TreatmentServiceRegisterRequest;
 import com.emmkay.infertility_system_api.dto.request.TreatmentServiceUpdateRequest;
 import com.emmkay.infertility_system_api.dto.response.TreatmentServiceResponse;
 import com.emmkay.infertility_system_api.entity.TreatmentService;
@@ -33,6 +34,7 @@ public class TreatmentServiceService {
     TreatmentServiceMapper treatmentServiceMapper;
     UserRepository userRepository;
     TreatmentTypeRepository treatmentTypeRepository;
+    TreatmentRecordService treatmentRecordService;
 
     @PreAuthorize("hasRole('MANAGER')")
     public TreatmentServiceResponse createTreatmentService(TreatmentServiceCreationRequest request) {
@@ -45,7 +47,7 @@ public class TreatmentServiceService {
 
         User user = userRepository.findById(userid).orElseThrow(() ->
                 new AppException(ErrorCode.USER_NOT_EXISTED));
-        TreatmentType type = treatmentTypeRepository .findById(request.getTreatmentTypeId()).orElseThrow(() ->
+        TreatmentType type = treatmentTypeRepository.findById(request.getTreatmentTypeId()).orElseThrow(() ->
                 new AppException(ErrorCode.TREATMENT_TYPE_NOT_EXISTED));
 
         TreatmentService treatmentService = treatmentServiceMapper.toTreatmentService(request);
@@ -66,14 +68,14 @@ public class TreatmentServiceService {
                 .toList();
     }
 
-    public TreatmentServiceResponse findById(Integer id) {
+    public TreatmentServiceResponse findById(Long id) {
         TreatmentService treatmentService = treatmentServiceRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_SERVICE_NOT_EXISTED));
         return treatmentServiceMapper.toTreatmentServiceResponse(treatmentService);
     }
 
     @PreAuthorize("hasRole('MANAGER')")
-    public TreatmentServiceResponse updateTreatmentService(Integer id, TreatmentServiceUpdateRequest request) {
+    public TreatmentServiceResponse updateTreatmentService(Long id, TreatmentServiceUpdateRequest request) {
         TreatmentService treatmentService = treatmentServiceRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_SERVICE_NOT_EXISTED));
 
@@ -81,7 +83,7 @@ public class TreatmentServiceService {
             throw new AppException(ErrorCode.TREATMENT_SERVICE_IS_EXISTED);
         }
 
-        TreatmentType type = treatmentTypeRepository .findById(request.getTreatmentTypeId()).orElseThrow(() ->
+        TreatmentType type = treatmentTypeRepository.findById(request.getTreatmentTypeId()).orElseThrow(() ->
                 new AppException(ErrorCode.TREATMENT_TYPE_NOT_EXISTED));
         treatmentService.setType(type);
         treatmentServiceMapper.updateTreatmentService(treatmentService, request);
@@ -97,7 +99,7 @@ public class TreatmentServiceService {
     }
 
     @PreAuthorize("hasRole('MANAGER')")
-    public void removeTreatmentService(Integer id) {
+    public void removeTreatmentService(Long id) {
         TreatmentService treatmentService = treatmentServiceRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_SERVICE_NOT_EXISTED));
         treatmentService.setIsRemove(true);
@@ -105,11 +107,24 @@ public class TreatmentServiceService {
     }
 
     @PreAuthorize("hasRole('MANAGER')")
-    public TreatmentServiceResponse restoreTreatmentService(Integer id) {
+    public TreatmentServiceResponse restoreTreatmentService(Long id) {
         TreatmentService treatmentService = treatmentServiceRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_SERVICE_NOT_EXISTED));
         treatmentService.setIsRemove(false);
         return treatmentServiceMapper.toTreatmentServiceResponse(treatmentServiceRepository.save(treatmentService));
+    }
+
+    @PreAuthorize("hasRole('MANAGER') or hasRole('DOCTOR') or hasRole('CUSTOMER')")
+    public void registerTreatmentService(TreatmentServiceRegisterRequest request) {
+        TreatmentService treatmentService = treatmentServiceRepository.findById(request.getTreatmentServiceId())
+                .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_SERVICE_NOT_EXISTED));
+        treatmentRecordService.creatTreatmentRecord(treatmentService, request.getCustomerId(), request.getDoctorId(), request.getStartDate(), request.getShift(), request.getCd1Date()
+        );
+    }
+
+    @PreAuthorize("hasRole('MANAGER') or hasRole('DOCTOR') or hasRole('CUSTOMER')")
+    public void cancelTreatmentService(Long recordId, String customerId) {
+        treatmentRecordService.cancelTreatmentRecord(recordId, customerId);
     }
 
 }

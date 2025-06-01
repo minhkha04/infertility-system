@@ -7,10 +7,10 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface TreatmentServiceRepository extends JpaRepository<TreatmentService, Integer> {
+public interface TreatmentServiceRepository extends JpaRepository<TreatmentService, Long> {
     boolean existsByName(String name);
 
-    boolean existsByNameAndIdNot(String name, Integer id);
+    boolean existsByNameAndIdNot(String name, Long id);
 
     List<TreatmentService> findAllByIsRemoveFalse();
 }

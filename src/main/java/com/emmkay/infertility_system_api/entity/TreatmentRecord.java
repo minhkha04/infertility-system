@@ -23,7 +23,7 @@ public class TreatmentRecord {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
-    private Integer id;
+    private Long id;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -55,9 +55,12 @@ public class TreatmentRecord {
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "created_date")
-    private Instant createdDate;
+    private LocalDate createdDate;
 
     @OneToMany(mappedBy = "record")
     private Set<TreatmentStep> treatmentSteps = new LinkedHashSet<>();
+
+    @Column(name = "cd1_date")
+    private LocalDate cd1Date;
 
 }

@@ -38,6 +38,10 @@ public enum ErrorCode {
     WORK_SCHEDULE_NOT_EXISTED(1025, "Work schedule not found", HttpStatus.NOT_FOUND),
     DATE_OUT_OF_RANGE(1026, "The selected date must be within 14 days from today", HttpStatus.BAD_REQUEST),
     INVALID_SHIFT_VALUE(1027, "Invalid shift value. Must be 'morning', 'afternoon'", HttpStatus.BAD_REQUEST),
+    TREATMENT_RECORD_NOT_FOUND(1028, "Treatment record not found", HttpStatus.BAD_REQUEST),
+    TREATMENT_STEP_NOT_FOUND(1029, "Treatment step not found", HttpStatus.NOT_FOUND),
+    TREATMENT_ALREADY_IN_PROGRESS(1030, "You have an incomplete treatment record. Please complete it before registering for a new service", HttpStatus.BAD_REQUEST),
+    CANNOT_CANCEL_TREATMENT(1031, "You cannot cancel this treatment record", HttpStatus.BAD_REQUEST),
     ;
     int code;
     String message;

@@ -70,8 +70,7 @@ public class User {
     @Column(name = "address")
     private String address;
 
-    @OneToMany(mappedBy = "customer")
-    private Set<Appointment> appointments = new LinkedHashSet<>();
+
 
     @OneToMany(mappedBy = "author")
     private Set<Blog> blogs = new LinkedHashSet<>();
@@ -101,5 +100,8 @@ public class User {
 
     @OneToMany(mappedBy = "createdBy")
     private Set<WorkSchedule> workSchedules = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "customer")
+    private Set<Appointment> appointments = new LinkedHashSet<>();
 
 }

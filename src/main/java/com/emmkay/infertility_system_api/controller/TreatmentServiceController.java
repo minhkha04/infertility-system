@@ -1,6 +1,7 @@
 package com.emmkay.infertility_system_api.controller;
 
 import com.emmkay.infertility_system_api.dto.request.TreatmentServiceCreationRequest;
+import com.emmkay.infertility_system_api.dto.request.TreatmentServiceRegisterRequest;
 import com.emmkay.infertility_system_api.dto.request.TreatmentServiceUpdateRequest;
 import com.emmkay.infertility_system_api.dto.response.ApiResponse;
 import com.emmkay.infertility_system_api.dto.response.TreatmentServiceResponse;
@@ -36,7 +37,7 @@ public class TreatmentServiceController {
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<TreatmentServiceResponse> findById(@PathVariable Integer id) {
+    public ApiResponse<TreatmentServiceResponse> findById(@PathVariable Long id) {
         return ApiResponse.<TreatmentServiceResponse>builder()
                 .result(treatmentServiceService.findById(id))
                 .build();
@@ -44,7 +45,7 @@ public class TreatmentServiceController {
 
     @PutMapping("/{id}")
     public ApiResponse<TreatmentServiceResponse> updateTreatmentService(
-            @PathVariable Integer id,
+            @PathVariable Long id,
             @RequestBody @Valid TreatmentServiceUpdateRequest request) {
         return ApiResponse.<TreatmentServiceResponse>builder()
                 .result(treatmentServiceService.updateTreatmentService(id, request))
@@ -59,7 +60,7 @@ public class TreatmentServiceController {
     }
 
     @DeleteMapping("/{id}")
-    public ApiResponse<String> removeTreatmentService(@PathVariable Integer id) {
+    public ApiResponse<String> removeTreatmentService(@PathVariable Long id) {
         treatmentServiceService.removeTreatmentService(id);
         return ApiResponse.<String>builder()
                 .result("Treatment service removed successfully")
@@ -67,9 +68,26 @@ public class TreatmentServiceController {
     }
 
     @PutMapping("/restore/{id}")
-    public ApiResponse<TreatmentServiceResponse> restoreTreatmentService(@PathVariable Integer id) {
+    public ApiResponse<TreatmentServiceResponse> restoreTreatmentService(@PathVariable Long id) {
         return ApiResponse.<TreatmentServiceResponse>builder()
                 .result(treatmentServiceService.restoreTreatmentService(id))
+                .build();
+    }
+
+    @PostMapping("/register")
+    public ApiResponse<String> registerTreatmentService(
+            @RequestBody @Valid TreatmentServiceRegisterRequest request) {
+        treatmentServiceService.registerTreatmentService(request);
+        return ApiResponse.<String>builder()
+                .result("Treatment service registered successfully")
+                .build();
+    }
+
+    @DeleteMapping("/cancel/{recordId}/{customerId}")
+    public ApiResponse<String> cancelTreatmentRecord(@PathVariable Long recordId, @PathVariable String customerId) {
+        treatmentServiceService.cancelTreatmentService(recordId, customerId);
+        return ApiResponse.<String>builder()
+                .result("Treatment record cancelled successfully")
                 .build();
     }
 }
