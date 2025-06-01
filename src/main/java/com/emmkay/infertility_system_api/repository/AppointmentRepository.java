@@ -1,5 +1,6 @@
 package com.emmkay.infertility_system_api.repository;
 
+import com.emmkay.infertility_system_api.dto.response.AppointmentResponse;
 import com.emmkay.infertility_system_api.entity.Appointment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
 
 @Repository
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
@@ -36,5 +38,11 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             """)
     int countActiveByDoctorIdAndDateAndShift(@Param("doctorId") String doctorId, @Param("date") LocalDate date, @Param("shift") String shift);
 
+    List<Appointment> findAppointmentByCustomerId(String customerId);
 
+    List<Appointment> findAppointmentByCustomerIdAndStatusNot(String customerId, String status);
+
+    List<Appointment> findAppointmentByDoctorIdAndStatusNot(String doctorId, String status);
+
+    List<Appointment> findAppointmentByDoctorIdAndStatusNotAndAppointmentDate(String doctorId, String status, LocalDate appointmentDate);
 }

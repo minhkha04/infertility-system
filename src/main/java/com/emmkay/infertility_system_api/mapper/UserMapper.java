@@ -1,8 +1,8 @@
 package com.emmkay.infertility_system_api.mapper;
 
+import com.emmkay.infertility_system_api.dto.request.AdminUserCreateRequest;
 import com.emmkay.infertility_system_api.dto.request.AdminUserUpdateRequest;
-import com.emmkay.infertility_system_api.dto.request.AdminUserCreationRequest;
-import com.emmkay.infertility_system_api.dto.request.UserCreationRequest;
+import com.emmkay.infertility_system_api.dto.request.UserCreateRequest;
 import com.emmkay.infertility_system_api.dto.request.UserUpdateRequest;
 import com.emmkay.infertility_system_api.dto.response.AdminUserResponse;
 import com.emmkay.infertility_system_api.dto.response.UserResponse;
@@ -15,10 +15,10 @@ import org.mapstruct.MappingTarget;
 public interface UserMapper {
 
     @Mapping(target = "roleName", ignore = true)
-    User toUser(UserCreationRequest request);
+    User toUser(UserCreateRequest request);
 
     @Mapping(target = "roleName", ignore = true)
-    User toUser(AdminUserCreationRequest request);
+    User toUser(AdminUserCreateRequest request);
 
     UserResponse toUserResponse(User user);
 

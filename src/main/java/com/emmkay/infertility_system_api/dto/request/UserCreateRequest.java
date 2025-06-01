@@ -13,7 +13,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @SuperBuilder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class UserCreationRequest {
+public class UserCreateRequest {
 
     @NotBlank(message = "{validation.required}")
     @Size(min = 6, max = 20, message = "{validation.username.size}")

@@ -1,6 +1,6 @@
 package com.emmkay.infertility_system_api.controller;
 
-import com.emmkay.infertility_system_api.dto.request.AdminUserCreationRequest;
+import com.emmkay.infertility_system_api.dto.request.AdminUserCreateRequest;
 import com.emmkay.infertility_system_api.dto.request.AdminUserUpdatePasswordRequest;
 import com.emmkay.infertility_system_api.dto.request.AdminUserUpdateRequest;
 import com.emmkay.infertility_system_api.dto.response.AdminUserResponse;
@@ -52,7 +52,7 @@ public class AdminController {
     }
 
     @PostMapping("/create-user")
-    public ApiResponse<AdminUserResponse> createUser(@RequestBody @Valid AdminUserCreationRequest request) {
+    public ApiResponse<AdminUserResponse> createUser(@RequestBody @Valid AdminUserCreateRequest request) {
         return ApiResponse.<AdminUserResponse>builder()
                 .result(adminService.createUser(request))
                 .build();

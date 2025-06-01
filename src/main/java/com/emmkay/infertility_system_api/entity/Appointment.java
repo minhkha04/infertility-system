@@ -54,7 +54,6 @@ public class Appointment {
     private String purpose;
 
     @Size(max = 50)
-    @ColumnDefault("'Pending'")
     @Column(name = "status", length = 50)
     private String status;
 

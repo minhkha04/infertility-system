@@ -1,6 +1,6 @@
 package com.emmkay.infertility_system_api.service;
 
-import com.emmkay.infertility_system_api.dto.request.TreatmentServiceCreationRequest;
+import com.emmkay.infertility_system_api.dto.request.TreatmentServiceCreateRequest;
 import com.emmkay.infertility_system_api.dto.request.TreatmentServiceRegisterRequest;
 import com.emmkay.infertility_system_api.dto.request.TreatmentServiceUpdateRequest;
 import com.emmkay.infertility_system_api.dto.response.TreatmentServiceResponse;
@@ -37,7 +37,7 @@ public class TreatmentServiceService {
     TreatmentRecordService treatmentRecordService;
 
     @PreAuthorize("hasRole('MANAGER')")
-    public TreatmentServiceResponse createTreatmentService(TreatmentServiceCreationRequest request) {
+    public TreatmentServiceResponse createTreatmentService(TreatmentServiceCreateRequest request) {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userid = authentication.getName();

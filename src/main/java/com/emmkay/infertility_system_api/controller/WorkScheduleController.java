@@ -2,7 +2,7 @@ package com.emmkay.infertility_system_api.controller;
 
 
 import com.emmkay.infertility_system_api.dto.request.BulkWorkScheduleRequest;
-import com.emmkay.infertility_system_api.dto.request.WorkScheduleCreationRequest;
+import com.emmkay.infertility_system_api.dto.request.WorkScheduleCreateRequest;
 import com.emmkay.infertility_system_api.dto.request.WorkScheduleUpdateRequest;
 import com.emmkay.infertility_system_api.dto.response.ApiResponse;
 import com.emmkay.infertility_system_api.dto.response.WorkScheduleMonthlyResponse;
@@ -25,7 +25,7 @@ public class WorkScheduleController {
 
 
     @PostMapping()
-    public ApiResponse<WorkScheduleResponse> createWorkSchedule(@RequestBody @Valid WorkScheduleCreationRequest request) {
+    public ApiResponse<WorkScheduleResponse> createWorkSchedule(@RequestBody @Valid WorkScheduleCreateRequest request) {
         return ApiResponse.<WorkScheduleResponse>builder()
                 .result(workScheduleService.createWorkSchedule(request))
                 .build();

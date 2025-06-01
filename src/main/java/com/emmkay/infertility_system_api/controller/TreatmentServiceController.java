@@ -1,6 +1,6 @@
 package com.emmkay.infertility_system_api.controller;
 
-import com.emmkay.infertility_system_api.dto.request.TreatmentServiceCreationRequest;
+import com.emmkay.infertility_system_api.dto.request.TreatmentServiceCreateRequest;
 import com.emmkay.infertility_system_api.dto.request.TreatmentServiceRegisterRequest;
 import com.emmkay.infertility_system_api.dto.request.TreatmentServiceUpdateRequest;
 import com.emmkay.infertility_system_api.dto.response.ApiResponse;
@@ -23,7 +23,7 @@ public class TreatmentServiceController {
     TreatmentServiceService treatmentServiceService;
 
     @PostMapping("")
-    public ApiResponse<TreatmentServiceResponse> createTreatmentService(@RequestBody @Valid TreatmentServiceCreationRequest request) {
+    public ApiResponse<TreatmentServiceResponse> createTreatmentService(@RequestBody @Valid TreatmentServiceCreateRequest request) {
         return ApiResponse.<TreatmentServiceResponse>builder()
                 .result(treatmentServiceService.createTreatmentService(request))
                 .build();

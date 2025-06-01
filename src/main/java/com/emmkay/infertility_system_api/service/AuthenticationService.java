@@ -118,7 +118,7 @@ public class AuthenticationService {
                 .build();
     }
 
-    public UserResponse register(UserCreationRequest request) {
+    public UserResponse register(UserCreateRequest request) {
         Optional<User> userOptional = userRepository.findByUsername(request.getUsername());
         if (userOptional.isPresent()) {
             User user = userOptional.get();

@@ -42,6 +42,11 @@ public enum ErrorCode {
     TREATMENT_STEP_NOT_FOUND(1029, "Treatment step not found", HttpStatus.NOT_FOUND),
     TREATMENT_ALREADY_IN_PROGRESS(1030, "You have an incomplete treatment record. Please complete it before registering for a new service", HttpStatus.BAD_REQUEST),
     CANNOT_CANCEL_TREATMENT(1031, "You cannot cancel this treatment record", HttpStatus.BAD_REQUEST),
+    APPOINTMENT_NOT_FOUND(1032, "Appointment not found", HttpStatus.NOT_FOUND),
+    DOCTOR_NOT_AVAILABLE(1033, "Doctor is not available for the selected date and shift", HttpStatus.BAD_REQUEST),
+    APPOINTMENT_IS_COMPLETED(1034, "Cannot reschedule a completed appointment", HttpStatus.BAD_REQUEST),
+    TREATMENT_STEP_HAS_SCHEDULE(1035, "This step has already been scheduled", HttpStatus.BAD_REQUEST),
+    CAN_NOT_BE_UPDATED_STATUS(1036, "Can't update status", HttpStatus.BAD_REQUEST)
     ;
     int code;
     String message;

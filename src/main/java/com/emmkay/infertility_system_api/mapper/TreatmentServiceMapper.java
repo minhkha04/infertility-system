@@ -1,6 +1,6 @@
 package com.emmkay.infertility_system_api.mapper;
 
-import com.emmkay.infertility_system_api.dto.request.TreatmentServiceCreationRequest;
+import com.emmkay.infertility_system_api.dto.request.TreatmentServiceCreateRequest;
 import com.emmkay.infertility_system_api.dto.request.TreatmentServiceUpdateRequest;
 import com.emmkay.infertility_system_api.dto.response.TreatmentServiceResponse;
 import com.emmkay.infertility_system_api.entity.TreatmentService;
@@ -11,7 +11,7 @@ import org.mapstruct.MappingTarget;
 @Mapper(componentModel = "spring")
 public interface TreatmentServiceMapper {
 
-    TreatmentService toTreatmentService(TreatmentServiceCreationRequest request);
+    TreatmentService toTreatmentService(TreatmentServiceCreateRequest request);
 
     void updateTreatmentService(@MappingTarget TreatmentService treatmentService, TreatmentServiceUpdateRequest request );
 

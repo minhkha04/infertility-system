@@ -34,7 +34,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/register")
-    public ApiResponse<UserResponse> register(@RequestBody @Valid UserCreationRequest request) {
+    public ApiResponse<UserResponse> register(@RequestBody @Valid UserCreateRequest request) {
         return ApiResponse.<UserResponse>builder()
                 .result(authenticationService.register(request))
                 .build();

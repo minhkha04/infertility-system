@@ -1,7 +1,7 @@
 package com.emmkay.infertility_system_api.service;
 
 import com.emmkay.infertility_system_api.dto.request.BulkWorkScheduleRequest;
-import com.emmkay.infertility_system_api.dto.request.WorkScheduleCreationRequest;
+import com.emmkay.infertility_system_api.dto.request.WorkScheduleCreateRequest;
 import com.emmkay.infertility_system_api.dto.request.WorkScheduleUpdateRequest;
 import com.emmkay.infertility_system_api.dto.response.WorkScheduleResponse;
 import com.emmkay.infertility_system_api.dto.response.WorkScheduleMonthlyResponse;
@@ -27,7 +27,6 @@ import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -44,7 +43,7 @@ public class WorkScheduleService {
 
 
     @PreAuthorize("hasRole('MANAGER')")
-    public WorkScheduleResponse createWorkSchedule(WorkScheduleCreationRequest request) {
+    public WorkScheduleResponse createWorkSchedule(WorkScheduleCreateRequest request) {
         if (workScheduleRepository.existsByDoctorIdAndWorkDateAndShift(
                 request.getDoctorId(), request.getWorkDate(), request.getShift())) {
             throw new AppException(ErrorCode.WORK_SCHEDULE_EXISTED);

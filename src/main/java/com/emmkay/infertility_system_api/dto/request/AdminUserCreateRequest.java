@@ -11,7 +11,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class AdminUserCreationRequest {
+public class AdminUserCreateRequest {
     @NotBlank(message = "{validation.required}")
     @Size(min = 6, max = 20, message = "{validation.username.size}")
     @Pattern(regexp = "^[a-zA-Z0-9]+$", message = "{validation.username.pattern}")

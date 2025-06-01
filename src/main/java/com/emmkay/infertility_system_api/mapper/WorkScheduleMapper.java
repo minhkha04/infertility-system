@@ -1,6 +1,6 @@
 package com.emmkay.infertility_system_api.mapper;
 
-import com.emmkay.infertility_system_api.dto.request.WorkScheduleCreationRequest;
+import com.emmkay.infertility_system_api.dto.request.WorkScheduleCreateRequest;
 import com.emmkay.infertility_system_api.dto.request.WorkScheduleUpdateRequest;
 import com.emmkay.infertility_system_api.dto.response.WorkScheduleResponse;
 import com.emmkay.infertility_system_api.entity.WorkSchedule;
@@ -12,7 +12,7 @@ import org.mapstruct.MappingTarget;
 public interface WorkScheduleMapper {
 
     @Mapping(target = "createdBy", ignore = true)
-    WorkSchedule toWorkSchedule(WorkScheduleCreationRequest request);
+    WorkSchedule toWorkSchedule(WorkScheduleCreateRequest request);
 
     @Mapping(target = "createdBy", source = "createdBy.fullName")
     @Mapping(target = "doctorId", source = "doctor.id")

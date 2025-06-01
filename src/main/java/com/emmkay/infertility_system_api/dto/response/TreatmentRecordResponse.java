@@ -13,6 +13,7 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class TreatmentRecordResponse {
     Long id;
+    String customerId;
     String customerName;
     String doctorName;
     String treatmentServiceName;
