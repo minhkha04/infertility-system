@@ -2,14 +2,17 @@ package com.emmkay.infertility_system_api.service;
 
 import com.emmkay.infertility_system_api.dto.request.DoctorUpdateRequest;
 import com.emmkay.infertility_system_api.dto.response.DoctorResponse;
+import com.emmkay.infertility_system_api.dto.response.DoctorWorkScheduleResponse;
 import com.emmkay.infertility_system_api.entity.Doctor;
 import com.emmkay.infertility_system_api.entity.User;
+import com.emmkay.infertility_system_api.entity.WorkSchedule;
 import com.emmkay.infertility_system_api.exception.AppException;
 import com.emmkay.infertility_system_api.exception.ErrorCode;
 import com.emmkay.infertility_system_api.mapper.DoctorMapper;
 import com.emmkay.infertility_system_api.mapper.UserMapper;
 import com.emmkay.infertility_system_api.repository.DoctorRepository;
 import com.emmkay.infertility_system_api.repository.UserRepository;
+import com.emmkay.infertility_system_api.repository.WorkScheduleRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -17,7 +20,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +37,9 @@ public class DoctorService {
     DoctorMapper doctorMapper;
     DoctorRepository doctorRepository;
     UserRepository userRepository;
+    WorkScheduleRepository workScheduleRepository;
+    AppointmentService appointmentService;
+
 
     public List<DoctorResponse> getAllDoctors() {
         List<Doctor> doctors = doctorRepository.findAll();
@@ -59,5 +70,75 @@ public class DoctorService {
         Doctor updatedDoctor = doctorRepository.save(doctor);
         return doctorMapper.toDoctorResponse(updatedDoctor);
     }
+
+    public List<DoctorResponse> getAvailableDoctors(LocalDate date, String shift) {
+        LocalDate today = LocalDate.now();
+        if (date.isBefore(today) || date.isAfter(today.plusDays(14))) {
+            throw new AppException(ErrorCode.DATE_OUT_OF_RANGE);
+        }
+
+        List<String> shiftsToMatch = switch (shift) {
+            case "morning", "afternoon" -> List.of(shift, "full_day");
+            case "full_day" -> List.of("full_day");
+            default -> throw new AppException(ErrorCode.INVALID_SHIFT_VALUE);
+        };
+
+        List<WorkSchedule> schedules = workScheduleRepository.findByWorkDateAndShiftIn(date, shiftsToMatch);
+        return schedules.stream()
+                .map(WorkSchedule::getDoctor)
+                .distinct()
+                .filter(doctor -> appointmentService.isDoctorAvailable(doctor.getId(), date, shift))
+                .map(doctorMapper::toDoctorResponse)
+                .toList();
+    }
+
+    public DoctorWorkScheduleResponse getDoctorScheduleNext14Days(String doctorId) {
+        LocalDate from = LocalDate.now();
+        LocalDate to = from.plusDays(13);
+
+        List<WorkSchedule> schedules = workScheduleRepository
+                .findByDoctorIdAndWorkDateBetween(doctorId, from, to);
+
+        Map<String, List<String>> grouped = new LinkedHashMap<>();
+
+        for (WorkSchedule ws : schedules) {
+            LocalDate date = ws.getWorkDate();
+            String dateKey = date.toString();
+
+            List<String> availableShifts = new ArrayList<>();
+
+            switch (ws.getShift()) {
+                case "morning":
+                case "afternoon":
+                    if (appointmentService.isDoctorAvailable(doctorId, date, ws.getShift())) {
+                        availableShifts.add(ws.getShift());
+                    }
+                    break;
+
+                case "full_day":
+                    // Kiểm tra từng ca riêng biệt
+                    if (appointmentService.isDoctorAvailable(doctorId, date, "morning")) {
+                        availableShifts.add("morning");
+                    }
+                    if (appointmentService.isDoctorAvailable(doctorId, date, "afternoon")) {
+                        availableShifts.add("afternoon");
+                    }
+                    break;
+            }
+
+            if (!availableShifts.isEmpty()) {
+                grouped.computeIfAbsent(dateKey, k -> new ArrayList<>()).addAll(availableShifts);
+            }
+        }
+
+        return DoctorWorkScheduleResponse.builder()
+                .doctorId(doctorId)
+                .from(from.toString())
+                .to(to.toString())
+                .schedules(grouped)
+                .build();
+    }
+
+
 
 }

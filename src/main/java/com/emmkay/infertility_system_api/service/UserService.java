@@ -14,7 +14,6 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -25,7 +24,6 @@ public class UserService {
 
     UserRepository userRepository;
     UserMapper userMapper;
-    PasswordEncoder passwordEncoder;
 
 
     public ApiResponse<UserResponse> getMyInfo() {
@@ -46,4 +44,16 @@ public class UserService {
 
         return userMapper.toUserResponse(userRepository.save(user));
     }
+
+    @PreAuthorize("#userId == authentication.name")
+    public UserResponse uploadAvatar(String userId, String imageUrl) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        user.setAvatarUrl(imageUrl);
+        User updateUser = userRepository.save(user);
+        return userMapper.toUserResponse(updateUser);
+    }
+
+
 }

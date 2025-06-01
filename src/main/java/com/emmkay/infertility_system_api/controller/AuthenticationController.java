@@ -34,7 +34,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/register")
-    public ApiResponse<UserResponse> register(@RequestBody @Valid UserCreationRequest request) {
+    public ApiResponse<UserResponse> register(@RequestBody @Valid UserCreateRequest request) {
         return ApiResponse.<UserResponse>builder()
                 .result(authenticationService.register(request))
                 .build();
@@ -91,6 +91,13 @@ public class AuthenticationController {
         authenticationService.changePassword(request);
         return ApiResponse.<String>builder()
                 .result("OTP sent to your email for password change!")
+                .build();
+    }
+
+    @PostMapping("/refresh-token")
+    public ApiResponse<AuthenticationResponse> refreshToken(@RequestBody @Valid RefreshTokenRequest request) {
+        return ApiResponse.<AuthenticationResponse>builder()
+                .result(authenticationService.refreshToken(request))
                 .build();
     }
 

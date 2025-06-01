@@ -2,22 +2,24 @@ package com.emmkay.infertility_system_api.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.Instant;
-import java.time.LocalTime;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @Entity
-@Table(name = "doctor_work_schedule")
+@Table(name = "work_schedule")
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-public class DoctorWorkSchedule {
+@AllArgsConstructor
+public class WorkSchedule {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -30,25 +32,21 @@ public class DoctorWorkSchedule {
     private Doctor doctor;
 
     @NotNull
-    @Lob
-    @Column(name = "weekday", nullable = false)
-    private String weekday;
+    @Column(name = "work_date", nullable = false)
+    private LocalDate workDate;
 
+    @Size(max = 20)
     @NotNull
-    @Column(name = "start_time", nullable = false)
-    private LocalTime startTime;
+    @Column(name = "shift", nullable = false, length = 20)
+    private String shift;
 
-    @NotNull
-    @Column(name = "end_time", nullable = false)
-    private LocalTime endTime;
-
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "created_by", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
+    @JoinColumn(name = "created_by")
     private User createdBy;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "created_at")
-    private Instant createdAt;
+    private LocalDateTime createdAt;
 
 }

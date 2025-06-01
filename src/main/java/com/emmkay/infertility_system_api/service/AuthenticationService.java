@@ -17,6 +17,7 @@ import com.emmkay.infertility_system_api.repository.EmailOtpRepository;
 import com.emmkay.infertility_system_api.repository.RoleRepository;
 import com.emmkay.infertility_system_api.repository.UserRepository;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.nimbusds.jwt.SignedJWT;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -25,6 +26,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.text.Normalizer;
+import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -116,7 +118,7 @@ public class AuthenticationService {
                 .build();
     }
 
-    public UserResponse register(UserCreationRequest request) {
+    public UserResponse register(UserCreateRequest request) {
         Optional<User> userOptional = userRepository.findByUsername(request.getUsername());
         if (userOptional.isPresent()) {
             User user = userOptional.get();
@@ -138,8 +140,9 @@ public class AuthenticationService {
     }
 
     public IntrospectResponse introspect(IntrospectRequest request) {
+        jwtHelper.verifyToken(request.getToken());
         return IntrospectResponse.builder()
-                .valid(jwtHelper.verifyToken(request.getToken()))
+                .valid(true)
                 .build();
     }
 
@@ -184,6 +187,20 @@ public class AuthenticationService {
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         validateUserIsActiveAndVerified(user);
         otpHelper.generateAndSendOtp(request.getEmail(), "change password");
+    }
+
+    public AuthenticationResponse refreshToken(RefreshTokenRequest request) {
+        SignedJWT signedJWT = jwtHelper.verifyToken(request.getToken());
+        try {
+            String userId = signedJWT.getJWTClaimsSet().getSubject();
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+            return AuthenticationResponse.builder()
+                    .token(jwtHelper.generateToken(user))
+                    .build();
+        } catch (ParseException ex) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
     }
 }
 

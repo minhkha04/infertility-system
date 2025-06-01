@@ -2,15 +2,20 @@ package com.emmkay.infertility_system_api.controller;
 
 
 import com.emmkay.infertility_system_api.dto.request.DoctorUpdateRequest;
+import com.emmkay.infertility_system_api.dto.request.UploadImageRequest;
 import com.emmkay.infertility_system_api.dto.response.ApiResponse;
 import com.emmkay.infertility_system_api.dto.response.DoctorResponse;
+import com.emmkay.infertility_system_api.dto.response.DoctorWorkScheduleResponse;
+import com.emmkay.infertility_system_api.service.CloudinaryService;
 import com.emmkay.infertility_system_api.service.DoctorService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -44,4 +49,21 @@ public class DoctorController {
                 .result(updatedDoctor)
                 .build();
     }
+
+    @GetMapping("/available")
+    public ApiResponse<List<DoctorResponse>> getAvailableDoctors(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam String shift
+    ) {
+        List<DoctorResponse> availableDoctors = doctorService.getAvailableDoctors(date, shift);
+        return ApiResponse.<List<DoctorResponse>>builder()
+                .result(availableDoctors)
+                .build();
+    }
+
+    @GetMapping("/schedules/next-14-days/{id}")
+    public DoctorWorkScheduleResponse getDoctorSchedulesNext14Days(@PathVariable("id") String doctorId) {
+        return doctorService.getDoctorScheduleNext14Days(doctorId);
+    }
+
 }

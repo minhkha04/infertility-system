@@ -16,4 +16,5 @@ public interface DoctorRepository extends JpaRepository<Doctor, String> {
 
     @EntityGraph(attributePaths = {"users"})
     Optional<Doctor> findById(String id);
+
 }

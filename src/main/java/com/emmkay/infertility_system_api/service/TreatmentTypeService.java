@@ -1,8 +1,7 @@
 package com.emmkay.infertility_system_api.service;
 
-import com.emmkay.infertility_system_api.dto.request.TreatmentTypeCreationRequest;
+import com.emmkay.infertility_system_api.dto.request.TreatmentTypeCreateRequest;
 import com.emmkay.infertility_system_api.dto.request.TreatmentTypeUpdateRequest;
-import com.emmkay.infertility_system_api.dto.response.ApiResponse;
 import com.emmkay.infertility_system_api.dto.response.TreatmentTypeResponse;
 import com.emmkay.infertility_system_api.entity.TreatmentType;
 import com.emmkay.infertility_system_api.exception.AppException;
@@ -36,7 +35,7 @@ public class TreatmentTypeService {
     }
 
     @PreAuthorize("hasRole('MANAGER')")
-    public TreatmentTypeResponse createTreatmentType(@Valid TreatmentTypeCreationRequest request) {
+    public TreatmentTypeResponse createTreatmentType(@Valid TreatmentTypeCreateRequest request) {
        TreatmentType treatmentType = treatmentTypeMapper.toTreatmentType(request);
        if (treatmentTypeRepository.existsByName(request.getName())) {
            throw new AppException(ErrorCode.TREATMENT_TYPE_IS_EXISTED);

@@ -1,8 +1,8 @@
 package com.emmkay.infertility_system_api.service;
 
+import com.emmkay.infertility_system_api.dto.request.AdminUserCreateRequest;
 import com.emmkay.infertility_system_api.dto.request.AdminUserUpdatePasswordRequest;
 import com.emmkay.infertility_system_api.dto.request.AdminUserUpdateRequest;
-import com.emmkay.infertility_system_api.dto.request.AdminUserCreationRequest;
 import com.emmkay.infertility_system_api.dto.response.AdminUserResponse;
 import com.emmkay.infertility_system_api.entity.Doctor;
 import com.emmkay.infertility_system_api.entity.Role;
@@ -68,7 +68,7 @@ public class AdminService {
                 .toList();
     }
 
-    public AdminUserResponse createUser(AdminUserCreationRequest request) {
+    public AdminUserResponse createUser(AdminUserCreateRequest request) {
         Optional<User> userOptional = userRepository.findByUsername(request.getUsername());
         if (userOptional.isPresent()) {
             User user = userOptional.get();
@@ -147,7 +147,6 @@ public class AdminService {
         return userMapper.toAdminUserResponse(userRepository.save(user));
     }
 
-
     public void updateUserPassword(String userId, AdminUserUpdatePasswordRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
@@ -155,4 +154,9 @@ public class AdminService {
         userRepository.save(user);
     }
 
+    public void deleteUserFromDatabase(String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        userRepository.delete(user);
+    }
 }

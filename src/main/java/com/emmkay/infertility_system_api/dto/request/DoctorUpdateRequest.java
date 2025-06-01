@@ -14,8 +14,6 @@ import lombok.experimental.SuperBuilder;
 @EqualsAndHashCode(callSuper = false)
 public class DoctorUpdateRequest extends UserUpdateRequest {
 
-    String avatarUrl;
-
     @NotBlank(message = "{validation.required}")
     String qualifications;
 

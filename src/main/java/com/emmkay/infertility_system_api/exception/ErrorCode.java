@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public enum ErrorCode {
+    MISSING_REQUEST_BODY(6969, "GỌI API NGU, XEM LẠI SWAGGER", HttpStatus.BAD_REQUEST),
     UNCATEGORIZED_EXCEPTION(9999, "Uncategorized exception", HttpStatus.INTERNAL_SERVER_ERROR),
     USERNAME_EXISTED(1001, "Username has been existed", HttpStatus.BAD_REQUEST),
     ROLE_NOT_EXISTED(1002, "Role not found", HttpStatus.NOT_FOUND),
@@ -30,6 +31,22 @@ public enum ErrorCode {
     TREATMENT_STAGE_IS_EXISTED(1018, "Treatment stage is existed", HttpStatus.BAD_REQUEST),
     TREATMENT_STAGE_NOT_EXISTED(1019, "Treatment stage not found", HttpStatus.NOT_FOUND),
     DOCTOR_NOT_EXISTED(1020, "Doctor not found", HttpStatus.NOT_FOUND),
+    TREATMENT_SERVICE_IS_EXISTED(1021, "Treatment service is existed", HttpStatus.BAD_REQUEST),
+    TREATMENT_SERVICE_NOT_EXISTED(1022, "Treatment service not found", HttpStatus.NOT_FOUND),
+    WORK_SCHEDULE_EXISTED(1023, "Work schedule for doctor on date already exists", HttpStatus.BAD_REQUEST),
+    UPLOAD_IMAGE_FAILED(1024, "Upload image failed", HttpStatus.INTERNAL_SERVER_ERROR),
+    WORK_SCHEDULE_NOT_EXISTED(1025, "Work schedule not found", HttpStatus.NOT_FOUND),
+    DATE_OUT_OF_RANGE(1026, "The selected date must be within 14 days from today", HttpStatus.BAD_REQUEST),
+    INVALID_SHIFT_VALUE(1027, "Invalid shift value. Must be 'morning', 'afternoon'", HttpStatus.BAD_REQUEST),
+    TREATMENT_RECORD_NOT_FOUND(1028, "Treatment record not found", HttpStatus.BAD_REQUEST),
+    TREATMENT_STEP_NOT_FOUND(1029, "Treatment step not found", HttpStatus.NOT_FOUND),
+    TREATMENT_ALREADY_IN_PROGRESS(1030, "You have an incomplete treatment record. Please complete it before registering for a new service", HttpStatus.BAD_REQUEST),
+    CANNOT_CANCEL_TREATMENT(1031, "You cannot cancel this treatment record", HttpStatus.BAD_REQUEST),
+    APPOINTMENT_NOT_FOUND(1032, "Appointment not found", HttpStatus.NOT_FOUND),
+    DOCTOR_NOT_AVAILABLE(1033, "Doctor is not available for the selected date and shift", HttpStatus.BAD_REQUEST),
+    APPOINTMENT_IS_COMPLETED(1034, "Cannot reschedule a completed appointment", HttpStatus.BAD_REQUEST),
+    TREATMENT_STEP_HAS_SCHEDULE(1035, "This step has already been scheduled", HttpStatus.BAD_REQUEST),
+    CAN_NOT_BE_UPDATED_STATUS(1036, "Can't update status", HttpStatus.BAD_REQUEST)
     ;
     int code;
     String message;

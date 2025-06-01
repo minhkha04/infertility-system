@@ -12,7 +12,6 @@ import lombok.experimental.SuperBuilder;
 @EqualsAndHashCode(callSuper = false)
 public class DoctorResponse extends UserResponse {
 
-    String avatarUrl;
     String qualifications;
     Integer graduationYear;
     Integer experienceYears;

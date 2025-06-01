@@ -1,7 +1,7 @@
 package com.emmkay.infertility_system_api.controller;
 
 import com.emmkay.infertility_system_api.dto.request.AuthenticationRequest;
-import com.emmkay.infertility_system_api.dto.request.UserCreationRequest;
+import com.emmkay.infertility_system_api.dto.request.UserCreateRequest;
 import com.emmkay.infertility_system_api.dto.response.AuthenticationResponse;
 import com.emmkay.infertility_system_api.dto.response.RoleResponse;
 import com.emmkay.infertility_system_api.dto.response.UserResponse;
@@ -141,7 +141,7 @@ class AuthenticationControllerTest {
 
     @Test
     void register_missingEmail() throws Exception {
-        UserCreationRequest registerRequest = UserCreationRequest.builder()
+        UserCreateRequest registerRequest = UserCreateRequest.builder()
                 .username("newuser")
                 .password("newpassword123")
                 .email("")
@@ -158,7 +158,7 @@ class AuthenticationControllerTest {
 
     @Test
     void register_missingUsername() throws Exception {
-        UserCreationRequest registerRequest = UserCreationRequest.builder()
+        UserCreateRequest registerRequest = UserCreateRequest.builder()
                 .username("")
                 .password("newpassword123")
                 .email("newuser@example.com")
@@ -175,7 +175,7 @@ class AuthenticationControllerTest {
 
     @Test
     void register_missingPassword() throws Exception {
-        UserCreationRequest registerRequest = UserCreationRequest.builder()
+        UserCreateRequest registerRequest = UserCreateRequest.builder()
                 .username("newuser")
                 .password("")
                 .email("newuser@example.com")
@@ -192,7 +192,7 @@ class AuthenticationControllerTest {
 
     @Test
     void register_invalidEmailFormat() throws Exception {
-        UserCreationRequest registerRequest = UserCreationRequest.builder()
+        UserCreateRequest registerRequest = UserCreateRequest.builder()
                 .username("newuser")
                 .password("newpassword123")
                 .email("invalid-email")
@@ -208,7 +208,7 @@ class AuthenticationControllerTest {
 
     @Test
     void register_success() throws Exception {
-        UserCreationRequest registerRequest = UserCreationRequest.builder()
+        UserCreateRequest registerRequest = UserCreateRequest.builder()
                 .username("newuser")
                 .password("newpassword123")
                 .fullName("New User")
@@ -234,7 +234,7 @@ class AuthenticationControllerTest {
                         .build())
                 .build();
 
-        Mockito.when(authenticationService.register(any(UserCreationRequest.class)))
+        Mockito.when(authenticationService.register(any(UserCreateRequest.class)))
                 .thenReturn(userResponse);
 
         mockMvc.perform(post("/auth/register")
@@ -249,7 +249,7 @@ class AuthenticationControllerTest {
 
     @Test
     void register_emailAlreadyExists() throws Exception {
-        UserCreationRequest registerRequest = UserCreationRequest.builder()
+        UserCreateRequest registerRequest = UserCreateRequest.builder()
                 .username("newuser")
                 .password("newpassword123")
                 .fullName("New User")
@@ -260,7 +260,7 @@ class AuthenticationControllerTest {
                 .address("123 Main St")
                 .build();
 
-        Mockito.when(authenticationService.register(any(UserCreationRequest.class)))
+        Mockito.when(authenticationService.register(any(UserCreateRequest.class)))
                 .thenThrow(new AppException(ErrorCode.EMAIL_EXISTED));
 
         mockMvc.perform(post("/auth/register")
@@ -273,7 +273,7 @@ class AuthenticationControllerTest {
 
     @Test
     void register_usernameAlreadyExists() throws Exception {
-        UserCreationRequest registerRequest = UserCreationRequest.builder()
+        UserCreateRequest registerRequest = UserCreateRequest.builder()
                 .username("newuser")
                 .password("newpassword123")
                 .fullName("New User")
@@ -284,7 +284,7 @@ class AuthenticationControllerTest {
                 .address("123 Main St")
                 .build();
 
-        Mockito.when(authenticationService.register(any(UserCreationRequest.class)))
+        Mockito.when(authenticationService.register(any(UserCreateRequest.class)))
                 .thenThrow(new AppException(ErrorCode.USERNAME_EXISTED));
 
         mockMvc.perform(post("/auth/register")

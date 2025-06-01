@@ -28,9 +28,6 @@ public class Doctor {
     @JoinColumn(name = "id", nullable = false)
     private User users;
 
-    @Size(max = 255)
-    @Column(name = "avatar_url")
-    private String avatarUrl;
 
     @Lob
     @Column(name = "qualifications")
@@ -42,16 +39,18 @@ public class Doctor {
     @Column(name = "experience_years")
     private Integer experienceYears;
 
-    @OneToMany(mappedBy = "doctor")
-    private Set<Appointment> appointments = new LinkedHashSet<>();
 
-    @OneToMany(mappedBy = "doctor")
-    private Set<DoctorWorkSchedule> doctorWorkSchedules = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "doctor")
     private Set<Feedback> feedbacks = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "doctor")
     private Set<TreatmentRecord> treatmentRecords = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "doctor")
+    private Set<WorkSchedule> workSchedules = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "doctor")
+    private Set<Appointment> appointments = new LinkedHashSet<>();
 
 }

@@ -21,4 +21,5 @@ public class UserResponse {
     LocalDate dateOfBirth;
     RoleResponse roleName;
     String address;
+    String avatarUrl;
 }

@@ -70,14 +70,10 @@ public class User {
     @Column(name = "address")
     private String address;
 
-    @OneToMany(mappedBy = "customer")
-    private Set<Appointment> appointments = new LinkedHashSet<>();
+
 
     @OneToMany(mappedBy = "author")
     private Set<Blog> blogs = new LinkedHashSet<>();
-
-    @OneToMany(mappedBy = "createdBy")
-    private Set<DoctorWorkSchedule> doctorWorkSchedules = new LinkedHashSet<>();
 
     @OneToOne(mappedBy = "users")
     private Doctor doctor;
@@ -96,5 +92,16 @@ public class User {
 
     @OneToMany(mappedBy = "createdBy")
     private Set<TreatmentService> treatmentServices = new LinkedHashSet<>();
+
+    @Size(max = 255)
+    @Column(name = "avatar_url")
+    private String avatarUrl;
+
+
+    @OneToMany(mappedBy = "createdBy")
+    private Set<WorkSchedule> workSchedules = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "customer")
+    private Set<Appointment> appointments = new LinkedHashSet<>();
 
 }

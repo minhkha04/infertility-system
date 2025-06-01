@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -23,7 +22,7 @@ public class TreatmentStep {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
-    private Integer id;
+    private Long id;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -41,16 +40,14 @@ public class TreatmentStep {
     @Column(name = "step_type", nullable = false)
     private String stepType;
 
-    @NotNull
-    @Column(name = "scheduled_date", nullable = false)
+    @Column(name = "scheduled_date")
     private LocalDate scheduledDate;
 
     @Column(name = "actual_date")
     private LocalDate actualDate;
 
-    @ColumnDefault("'Planned'")
-    @Lob
-    @Column(name = "status")
+    @Size(max = 50)
+    @Column(name = "status", length = 50)
     private String status;
 
     @Lob
@@ -59,5 +56,9 @@ public class TreatmentStep {
 
     @OneToMany(mappedBy = "step")
     private Set<Reminder> reminders = new LinkedHashSet<>();
+
+
+    @OneToMany(mappedBy = "treatmentStep")
+    private Set<Appointment> appointments = new LinkedHashSet<>();
 
 }

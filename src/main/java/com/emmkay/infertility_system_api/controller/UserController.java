@@ -1,8 +1,11 @@
 package com.emmkay.infertility_system_api.controller;
 
+import com.emmkay.infertility_system_api.dto.request.UploadImageRequest;
 import com.emmkay.infertility_system_api.dto.request.UserUpdateRequest;
 import com.emmkay.infertility_system_api.dto.response.ApiResponse;
+import com.emmkay.infertility_system_api.dto.response.DoctorResponse;
 import com.emmkay.infertility_system_api.dto.response.UserResponse;
+import com.emmkay.infertility_system_api.service.CloudinaryService;
 import com.emmkay.infertility_system_api.service.UserService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -17,6 +20,8 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     UserService userService;
+    CloudinaryService cloudinaryService;
+
 
     @GetMapping("/myInfo")
     public ApiResponse<UserResponse> getMyInfo() {
@@ -29,4 +34,13 @@ public class UserController {
                 .result(userService.updateUser(userId, request))
                 .build();
     }
+
+    @PutMapping("/upload-avatar")
+    public ApiResponse<UserResponse> uploadAvatar(@ModelAttribute @Valid UploadImageRequest request) {
+        String imageUrl = cloudinaryService.uploadImage(request.getFile(), "avt", request.getUserId());
+        return ApiResponse.<UserResponse>builder()
+                .result(userService.uploadAvatar(request.getUserId(), imageUrl))
+                .build();
+    }
+
 }
