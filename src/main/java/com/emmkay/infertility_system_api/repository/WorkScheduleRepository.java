@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface WorkScheduleRepository extends JpaRepository<WorkSchedule, Long> {
@@ -20,4 +21,6 @@ public interface WorkScheduleRepository extends JpaRepository<WorkSchedule, Long
     List<WorkSchedule> findByDoctorIdAndWorkDateBetween(String doctorId, LocalDate workDateAfter, LocalDate workDateBefore);
 
     boolean existsByDoctorIdAndWorkDateAndShift(String doctorId, LocalDate workDate, String shift);
+
+    Optional<WorkSchedule> findByDoctorIdAndWorkDate(String doctorId, LocalDate workDate);
 }

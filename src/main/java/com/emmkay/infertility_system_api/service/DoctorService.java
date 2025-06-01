@@ -21,6 +21,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -36,6 +38,8 @@ public class DoctorService {
     DoctorRepository doctorRepository;
     UserRepository userRepository;
     WorkScheduleRepository workScheduleRepository;
+    AppointmentService appointmentService;
+
 
     public List<DoctorResponse> getAllDoctors() {
         List<Doctor> doctors = doctorRepository.findAll();
@@ -80,24 +84,52 @@ public class DoctorService {
         };
 
         List<WorkSchedule> schedules = workScheduleRepository.findByWorkDateAndShiftIn(date, shiftsToMatch);
-        List<Doctor> doctors = schedules.stream()
+        return schedules.stream()
                 .map(WorkSchedule::getDoctor)
                 .distinct()
+                .filter(doctor -> appointmentService.isDoctorAvailable(doctor.getId(), date, shift))
+                .map(doctorMapper::toDoctorResponse)
                 .toList();
-        return doctors.stream().map(doctorMapper::toDoctorResponse).toList();
     }
 
     public DoctorWorkScheduleResponse getDoctorScheduleNext14Days(String doctorId) {
         LocalDate from = LocalDate.now();
-        LocalDate to = from.plusDays(13); // 14 ngày tính từ hôm nay
+        LocalDate to = from.plusDays(13);
 
-        List<WorkSchedule> schedules = workScheduleRepository.findByDoctorIdAndWorkDateBetween(doctorId, from, to);
+        List<WorkSchedule> schedules = workScheduleRepository
+                .findByDoctorIdAndWorkDateBetween(doctorId, from, to);
 
-        Map<String, List<String>> grouped = schedules.stream()
-                .collect(Collectors.groupingBy(
-                        ws -> ws.getWorkDate().toString(),
-                        Collectors.mapping(WorkSchedule::getShift, Collectors.toList())
-                ));
+        Map<String, List<String>> grouped = new LinkedHashMap<>();
+
+        for (WorkSchedule ws : schedules) {
+            LocalDate date = ws.getWorkDate();
+            String dateKey = date.toString();
+
+            List<String> availableShifts = new ArrayList<>();
+
+            switch (ws.getShift()) {
+                case "morning":
+                case "afternoon":
+                    if (appointmentService.isDoctorAvailable(doctorId, date, ws.getShift())) {
+                        availableShifts.add(ws.getShift());
+                    }
+                    break;
+
+                case "full_day":
+                    // Kiểm tra từng ca riêng biệt
+                    if (appointmentService.isDoctorAvailable(doctorId, date, "morning")) {
+                        availableShifts.add("morning");
+                    }
+                    if (appointmentService.isDoctorAvailable(doctorId, date, "afternoon")) {
+                        availableShifts.add("afternoon");
+                    }
+                    break;
+            }
+
+            if (!availableShifts.isEmpty()) {
+                grouped.computeIfAbsent(dateKey, k -> new ArrayList<>()).addAll(availableShifts);
+            }
+        }
 
         return DoctorWorkScheduleResponse.builder()
                 .doctorId(doctorId)
@@ -106,5 +138,7 @@ public class DoctorService {
                 .schedules(grouped)
                 .build();
     }
+
+
 
 }
