@@ -54,35 +54,24 @@ public class CloudinaryService {
     public void validateImageFile(MultipartFile file) {
         String originalFilename = file.getOriginalFilename();
         String contentType = file.getContentType();
-
         if (originalFilename == null || contentType == null) {
             throw new AppException(ErrorCode.INVALID_IMAGE_FILE);
         }
-
-        // MIME check (an toàn hơn)
         if (!contentType.equalsIgnoreCase("image/jpeg") &&
                 !contentType.equalsIgnoreCase("image/png")) {
             throw new AppException(ErrorCode.INVALID_IMAGE_FILE);
         }
-
-        // Extension check
         if (!originalFilename.toLowerCase().matches(".*\\.(jpg|jpeg|png)$")) {
             throw new AppException(ErrorCode.INVALID_IMAGE_FILE);
         }
     }
     public File convertToPng(MultipartFile file) throws IOException {
-        // Đọc ảnh gốc vào bộ nhớ
         BufferedImage originalImage = ImageIO.read(file.getInputStream());
         if (originalImage == null) {
             throw new AppException(ErrorCode.INVALID_IMAGE_FILE);
         }
-
-        // Tạo file PNG tạm thời
         File pngFile = File.createTempFile("converted_", ".png");
-
-        // Ghi lại ảnh sang định dạng PNG
         ImageIO.write(originalImage, "png", pngFile);
-
         return pngFile;
     }
 
