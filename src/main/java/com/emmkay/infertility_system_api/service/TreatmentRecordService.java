@@ -42,7 +42,7 @@ public class TreatmentRecordService {
     ) {
 
         if (treatmentRecordRepository.existsByCustomerIdAndStatusIn(
-                customerId, List.of("Pending", "InProgress")
+                customerId, List.of("PENDING", "INPROGRESS")
         )) {
             throw new AppException(ErrorCode.TREATMENT_ALREADY_IN_PROGRESS);
         }
@@ -51,12 +51,17 @@ public class TreatmentRecordService {
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         Doctor doctor = doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_NOT_EXISTED));
+
+        if (appointmentService.isDoctorAvailable(doctorId, startDate, shift)) {
+            throw new AppException(ErrorCode.DOCTOR_NOT_AVAILABLE);
+        }
+
         TreatmentRecord treatmentRecord = TreatmentRecord.builder()
                 .customer(customer)
                 .doctor(doctor)
                 .service(treatmentService)
                 .startDate(startDate)
-                .status("Pending")
+                .status("PENDING")
                 .createdDate(LocalDate.now())
                 .cd1Date(cd1Date)
                 .build();
@@ -83,11 +88,11 @@ public class TreatmentRecordService {
         TreatmentRecord record = treatmentRecordRepository.findByIdAndCustomerId(recordId, customerId)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
 
-        if (record.getStatus().equals("Completed") || record.getStatus().equals("Cancelled")) {
+        if (record.getStatus().equals("COMPLETED") || record.getStatus().equals("CANCELLED")) {
             throw new AppException(ErrorCode.CANNOT_CANCEL_TREATMENT);
         }
 
-        record.setStatus("Cancelled");
+        record.setStatus("CANCELLED");
         treatmentRecordRepository.save(record);
         treatmentStepService.cancelStepsByRecordId(recordId);
         appointmentService.cancelAppointmentsByRecordId(recordId);

@@ -59,6 +59,7 @@ public class WorkScheduleService {
         workSchedule.setCreatedAt(LocalDateTime.now());
         workSchedule.setCreatedBy(manager);
         workSchedule.setDoctor(doctor);
+        workSchedule.setShift(workSchedule.getShift().toUpperCase());
 
         return workScheduleMapper.toWorkScheduleResponse(workScheduleRepository.save(workSchedule));
     }
@@ -68,6 +69,7 @@ public class WorkScheduleService {
         WorkSchedule workSchedule = workScheduleRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.WORK_SCHEDULE_NOT_EXISTED));
         workScheduleMapper.updateWorkSchedule(workSchedule, request);
+        workSchedule.setShift(workSchedule.getShift().toUpperCase());
         return workScheduleMapper.toWorkScheduleResponse(workScheduleRepository.save(workSchedule));
     }
 
@@ -112,7 +114,7 @@ public class WorkScheduleService {
                     WorkSchedule schedule = WorkSchedule.builder()
                             .doctor(doctor)
                             .workDate(date)
-                            .shift(rule.getShift())
+                            .shift(rule.getShift().toUpperCase())
                             .createdBy(manager)
                             .build();
 

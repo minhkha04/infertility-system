@@ -21,7 +21,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-import static java.util.Arrays.stream;
 
 @Slf4j
 @Service
@@ -50,16 +49,16 @@ public class AppointmentService {
                 .appointmentDate(date)
                 .shift(shift)
                 .treatmentStep(treatmentStep)
-                .status("Confirmed")
+                .status("CONFIRMED")
                 .purpose(treatmentStep.getStage().getName())
                 .createdAt(LocalDate.now())
                 .build());
     }
 
     public void cancelAppointmentsByRecordId(Long recordId) {
-        List<String> cancellableStatuses = List.of("Pending", "Confirmed");
+        List<String> cancellableStatuses = List.of("CONFIRMED");
         appointmentRepository.updateStatusByRecordIdNative(
-                recordId, cancellableStatuses, "Cancelled"
+                recordId, cancellableStatuses, "CANCELLED"
         );
     }
 
@@ -73,7 +72,7 @@ public class AppointmentService {
 
 
         // Nếu bác sĩ không làm ca đó (không phải ca tương ứng và cũng không phải full_day)
-        if (!actualShift.equals(shift) && !"full_day".equals(actualShift)) {
+        if (!actualShift.equals(shift) && !"FULL_DAY".equals(actualShift)) {
             return false;
         }
 
@@ -86,7 +85,7 @@ public class AppointmentService {
 
     @PreAuthorize("hasRole('CUSTOMER') or hasRole('MANAGER')")
     public List<AppointmentResponse> getAppointmentsForCustomer(String customerId) {
-        return appointmentRepository.findAppointmentByCustomerIdAndStatusNot(customerId, "Cancelled")
+        return appointmentRepository.findAppointmentByCustomerIdAndStatusNot(customerId, "CANCELLED")
                 .stream()
                 .map(appointmentMapper::toAppointmentResponse)
                 .toList();
@@ -94,7 +93,7 @@ public class AppointmentService {
 
     @PreAuthorize("hasRole('DOCTOR') or hasRole('MANAGER')")
     public List<AppointmentResponse> getAppointmentsForDoctor(String customerId) {
-        return appointmentRepository.findAppointmentByDoctorIdAndStatusNot(customerId, "Cancelled")
+        return appointmentRepository.findAppointmentByDoctorIdAndStatusNot(customerId, "CANCELLED")
                 .stream()
                 .map(appointmentMapper::toAppointmentResponse)
                 .toList();
@@ -102,7 +101,7 @@ public class AppointmentService {
 
     @PreAuthorize("hasRole('DOCTOR') or hasRole('MANAGER')")
     public List<AppointmentResponse> getAppointmentsForDoctorToday(String customerId) {
-        return appointmentRepository.findAppointmentByDoctorIdAndStatusNotAndAppointmentDate(customerId, "Cancelled", LocalDate.now())
+        return appointmentRepository.findAppointmentByDoctorIdAndStatusNotAndAppointmentDate(customerId, "CANCELLED", LocalDate.now())
                 .stream()
                 .map(appointmentMapper::toAppointmentResponse)
                 .toList();
@@ -132,7 +131,7 @@ public class AppointmentService {
         if ("COMPLETED".equalsIgnoreCase(appointment.getStatus())) {
             throw new AppException(ErrorCode.APPOINTMENT_IS_COMPLETED);
         }
-
+        request.setShift(request.getShift().toUpperCase());
         appointmentMapper.updateStatusAppointment(appointment, request);
         return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
     }
@@ -158,7 +157,7 @@ public class AppointmentService {
         Appointment appointment = appointmentMapper.toAppointment(req);
         appointment.setDoctor(doctor);
         appointment.setTreatmentStep(step);
-        appointment.setStatus("Confirmed");
+        appointment.setStatus("CONFIRMED");
         appointment.setPurpose(step.getStage().getName());
         appointment.setCreatedAt(LocalDate.now());
         appointment.setCustomer(customer);
@@ -175,7 +174,7 @@ public class AppointmentService {
             throw new AppException(ErrorCode.CAN_NOT_BE_UPDATED_STATUS);
         }
 
-        appointment.setStatus(request.getStatus());
+        appointment.setStatus(request.getStatus().toUpperCase());
         if (request.getNotes() != null) {
             appointment.setNotes(request.getNotes());
         }

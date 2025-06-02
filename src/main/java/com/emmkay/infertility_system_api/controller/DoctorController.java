@@ -2,11 +2,9 @@ package com.emmkay.infertility_system_api.controller;
 
 
 import com.emmkay.infertility_system_api.dto.request.DoctorUpdateRequest;
-import com.emmkay.infertility_system_api.dto.request.UploadImageRequest;
 import com.emmkay.infertility_system_api.dto.response.ApiResponse;
 import com.emmkay.infertility_system_api.dto.response.DoctorResponse;
 import com.emmkay.infertility_system_api.dto.response.DoctorWorkScheduleResponse;
-import com.emmkay.infertility_system_api.service.CloudinaryService;
 import com.emmkay.infertility_system_api.service.DoctorService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;

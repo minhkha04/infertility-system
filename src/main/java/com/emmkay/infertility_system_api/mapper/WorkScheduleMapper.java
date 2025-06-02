@@ -12,6 +12,7 @@ import org.mapstruct.MappingTarget;
 public interface WorkScheduleMapper {
 
     @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "shift", source = "shift")
     WorkSchedule toWorkSchedule(WorkScheduleCreateRequest request);
 
     @Mapping(target = "createdBy", source = "createdBy.fullName")

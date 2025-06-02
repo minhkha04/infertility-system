@@ -1,6 +1,5 @@
 package com.emmkay.infertility_system_api.repository;
 
-import com.emmkay.infertility_system_api.dto.response.AppointmentResponse;
 import com.emmkay.infertility_system_api.entity.Appointment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -34,7 +33,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
                 WHERE a.doctor.id = :doctorId 
                   AND DATE(a.appointmentDate) = :date 
                   AND a.shift = :shift
-                  AND a.status <> 'Cancelled'
+                  AND a.status <> 'CANCELLED'
             """)
     int countActiveByDoctorIdAndDateAndShift(@Param("doctorId") String doctorId, @Param("date") LocalDate date, @Param("shift") String shift);
 

@@ -39,11 +39,11 @@ public class TreatmentStepService {
                     .record(treatmentRecord)
                     .stage(stage)
                     .stepType(stage.getName())
-                    .status("Planning")
+                    .status("PLANNED")
                     .build();
             if (stage.getOrderIndex() == 1) {
                 step.setScheduledDate(startDate);
-                step.setStatus("Confirmed");
+                step.setStatus("CONFIRMED");
             }
             steps.add(step);
         });
@@ -51,9 +51,9 @@ public class TreatmentStepService {
     }
 
     public void cancelStepsByRecordId(Long recordId) {
-        List<String> cancellableStatuses = List.of("Pending", "Confirmed");
+        List<String> cancellableStatuses = List.of("PLANNED", "CONFIRMED");
         treatmentStepRepository.updateStatusByRecordIdAndStatusIn(
-                recordId,  cancellableStatuses, "Cancelled"
+                recordId,  cancellableStatuses, "CANCELLED"
         );
     }
 

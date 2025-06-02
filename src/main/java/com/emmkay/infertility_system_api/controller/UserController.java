@@ -3,7 +3,6 @@ package com.emmkay.infertility_system_api.controller;
 import com.emmkay.infertility_system_api.dto.request.UploadImageRequest;
 import com.emmkay.infertility_system_api.dto.request.UserUpdateRequest;
 import com.emmkay.infertility_system_api.dto.response.ApiResponse;
-import com.emmkay.infertility_system_api.dto.response.DoctorResponse;
 import com.emmkay.infertility_system_api.dto.response.UserResponse;
 import com.emmkay.infertility_system_api.service.CloudinaryService;
 import com.emmkay.infertility_system_api.service.UserService;

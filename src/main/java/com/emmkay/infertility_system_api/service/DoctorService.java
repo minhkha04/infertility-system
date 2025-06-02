@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -78,8 +77,8 @@ public class DoctorService {
         }
 
         List<String> shiftsToMatch = switch (shift) {
-            case "morning", "afternoon" -> List.of(shift, "full_day");
-            case "full_day" -> List.of("full_day");
+            case "MORNING", "AFTERNOON" -> List.of(shift, "FULL_DAY");
+            case "FULL_DAY" -> List.of("FULL_DAY");
             default -> throw new AppException(ErrorCode.INVALID_SHIFT_VALUE);
         };
 
@@ -108,20 +107,20 @@ public class DoctorService {
             List<String> availableShifts = new ArrayList<>();
 
             switch (ws.getShift()) {
-                case "morning":
-                case "afternoon":
+                case "MORNING":
+                case "AFTERNOON":
                     if (appointmentService.isDoctorAvailable(doctorId, date, ws.getShift())) {
                         availableShifts.add(ws.getShift());
                     }
                     break;
 
-                case "full_day":
+                case "FULL_DAY":
                     // Kiểm tra từng ca riêng biệt
-                    if (appointmentService.isDoctorAvailable(doctorId, date, "morning")) {
-                        availableShifts.add("morning");
+                    if (appointmentService.isDoctorAvailable(doctorId, date, "MORNING")) {
+                        availableShifts.add("MORNING");
                     }
-                    if (appointmentService.isDoctorAvailable(doctorId, date, "afternoon")) {
-                        availableShifts.add("afternoon");
+                    if (appointmentService.isDoctorAvailable(doctorId, date, "AFTERNOON")) {
+                        availableShifts.add("AFTERNOON");
                     }
                     break;
             }
@@ -138,7 +137,4 @@ public class DoctorService {
                 .schedules(grouped)
                 .build();
     }
-
-
-
 }

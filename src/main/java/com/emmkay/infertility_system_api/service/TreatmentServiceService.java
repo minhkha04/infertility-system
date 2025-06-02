@@ -118,7 +118,7 @@ public class TreatmentServiceService {
     public void registerTreatmentService(TreatmentServiceRegisterRequest request) {
         TreatmentService treatmentService = treatmentServiceRepository.findById(request.getTreatmentServiceId())
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_SERVICE_NOT_EXISTED));
-        treatmentRecordService.creatTreatmentRecord(treatmentService, request.getCustomerId(), request.getDoctorId(), request.getStartDate(), request.getShift(), request.getCd1Date()
+        treatmentRecordService.creatTreatmentRecord(treatmentService, request.getCustomerId(), request.getDoctorId(), request.getStartDate(), request.getShift().toUpperCase(), request.getCd1Date()
         );
     }
 
