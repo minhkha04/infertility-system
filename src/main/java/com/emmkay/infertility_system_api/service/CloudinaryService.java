@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
@@ -33,22 +35,56 @@ public class CloudinaryService {
     }
 
     public String uploadImage(MultipartFile multipartFile, String prefix, String slug) {
+        validateImageFile(multipartFile);
         try {
-            File tempFile = File.createTempFile("temp", multipartFile.getOriginalFilename());
-            multipartFile.transferTo(tempFile);
-
+            File pngFile = convertToPng(multipartFile);
             String publicId = prefix + "_" + slug;
-
             Map options = ObjectUtils.asMap(
                     "folder", "uploads",
                     "public_id", publicId,
-                    "overwrite", true
+                    "overwrite", true,
+                    "resource_type", "image"
             );
-
-            Map uploadResult = cloudinary.uploader().upload(tempFile, options);
+            Map uploadResult = cloudinary.uploader().upload(pngFile, options);
             return uploadResult.get("secure_url").toString();
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new AppException(ErrorCode.UPLOAD_IMAGE_FAILED);
         }
     }
+    public void validateImageFile(MultipartFile file) {
+        String originalFilename = file.getOriginalFilename();
+        String contentType = file.getContentType();
+
+        if (originalFilename == null || contentType == null) {
+            throw new AppException(ErrorCode.INVALID_IMAGE_FILE);
+        }
+
+        // MIME check (an toàn hơn)
+        if (!contentType.equalsIgnoreCase("image/jpeg") &&
+                !contentType.equalsIgnoreCase("image/png")) {
+            throw new AppException(ErrorCode.INVALID_IMAGE_FILE);
+        }
+
+        // Extension check
+        if (!originalFilename.toLowerCase().matches(".*\\.(jpg|jpeg|png)$")) {
+            throw new AppException(ErrorCode.INVALID_IMAGE_FILE);
+        }
+    }
+    public File convertToPng(MultipartFile file) throws IOException {
+        // Đọc ảnh gốc vào bộ nhớ
+        BufferedImage originalImage = ImageIO.read(file.getInputStream());
+        if (originalImage == null) {
+            throw new AppException(ErrorCode.INVALID_IMAGE_FILE);
+        }
+
+        // Tạo file PNG tạm thời
+        File pngFile = File.createTempFile("converted_", ".png");
+
+        // Ghi lại ảnh sang định dạng PNG
+        ImageIO.write(originalImage, "png", pngFile);
+
+        return pngFile;
+    }
+
+
 }

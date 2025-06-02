@@ -46,7 +46,8 @@ public enum ErrorCode {
     DOCTOR_NOT_AVAILABLE(1033, "Doctor is not available for the selected date and shift", HttpStatus.BAD_REQUEST),
     APPOINTMENT_IS_COMPLETED(1034, "Cannot reschedule a completed appointment", HttpStatus.BAD_REQUEST),
     TREATMENT_STEP_HAS_SCHEDULE(1035, "This step has already been scheduled", HttpStatus.BAD_REQUEST),
-    CAN_NOT_BE_UPDATED_STATUS(1036, "Can't update status", HttpStatus.BAD_REQUEST)
+    CAN_NOT_BE_UPDATED_STATUS(1036, "Can't update status", HttpStatus.BAD_REQUEST),
+    INVALID_IMAGE_FILE(1037, "Invalid image file. Only JPG, JPEG, PNG supported", HttpStatus.BAD_REQUEST)
     ;
     int code;
     String message;
