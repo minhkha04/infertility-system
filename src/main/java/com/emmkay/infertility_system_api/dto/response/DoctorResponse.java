@@ -15,5 +15,5 @@ public class DoctorResponse extends UserResponse {
     String qualifications;
     Integer graduationYear;
     Integer experienceYears;
-
+    String specialty;
 }

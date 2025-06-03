@@ -29,4 +29,7 @@ public class DoctorUpdateRequest extends UserUpdateRequest {
     @NotBlank(message = "{validation.required}")
     @Email(message = "{invalid.email}")
     String email;
+
+    @NotBlank(message = "{validation.required}")
+    String specialty;
 }

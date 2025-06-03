@@ -21,6 +21,6 @@ public interface DoctorMapper {
     DoctorResponse toDoctorResponse(Doctor doctor);
 
     @Mapping(target = "users.roleName", ignore = true)
-    @Mapping(target = "users.email", source = "email")
+    @Mapping(target = "users.email.", source = "email")
     void updateDoctor(@MappingTarget Doctor doctor, DoctorUpdateRequest request);
 }

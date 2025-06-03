@@ -53,4 +53,8 @@ public class Doctor {
     @OneToMany(mappedBy = "doctor")
     private Set<Appointment> appointments = new LinkedHashSet<>();
 
+    @Size(max = 255)
+    @Column(name = "specialty")
+    private String specialty;
+
 }
