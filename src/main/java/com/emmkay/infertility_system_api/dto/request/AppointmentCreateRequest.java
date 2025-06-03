@@ -14,7 +14,7 @@ import java.time.LocalDate;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class AppointmentCreateRequest {
     @NotNull(message = "{validation.required}")
-    Long treatmentTypeId;
+    Long treatmentStepId;
     @NotBlank(message = "{validation.required}")
     String shift;
     @NotBlank(message = "{validation.required}")
@@ -23,4 +23,6 @@ public class AppointmentCreateRequest {
     String doctorId;
     @NotNull(message = "{validation.required}")
     LocalDate appointmentDate;
+    String notes;
+
 }

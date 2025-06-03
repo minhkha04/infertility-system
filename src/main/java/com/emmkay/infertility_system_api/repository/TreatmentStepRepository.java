@@ -14,4 +14,6 @@ public interface TreatmentStepRepository extends JpaRepository<TreatmentStep, Lo
     @Query("update TreatmentStep t set t.status = :status where t.record.id = :recordId and t.status in :statuses")
     @Modifying
     void updateStatusByRecordIdAndStatusIn(Long recordId, Collection<String> statuses,  String status);
+
+    Collection<Object> findByRecordId(Long recordId);
 }

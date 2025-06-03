@@ -10,11 +10,13 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -29,6 +31,36 @@ public class TreatmentRecordService {
     TreatmentRecordMapper treatmentRecordMapper;
     TreatmentStepService treatmentStepService;
     AppointmentService appointmentService;
+
+
+    public List<TreatmentRecordResponse> getAllTreatmentRecordsByCustomerId(String customerId) {
+        List<TreatmentRecord> records = treatmentRecordRepository.findByCustomerId(customerId);
+        return records.stream()
+                .map(treatmentRecordMapper::toTreatmentRecordResponse)
+                .toList();
+    }
+
+    @PreAuthorize("hasRole('MANAGER')")
+    public List<TreatmentRecordResponse> getAllTreatmentRecords() {
+        List<TreatmentRecord> records = treatmentRecordRepository.findAll();
+        return records.stream()
+                .map(treatmentRecordMapper::toTreatmentRecordResponse)
+                .toList();
+    }
+
+    @PreAuthorize("hasRole('DOCTOR')")
+    public List<TreatmentRecordResponse> getAllTreatmentRecordsByDoctorId(String doctorId) {
+        List<TreatmentRecord> records = treatmentRecordRepository.findByDoctorId(doctorId);
+        return records.stream()
+                .map(treatmentRecordMapper::toTreatmentRecordResponse)
+                .toList();
+    }
+
+    public  TreatmentRecordResponse getTreatmentRecordById(String treatmentRecordId) {
+        TreatmentRecord treatmentRecord = treatmentRecordRepository.findById(Long.parseLong(treatmentRecordId))
+                .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
+        return treatmentRecordMapper.toTreatmentRecordResponse(treatmentRecord);
+    }
 
     @Transactional
     public TreatmentRecordResponse creatTreatmentRecord(
@@ -47,12 +79,18 @@ public class TreatmentRecordService {
             throw new AppException(ErrorCode.TREATMENT_ALREADY_IN_PROGRESS);
         }
 
+        if (!startDate.isAfter(LocalDate.now())) {
+            throw new AppException(ErrorCode.INVALID_START_DATE);
+        }
+
         User customer = userRepository.findById(customerId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         Doctor doctor = doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_NOT_EXISTED));
 
-        if (appointmentService.isDoctorAvailable(doctorId, startDate, shift)) {
+
+
+        if (!appointmentService.isDoctorAvailable(doctorId, startDate, shift)) {
             throw new AppException(ErrorCode.DOCTOR_NOT_AVAILABLE);
         }
 

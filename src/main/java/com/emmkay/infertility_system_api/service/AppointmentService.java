@@ -66,8 +66,8 @@ public class AppointmentService {
         Optional<WorkSchedule> workScheduleOpt = workScheduleRepository
                 .findByDoctorIdAndWorkDate(doctorId, date);
 
-        if (workScheduleOpt.isEmpty()) return false;
 
+        if (workScheduleOpt.isEmpty()) return false;
         String actualShift = workScheduleOpt.get().getShift();
 
 
@@ -138,8 +138,12 @@ public class AppointmentService {
 
     @PreAuthorize("hasRole('DOCTOR') or hasRole('MANAGER')")
     public AppointmentResponse scheduleStepAppointment(AppointmentCreateRequest req) {
-        TreatmentStep step = treatmentStepRepository.findById(req.getTreatmentTypeId())
+        TreatmentStep step = treatmentStepRepository.findById(req.getTreatmentStepId())
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_TYPE_NOT_EXISTED));
+
+        if (!req.getAppointmentDate().isAfter(LocalDate.now())) {
+            throw new AppException(ErrorCode.INVALID_START_DATE);
+        }
 
         if (step.getScheduledDate() != null) {
             throw new AppException(ErrorCode.TREATMENT_STEP_HAS_SCHEDULE);
