@@ -14,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+
 
 @RestController
 @RequestMapping("/work-schedule")
@@ -31,12 +33,11 @@ public class WorkScheduleController {
                 .build();
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{doctorId}")
     public ApiResponse<WorkScheduleResponse> updateWorkSchedule(
-            @PathVariable Long id,
-            @RequestBody @Valid WorkScheduleUpdateRequest request) {
+            @RequestBody @Valid WorkScheduleUpdateRequest request, String doctorId) {
         return ApiResponse.<WorkScheduleResponse>builder()
-                .result(workScheduleService.updateWorkSchedule(id, request))
+                .result(workScheduleService.updateWorkSchedule(request, doctorId))
                 .build();
     }
 
@@ -55,11 +56,13 @@ public class WorkScheduleController {
                 .build();
     }
 
-    @DeleteMapping("/{id}")
-    public ApiResponse<String> deleteWorkSchedule(@PathVariable Long id) {
-        workScheduleService.deleteWorkSchedule(id);
+    @DeleteMapping("/{date}/{doctorId}")
+    public ApiResponse<String> deleteWorkScheduleByDateAndDoctor(
+            @PathVariable LocalDate date,
+            @PathVariable String doctorId) {
+        workScheduleService.deleteWorkScheduleByDateAndDoctor(date, doctorId);
         return ApiResponse.<String>builder()
-                .result("Work schedule with ID " + id + " has been deleted successfully.")
+                .result("Work schedules for doctor " + doctorId + " on date " + date + " have been deleted successfully.")
                 .build();
     }
 

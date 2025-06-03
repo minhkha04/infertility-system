@@ -47,7 +47,13 @@ public enum ErrorCode {
     APPOINTMENT_IS_COMPLETED(1034, "Cannot reschedule a completed appointment", HttpStatus.BAD_REQUEST),
     TREATMENT_STEP_HAS_SCHEDULE(1035, "This step has already been scheduled", HttpStatus.BAD_REQUEST),
     CAN_NOT_BE_UPDATED_STATUS(1036, "Can't update status", HttpStatus.BAD_REQUEST),
-    INVALID_IMAGE_FILE(1037, "Invalid image file. Only JPG, JPEG, PNG supported", HttpStatus.BAD_REQUEST)
+    INVALID_IMAGE_FILE(1037, "Invalid image file. Only JPG, JPEG, PNG supported", HttpStatus.BAD_REQUEST),
+    BLOG_NOT_EXISTED(1038, "Blog not found", HttpStatus.NOT_FOUND),
+    UNAUTHORIZED_ACTION(1039, "You are not authorized to perform this action", HttpStatus.FORBIDDEN),
+    BLOG_ALREADY_APPROVED(1040, "Blog has already been approved", HttpStatus.BAD_REQUEST),
+    BLOG_APPROVED_ERROR(1041, "Only draft/rejected blogs can be submitted", HttpStatus.BAD_REQUEST),
+    INVALID_STATUS(1042, "Invalid status", HttpStatus.BAD_REQUEST),
+    BLOG_NOT_IN_REVIEW(1043, "Blog is not in review state", HttpStatus.BAD_REQUEST),
     ;
     int code;
     String message;

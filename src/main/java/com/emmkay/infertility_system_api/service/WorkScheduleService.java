@@ -20,11 +20,13 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -65,9 +67,10 @@ public class WorkScheduleService {
     }
 
     @PreAuthorize("hasRole('MANAGER')")
-    public WorkScheduleResponse updateWorkSchedule(Long id, WorkScheduleUpdateRequest request) {
-        WorkSchedule workSchedule = workScheduleRepository.findById(id)
+    public WorkScheduleResponse updateWorkSchedule(WorkScheduleUpdateRequest request, String doctorId) {
+        WorkSchedule workSchedule = workScheduleRepository.findByDoctorIdAndWorkDate(doctorId, request.getWorkDate())
                 .orElseThrow(() -> new AppException(ErrorCode.WORK_SCHEDULE_NOT_EXISTED));
+
         workScheduleMapper.updateWorkSchedule(workSchedule, request);
         workSchedule.setShift(workSchedule.getShift().toUpperCase());
         return workScheduleMapper.toWorkScheduleResponse(workScheduleRepository.save(workSchedule));
@@ -84,7 +87,8 @@ public class WorkScheduleService {
                 .collect(Collectors.toMap(
                         s -> s.getWorkDate().toString(), // key: "2025-06-05"
                         WorkSchedule::getShift,          // value: "morning"
-                        (existing, replacement) -> replacement // nếu trùng ngày thì lấy cái sau
+                        (existing, replacement) -> replacement, // nếu trùng ngày thì lấy cái sau
+                        LinkedHashMap::new
                 ));
 
         return WorkScheduleMonthlyResponse.builder()
@@ -94,12 +98,20 @@ public class WorkScheduleService {
                 .build();
     }
 
+    @Transactional
     @PreAuthorize("hasRole('MANAGER')")
     public int bulkCreateMonthlySchedule(BulkWorkScheduleRequest request) {
         YearMonth yearMonth = YearMonth.parse(request.getMonth()); // "2025-06"
         LocalDate start = yearMonth.atDay(1);
         LocalDate end = yearMonth.atEndOfMonth();
 
+        Doctor doctor = doctorRepository.findById(request.getDoctorId())
+                .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_NOT_EXISTED));
+
+        User manager = userRepository.findById(request.getCreatedBy())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        workScheduleRepository.deleteSchedulesByDoctorIdAndMonth(doctor.getId(), start, end);
         List<WorkSchedule> schedules = new ArrayList<>();
 
         for (LocalDate date = start; !date.isAfter(end); date = date.plusDays(1)) {
@@ -107,15 +119,13 @@ public class WorkScheduleService {
 
             for (BulkWorkScheduleRequest.ShiftRule rule : request.getRules()) {
                 if (rule.getWeekday().equalsIgnoreCase(weekday)) {
-                    Doctor doctor = doctorRepository.findById(request.getDoctorId())
-                            .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_NOT_EXISTED));
-                    User manager = userRepository.findById(request.getCreatedBy())
-                            .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
                     WorkSchedule schedule = WorkSchedule.builder()
                             .doctor(doctor)
                             .workDate(date)
                             .shift(rule.getShift().toUpperCase())
                             .createdBy(manager)
+                            .createdAt(LocalDateTime.now())
                             .build();
 
                     schedules.add(schedule);
@@ -123,21 +133,17 @@ public class WorkScheduleService {
             }
         }
 
-        // Remove duplicates (nếu đã tồn tại doctorId + date + shift)
-        schedules.removeIf(s -> workScheduleRepository
-                .existsByDoctorIdAndWorkDateAndShift(s.getDoctor().getId(), s.getWorkDate(), s.getShift()));
-
         // Save all
         workScheduleRepository.saveAll(schedules);
 
         return schedules.size(); // trả về số lịch đã tạo
     }
 
-    @PreAuthorize("hasRole('MANAGER')")
-    public void deleteWorkSchedule(Long id) {
-        WorkSchedule schedule = workScheduleRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.WORK_SCHEDULE_NOT_EXISTED));
 
+    @PreAuthorize("hasRole('MANAGER')")
+    public void deleteWorkScheduleByDateAndDoctor(LocalDate date, String doctorId) {
+        WorkSchedule schedule = workScheduleRepository.findByWorkDateAndDoctorId(date, doctorId)
+                .orElseThrow(() -> new AppException(ErrorCode.WORK_SCHEDULE_NOT_EXISTED));
         workScheduleRepository.delete(schedule);
     }
 

@@ -71,10 +71,6 @@ public class User {
     private String address;
 
 
-
-    @OneToMany(mappedBy = "author")
-    private Set<Blog> blogs = new LinkedHashSet<>();
-
     @OneToOne(mappedBy = "users")
     private Doctor doctor;
 
@@ -103,5 +99,11 @@ public class User {
 
     @OneToMany(mappedBy = "customer")
     private Set<Appointment> appointments = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "author")
+    private Set<Blog> writtenBlogs = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "approvedBy")
+    private Set<Blog> approvedBlogs = new LinkedHashSet<>();
 
 }

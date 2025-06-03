@@ -1,22 +1,19 @@
 package com.emmkay.infertility_system_api.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class WorkScheduleUpdateRequest {
-
+public class BlogUpdateRequest {
     @NotBlank(message = "{validation.required}")
-    String shift;
+    String title;
+    @NotBlank(message = "{validation.required}")
+    String content;
 
-    @NotNull(message = "{validation.required}")
-    LocalDate workDate;
+    String sourceReference;
 }
