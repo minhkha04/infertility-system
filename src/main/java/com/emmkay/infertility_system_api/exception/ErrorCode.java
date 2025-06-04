@@ -54,7 +54,8 @@ public enum ErrorCode {
     BLOG_APPROVED_ERROR(1041, "Only draft/rejected blogs can be submitted", HttpStatus.BAD_REQUEST),
     INVALID_STATUS(1042, "Invalid status", HttpStatus.BAD_REQUEST),
     BLOG_NOT_IN_REVIEW(1043, "Blog is not in review state", HttpStatus.BAD_REQUEST),
-    INVALID_START_DATE(1044, "The selected date cannot be today or in the past", HttpStatus.BAD_REQUEST)
+    INVALID_START_DATE(1044, "The selected date cannot be today or in the past", HttpStatus.BAD_REQUEST),
+    REMINDER_NOT_FOUND(1045, "Reminder not found", HttpStatus.BAD_REQUEST),
     ;
     int code;
     String message;

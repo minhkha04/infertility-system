@@ -1,4 +1,4 @@
-package com.emmkay.infertility_system_api.mapper;
+package com.emmkay.infertility_system_api.repository;
 
 import com.emmkay.infertility_system_api.entity.Doctor;
 import org.springframework.data.jpa.repository.JpaRepository;

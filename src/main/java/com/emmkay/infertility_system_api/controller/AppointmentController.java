@@ -77,7 +77,7 @@ public class AppointmentController {
     @GetMapping("/get-all")
     public ApiResponse<List<AppointmentResponse>> getAllAppointments() {
         return ApiResponse.<List<AppointmentResponse>>builder()
-                .result(appointmentService.geAllAppointments())
+                .result(appointmentService.getAllAppointments())
                 .build();
     }
 }

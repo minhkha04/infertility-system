@@ -11,7 +11,7 @@ import com.emmkay.infertility_system_api.entity.User;
 import com.emmkay.infertility_system_api.entity.WorkSchedule;
 import com.emmkay.infertility_system_api.exception.AppException;
 import com.emmkay.infertility_system_api.exception.ErrorCode;
-import com.emmkay.infertility_system_api.mapper.DoctorScheduleRepository;
+import com.emmkay.infertility_system_api.repository.DoctorScheduleRepository;
 import com.emmkay.infertility_system_api.mapper.WorkScheduleMapper;
 import com.emmkay.infertility_system_api.repository.DoctorRepository;
 import com.emmkay.infertility_system_api.repository.UserRepository;

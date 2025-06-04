@@ -6,6 +6,7 @@ import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.Instant;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -18,7 +19,7 @@ public class Reminder {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
-    private Integer id;
+    private Long id;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -32,7 +33,7 @@ public class Reminder {
 
     @NotNull
     @Column(name = "reminder_date", nullable = false)
-    private Instant reminderDate;
+    private LocalDate reminderDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "step_id")

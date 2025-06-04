@@ -34,8 +34,9 @@ public class AppointmentService {
     TreatmentStepRepository treatmentStepRepository;
     DoctorRepository doctorRepository;
     UserRepository userRepository;
+    ReminderService reminderService;
 
-
+    //auto generate
     public Appointment createInitialAppointment(
             User customer,
             Doctor doctor,
@@ -43,7 +44,7 @@ public class AppointmentService {
             String shift,
             TreatmentStep treatmentStep
     ) {
-        return appointmentRepository.save(Appointment.builder()
+        Appointment appointment = appointmentRepository.save(Appointment.builder()
                 .customer(customer)
                 .doctor(doctor)
                 .appointmentDate(date)
@@ -53,10 +54,16 @@ public class AppointmentService {
                 .purpose(treatmentStep.getStage().getName())
                 .createdAt(LocalDate.now())
                 .build());
+        reminderService.createReminderForAppointment(appointment);
+        return appointment;
+
     }
 
+
+    // cancel
     public void cancelAppointmentsByRecordId(Long recordId) {
         List<String> cancellableStatuses = List.of("CONFIRMED");
+        reminderService.deleteByRecordId(recordId);
         appointmentRepository.updateStatusByRecordIdNative(
                 recordId, cancellableStatuses, "CANCELLED"
         );
@@ -107,6 +114,8 @@ public class AppointmentService {
                 .toList();
     }
 
+
+    //thay đổi lịch hẹn
     @Transactional
     @PreAuthorize("hasRole('DOCTOR') or hasRole('MANAGER') or hasRole('CUSTOMER')")
     public AppointmentResponse rescheduleAppointment(Long appointmentId, RescheduleAppointmentRequest request) {
@@ -133,9 +142,11 @@ public class AppointmentService {
         }
         request.setShift(request.getShift().toUpperCase());
         appointmentMapper.updateStatusAppointment(appointment, request);
+        reminderService.updateReminder(appointment);
         return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
     }
 
+    //create appointment
     @PreAuthorize("hasRole('DOCTOR') or hasRole('MANAGER')")
     public AppointmentResponse scheduleStepAppointment(AppointmentCreateRequest req) {
         TreatmentStep step = treatmentStepRepository.findById(req.getTreatmentStepId())
@@ -165,9 +176,11 @@ public class AppointmentService {
         appointment.setPurpose(step.getStage().getName());
         appointment.setCreatedAt(LocalDate.now());
         appointment.setCustomer(customer);
+        reminderService.createReminderForAppointment(appointment);
         return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
     }
 
+    //update status appointment by doctor and manager
     @PreAuthorize("hasRole('DOCTOR') or hasRole('MANAGER')")
     public AppointmentResponse updateAppointmentStatus(Long id, AppointmentUpdateStatusRequest request) {
         Appointment appointment = appointmentRepository.findById(id)
@@ -186,7 +199,7 @@ public class AppointmentService {
     }
 
     @PreAuthorize("hasRole('MANAGER')")
-    public List<AppointmentResponse> geAllAppointments() {
+    public List<AppointmentResponse> getAllAppointments() {
         return appointmentRepository.findAllByOrderByAppointmentDateAsc().stream()
                 .map(appointmentMapper::toAppointmentResponse)
                 .toList();
