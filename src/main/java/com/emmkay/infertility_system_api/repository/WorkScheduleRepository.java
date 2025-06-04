@@ -1,13 +1,11 @@
 package com.emmkay.infertility_system_api.repository;
 
-import com.emmkay.infertility_system_api.entity.Doctor;
 import com.emmkay.infertility_system_api.entity.WorkSchedule;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -38,4 +36,6 @@ public interface WorkScheduleRepository extends JpaRepository<WorkSchedule, Long
     );
 
     Optional<WorkSchedule> findByWorkDateAndDoctorId(LocalDate workDate, String doctorId);
+
+    List<WorkSchedule> findAllByWorkDate(LocalDate workDate);
 }

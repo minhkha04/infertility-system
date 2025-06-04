@@ -18,4 +18,8 @@ public class AppointmentResponse {
     String notes;
     String purpose;
     String customerName;
+    String customerEmail;
+    LocalDate createdAt;
+    String serviceName;
+    String doctorName;
 }

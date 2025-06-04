@@ -3,6 +3,7 @@ package com.emmkay.infertility_system_api.service;
 import com.emmkay.infertility_system_api.dto.request.BulkWorkScheduleRequest;
 import com.emmkay.infertility_system_api.dto.request.WorkScheduleCreateRequest;
 import com.emmkay.infertility_system_api.dto.request.WorkScheduleUpdateRequest;
+import com.emmkay.infertility_system_api.dto.response.WorkScheduleForManagerDashBoardResponse;
 import com.emmkay.infertility_system_api.dto.response.WorkScheduleResponse;
 import com.emmkay.infertility_system_api.dto.response.WorkScheduleMonthlyResponse;
 import com.emmkay.infertility_system_api.entity.Doctor;
@@ -10,6 +11,7 @@ import com.emmkay.infertility_system_api.entity.User;
 import com.emmkay.infertility_system_api.entity.WorkSchedule;
 import com.emmkay.infertility_system_api.exception.AppException;
 import com.emmkay.infertility_system_api.exception.ErrorCode;
+import com.emmkay.infertility_system_api.mapper.DoctorScheduleRepository;
 import com.emmkay.infertility_system_api.mapper.WorkScheduleMapper;
 import com.emmkay.infertility_system_api.repository.DoctorRepository;
 import com.emmkay.infertility_system_api.repository.UserRepository;
@@ -42,7 +44,23 @@ public class WorkScheduleService {
     WorkScheduleMapper workScheduleMapper;
     UserRepository userRepository;
     DoctorRepository doctorRepository;
+    DoctorScheduleRepository doctorScheduleRepository;
 
+
+    public List<WorkScheduleForManagerDashBoardResponse> getWorkSchedulesForManagerDashboard() {
+        List<Object[]> results = doctorScheduleRepository.getDoctorScheduleToday();
+        return results.stream().map(
+                        result -> WorkScheduleForManagerDashBoardResponse.builder()
+                                .doctorName((String) result[1])
+                                .doctorId((String) result[0])
+                                .shift((String) result[3])
+                                .phoneNumber((String) result[2])
+                                .totalAppointments(((Number) result[4]).intValue())
+                                .completedAppointments(((Number) result[5]).intValue())
+                                .build()
+                )
+                .toList();
+    }
 
     @PreAuthorize("hasRole('MANAGER')")
     public WorkScheduleResponse createWorkSchedule(WorkScheduleCreateRequest request) {

@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -37,6 +36,8 @@ public class TreatmentRecordService {
         List<TreatmentRecord> records = treatmentRecordRepository.findByCustomerId(customerId);
         return records.stream()
                 .map(treatmentRecordMapper::toTreatmentRecordResponse)
+                .peek(response -> response.setTreatmentSteps(
+                        treatmentStepService.getStepsByRecordId(response.getId())))
                 .toList();
     }
 
@@ -45,6 +46,8 @@ public class TreatmentRecordService {
         List<TreatmentRecord> records = treatmentRecordRepository.findAll();
         return records.stream()
                 .map(treatmentRecordMapper::toTreatmentRecordResponse)
+                .peek(response -> response.setTreatmentSteps(
+                        treatmentStepService.getStepsByRecordId(response.getId())))
                 .toList();
     }
 
@@ -53,13 +56,18 @@ public class TreatmentRecordService {
         List<TreatmentRecord> records = treatmentRecordRepository.findByDoctorId(doctorId);
         return records.stream()
                 .map(treatmentRecordMapper::toTreatmentRecordResponse)
+                .peek(response -> response.setTreatmentSteps(
+                        treatmentStepService.getStepsByRecordId(response.getId())))
                 .toList();
     }
 
-    public  TreatmentRecordResponse getTreatmentRecordById(String treatmentRecordId) {
-        TreatmentRecord treatmentRecord = treatmentRecordRepository.findById(Long.parseLong(treatmentRecordId))
+    public TreatmentRecordResponse getTreatmentRecordById(Long treatmentRecordId) {
+        TreatmentRecord treatmentRecord = treatmentRecordRepository.findById(treatmentRecordId)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
-        return treatmentRecordMapper.toTreatmentRecordResponse(treatmentRecord);
+        TreatmentRecordResponse treatmentRecordResponse = treatmentRecordMapper
+                .toTreatmentRecordResponse(treatmentRecord);
+        treatmentRecordResponse.setTreatmentSteps(treatmentStepService.getStepsByRecordId(treatmentRecord.getId()));
+        return treatmentRecordResponse;
     }
 
     @Transactional
@@ -87,7 +95,6 @@ public class TreatmentRecordService {
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         Doctor doctor = doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_NOT_EXISTED));
-
 
 
         if (!appointmentService.isDoctorAvailable(doctorId, startDate, shift)) {

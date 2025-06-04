@@ -3,12 +3,14 @@ package com.emmkay.infertility_system_api.service;
 import com.emmkay.infertility_system_api.dto.request.DoctorUpdateRequest;
 import com.emmkay.infertility_system_api.dto.response.DoctorResponse;
 import com.emmkay.infertility_system_api.dto.response.DoctorWorkScheduleResponse;
+import com.emmkay.infertility_system_api.dto.response.WorkScheduleForManagerDashBoardResponse;
 import com.emmkay.infertility_system_api.entity.Doctor;
 import com.emmkay.infertility_system_api.entity.User;
 import com.emmkay.infertility_system_api.entity.WorkSchedule;
 import com.emmkay.infertility_system_api.exception.AppException;
 import com.emmkay.infertility_system_api.exception.ErrorCode;
 import com.emmkay.infertility_system_api.mapper.DoctorMapper;
+import com.emmkay.infertility_system_api.mapper.DoctorScheduleRepository;
 import com.emmkay.infertility_system_api.mapper.UserMapper;
 import com.emmkay.infertility_system_api.repository.DoctorRepository;
 import com.emmkay.infertility_system_api.repository.UserRepository;
@@ -38,6 +40,8 @@ public class DoctorService {
     UserRepository userRepository;
     WorkScheduleRepository workScheduleRepository;
     AppointmentService appointmentService;
+
+
 
 
     public List<DoctorResponse> getAllDoctors() {

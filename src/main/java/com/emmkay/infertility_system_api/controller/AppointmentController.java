@@ -11,8 +11,10 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.loader.ast.spi.Loadable;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Slf4j
@@ -38,16 +40,16 @@ public class AppointmentController {
                 .build();
     }
 
-    @GetMapping("/doctor/today/{doctorId}")
-    public ApiResponse<List<AppointmentResponse>> getAppointmentsByDoctorIdToday(@PathVariable String doctorId) {
+    @GetMapping("/doctor/{doctorId}/{date}")
+    public ApiResponse<List<AppointmentResponse>> getAppointmentsByDoctor(@PathVariable String doctorId, @PathVariable LocalDate date) {
         return ApiResponse.<List<AppointmentResponse>>builder()
-                .result(appointmentService.getAppointmentsForDoctorToday(doctorId))
+                .result(appointmentService.getAppointmentsForDoctorByDate(doctorId, date))
                 .build();
     }
 
 
-    @PutMapping("/reschedule/customer/{appointmentId})")
-    public ApiResponse<AppointmentResponse> rescheduleAppointmentForCustomer(
+    @PutMapping("/reschedule/{appointmentId})")
+    public ApiResponse<AppointmentResponse> rescheduleAppointment(
             @PathVariable Long appointmentId,
             @RequestBody @Valid RescheduleAppointmentRequest request) {
         return ApiResponse.<AppointmentResponse>builder()
@@ -69,6 +71,13 @@ public class AppointmentController {
             @RequestBody @Valid AppointmentUpdateStatusRequest request) {
         return ApiResponse.<AppointmentResponse>builder()
                 .result(appointmentService.updateAppointmentStatus(appointmentId, request))
+                .build();
+    }
+
+    @GetMapping("/get-all")
+    public ApiResponse<List<AppointmentResponse>> getAllAppointments() {
+        return ApiResponse.<List<AppointmentResponse>>builder()
+                .result(appointmentService.geAllAppointments())
                 .build();
     }
 }

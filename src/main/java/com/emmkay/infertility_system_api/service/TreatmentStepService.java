@@ -57,11 +57,11 @@ public class TreatmentStepService {
         );
     }
 
-//    public List<TreatmentStepResponse> getStepsByRecordId(Long recordId) {
-//        return treatmentStepRepository.findByRecordIdAndOrderByOr(recordId)
-//                .stream()
-//                .map(treatmentStepMapper::toTreatmentStepResponse)
-//                .toList();
-//    }
+    public List<TreatmentStepResponse> getStepsByRecordId(Long recordId) {
+        return treatmentStepRepository.findByRecordIdOrderByIdAsc(recordId)
+                .stream()
+                .map(treatmentStepMapper::toTreatmentStepResponse)
+                .toList();
+    }
 
 }

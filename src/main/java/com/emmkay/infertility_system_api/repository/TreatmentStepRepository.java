@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
+import java.util.List;
 
 @Repository
 public interface TreatmentStepRepository extends JpaRepository<TreatmentStep, Long> {
@@ -15,5 +16,5 @@ public interface TreatmentStepRepository extends JpaRepository<TreatmentStep, Lo
     @Modifying
     void updateStatusByRecordIdAndStatusIn(Long recordId, Collection<String> statuses,  String status);
 
-    Collection<Object> findByRecordId(Long recordId);
+    List<TreatmentStep> findByRecordIdOrderByIdAsc(Long recordId);
 }

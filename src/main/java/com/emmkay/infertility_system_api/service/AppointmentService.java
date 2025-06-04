@@ -100,8 +100,8 @@ public class AppointmentService {
     }
 
     @PreAuthorize("hasRole('DOCTOR') or hasRole('MANAGER')")
-    public List<AppointmentResponse> getAppointmentsForDoctorToday(String customerId) {
-        return appointmentRepository.findAppointmentByDoctorIdAndStatusNotAndAppointmentDate(customerId, "CANCELLED", LocalDate.now())
+    public List<AppointmentResponse> getAppointmentsForDoctorByDate(String doctorId, LocalDate date) {
+        return appointmentRepository.findAppointmentByDoctorIdAndStatusNotAndAppointmentDate(doctorId, "CANCELLED", date)
                 .stream()
                 .map(appointmentMapper::toAppointmentResponse)
                 .toList();
@@ -185,5 +185,10 @@ public class AppointmentService {
         return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
     }
 
-
+    @PreAuthorize("hasRole('MANAGER')")
+    public List<AppointmentResponse> geAllAppointments() {
+        return appointmentRepository.findAllByOrderByAppointmentDateAsc().stream()
+                .map(appointmentMapper::toAppointmentResponse)
+                .toList();
+    }
 }

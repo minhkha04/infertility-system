@@ -12,5 +12,6 @@ public interface TreatmentRecordMapper {
     @Mapping(target = "doctorName", source = "doctor.users.fullName")
     @Mapping(target = "treatmentServiceName", source = "service.name")
     @Mapping(target = "customerId", source = "customer.id")
+    @Mapping(target = "treatmentSteps", ignore = true)
     TreatmentRecordResponse toTreatmentRecordResponse(TreatmentRecord request);
 }

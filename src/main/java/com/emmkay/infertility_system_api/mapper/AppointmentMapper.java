@@ -9,12 +9,14 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
-import java.lang.annotation.Target;
 
 @Mapper(componentModel = "spring")
 public interface AppointmentMapper {
 
     @Mapping(target = "customerName", source = "customer.fullName")
+    @Mapping(target = "customerEmail", source = "customer.email")
+    @Mapping(target = "doctorName", source = "doctor.users.fullName")
+    @Mapping(target = "serviceName", source = "treatmentStep.record.service.name")
     AppointmentResponse toAppointmentResponse(Appointment appointment);
 
 
