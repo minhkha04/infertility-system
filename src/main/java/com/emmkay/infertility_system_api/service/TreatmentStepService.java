@@ -1,9 +1,12 @@
 package com.emmkay.infertility_system_api.service;
 
+import com.emmkay.infertility_system_api.dto.request.TreatmentStepUpdateRequest;
 import com.emmkay.infertility_system_api.dto.response.TreatmentStepResponse;
 import com.emmkay.infertility_system_api.entity.TreatmentRecord;
 import com.emmkay.infertility_system_api.entity.TreatmentStage;
 import com.emmkay.infertility_system_api.entity.TreatmentStep;
+import com.emmkay.infertility_system_api.exception.AppException;
+import com.emmkay.infertility_system_api.exception.ErrorCode;
 import com.emmkay.infertility_system_api.mapper.TreatmentStepMapper;
 import com.emmkay.infertility_system_api.repository.TreatmentStepRepository;
 import lombok.AccessLevel;
@@ -62,6 +65,14 @@ public class TreatmentStepService {
                 .stream()
                 .map(treatmentStepMapper::toTreatmentStepResponse)
                 .toList();
+    }
+
+    public TreatmentStepResponse updateTreatmentStepById(Long id, TreatmentStepUpdateRequest request) {
+        TreatmentStep treatmentStep = treatmentStepRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_STEP_NOT_FOUND));
+
+        treatmentStepMapper.updateTreatmentStep(treatmentStep, request);
+        return treatmentStepMapper.toTreatmentStepResponse(treatmentStepRepository.save(treatmentStep));
     }
 
 }
