@@ -1,6 +1,8 @@
 package com.emmkay.infertility_system_api.mapper;
 
+import com.emmkay.infertility_system_api.dto.projection.DoctorRatingProjection;
 import com.emmkay.infertility_system_api.dto.request.DoctorUpdateRequest;
+import com.emmkay.infertility_system_api.dto.response.DoctorRatingResponse;
 import com.emmkay.infertility_system_api.dto.response.DoctorResponse;
 import com.emmkay.infertility_system_api.entity.Doctor;
 import org.mapstruct.Mapper;

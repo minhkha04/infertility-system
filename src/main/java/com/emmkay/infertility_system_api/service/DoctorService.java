@@ -1,6 +1,8 @@
 package com.emmkay.infertility_system_api.service;
 
+import com.emmkay.infertility_system_api.dto.projection.DoctorRatingProjection;
 import com.emmkay.infertility_system_api.dto.request.DoctorUpdateRequest;
+import com.emmkay.infertility_system_api.dto.response.DoctorRatingResponse;
 import com.emmkay.infertility_system_api.dto.response.DoctorResponse;
 import com.emmkay.infertility_system_api.dto.response.DoctorWorkScheduleResponse;
 import com.emmkay.infertility_system_api.entity.Doctor;
@@ -40,7 +42,20 @@ public class DoctorService {
     AppointmentService appointmentService;
 
 
-
+    public List<DoctorRatingResponse> getAllDoctorRating() {
+        return doctorRepository.findAllRatings()
+                .stream()
+                .map(x -> DoctorRatingResponse.builder()
+                        .id(x.getId())
+                        .fullName(x.getFullName())
+                        .avatarUrl(x.getAvatarUrl())
+                        .qualifications(x.getQualifications())
+                        .experienceYears(x.getExperienceYears())
+                        .specialty(x.getSpecialty())
+                        .rate(x.getRate())
+                        .build())
+                .toList();
+    }
 
     public List<DoctorResponse> getAllDoctors() {
         List<Doctor> doctors = doctorRepository.findAll();

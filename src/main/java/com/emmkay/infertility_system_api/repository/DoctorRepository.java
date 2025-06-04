@@ -1,8 +1,10 @@
 package com.emmkay.infertility_system_api.repository;
 
+import com.emmkay.infertility_system_api.dto.projection.DoctorRatingProjection;
 import com.emmkay.infertility_system_api.entity.Doctor;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -16,5 +18,23 @@ public interface DoctorRepository extends JpaRepository<Doctor, String> {
 
     @EntityGraph(attributePaths = {"users"})
     Optional<Doctor> findById(String id);
+
+    @Query(value = """
+                SELECT u.fullName AS fullName,
+                u.id AS id,
+                u.avatarUrl AS avatarUrl,
+                d.qualifications AS qualifications,
+                d.experienceYears AS experienceYears,
+                d.specialty AS specialty,
+                ROUND(AVG(f.rating), 1) AS rate
+                FROM Doctor d\s
+                INNER JOIN User u\s
+                ON d.id  = u.id
+                INNER JOIN Feedback f\s
+                ON d.id = f.doctor.id
+                WHERE f.isApproved = true
+                GROUP BY u.id, u.avatarUrl, d.qualifications, d.specialty, u.fullName, d.experienceYears
+            """)
+    List<DoctorRatingProjection> findAllRatings();
 
 }

@@ -1,8 +1,10 @@
 package com.emmkay.infertility_system_api.controller;
 
 
+import com.emmkay.infertility_system_api.dto.projection.DoctorRatingProjection;
 import com.emmkay.infertility_system_api.dto.request.DoctorUpdateRequest;
 import com.emmkay.infertility_system_api.dto.response.ApiResponse;
+import com.emmkay.infertility_system_api.dto.response.DoctorRatingResponse;
 import com.emmkay.infertility_system_api.dto.response.DoctorResponse;
 import com.emmkay.infertility_system_api.dto.response.DoctorWorkScheduleResponse;
 import com.emmkay.infertility_system_api.service.DoctorService;
@@ -64,4 +66,10 @@ public class DoctorController {
         return doctorService.getDoctorScheduleNext14Days(doctorId);
     }
 
+    @GetMapping("/rating")
+    public ApiResponse<List<DoctorRatingResponse>> getDoctorRating() {
+        return ApiResponse.<List<DoctorRatingResponse>>builder()
+                .result(doctorService.getAllDoctorRating())
+                .build();
+    }
 }
