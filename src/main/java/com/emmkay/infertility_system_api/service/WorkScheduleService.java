@@ -48,18 +48,19 @@ public class WorkScheduleService {
 
 
     public List<WorkScheduleForManagerDashBoardResponse> getWorkSchedulesForManagerDashboard() {
-        List<Object[]> results = doctorScheduleRepository.getDoctorScheduleToday();
-        return results.stream().map(
-                        result -> WorkScheduleForManagerDashBoardResponse.builder()
-                                .doctorName((String) result[1])
-                                .doctorId((String) result[0])
-                                .shift((String) result[3])
-                                .phoneNumber((String) result[2])
-                                .totalAppointments(((Number) result[4]).intValue())
-                                .completedAppointments(((Number) result[5]).intValue())
-                                .build()
-                )
-                .toList();
+       return doctorScheduleRepository.getDoctorScheduleToday()
+               .stream()
+               .map(x ->
+                       WorkScheduleForManagerDashBoardResponse.builder()
+                               .doctorName(x.getDoctorName())
+                               .doctorId(x.getDoctorId())
+                               .shift(x.getShift())
+                               .phoneNumber(x.phoneNumber())
+                               .totalAppointments(x.getTotalAppointments())
+                               .completedAppointments(x.getCompletedAppointments())
+                               .build()
+               ).toList();
+
     }
 
     @PreAuthorize("hasRole('MANAGER')")
