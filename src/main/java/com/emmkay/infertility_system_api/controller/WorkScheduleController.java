@@ -35,7 +35,7 @@ public class WorkScheduleController {
 
     @PutMapping("/{doctorId}")
     public ApiResponse<WorkScheduleResponse> updateWorkSchedule(
-            @RequestBody @Valid WorkScheduleUpdateRequest request, String doctorId) {
+            @RequestBody @Valid WorkScheduleUpdateRequest request, @PathVariable String doctorId) {
         return ApiResponse.<WorkScheduleResponse>builder()
                 .result(workScheduleService.updateWorkSchedule(request, doctorId))
                 .build();
