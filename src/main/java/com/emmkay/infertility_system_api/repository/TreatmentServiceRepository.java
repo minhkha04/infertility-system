@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface TreatmentServiceRepository extends JpaRepository<TreatmentService, Long> {
@@ -13,4 +14,6 @@ public interface TreatmentServiceRepository extends JpaRepository<TreatmentServi
     boolean existsByNameAndIdNot(String name, Long id);
 
     List<TreatmentService> findAllByIsRemoveFalse();
+
+    Optional<TreatmentService> getTreatmentServicesById(Long id);
 }

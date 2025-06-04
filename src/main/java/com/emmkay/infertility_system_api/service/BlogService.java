@@ -61,12 +61,12 @@ public class BlogService {
             throw new AppException(ErrorCode.BLOG_NOT_IN_REVIEW);
         }
         switch (request.getAction().toUpperCase()) {
-            case "APPROVE":
+            case "APPROVED":
                 blog.setStatus("APPROVED");
                 blog.setPublishedAt(LocalDate.now());
                 blog.setRejectionReason(null);
                 break;
-            case "REJECT":
+            case "REJECTED":
                 blog.setStatus("REJECTED");
                 blog.setRejectionReason(request.getComment());
                 break;

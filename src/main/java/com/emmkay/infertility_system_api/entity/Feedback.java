@@ -7,7 +7,7 @@ import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import java.time.Instant;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -20,7 +20,7 @@ public class Feedback {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
-    private Integer id;
+    private Long id;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -46,7 +46,7 @@ public class Feedback {
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "submit_date")
-    private Instant submitDate;
+    private LocalDate submitDate;
 
     @ColumnDefault("0")
     @Column(name = "is_approved")
