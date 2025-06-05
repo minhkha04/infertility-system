@@ -1,13 +1,19 @@
 package com.emmkay.infertility_system_api.service;
 
 import com.emmkay.infertility_system_api.dto.request.TreatmentStepUpdateRequest;
+import com.emmkay.infertility_system_api.dto.response.SuggestedTreatmentStepResponse;
 import com.emmkay.infertility_system_api.dto.response.TreatmentStepResponse;
 import com.emmkay.infertility_system_api.entity.TreatmentRecord;
+import com.emmkay.infertility_system_api.entity.TreatmentService;
 import com.emmkay.infertility_system_api.entity.TreatmentStage;
 import com.emmkay.infertility_system_api.entity.TreatmentStep;
 import com.emmkay.infertility_system_api.exception.AppException;
 import com.emmkay.infertility_system_api.exception.ErrorCode;
+import com.emmkay.infertility_system_api.helper.TreatmentStageHelper;
 import com.emmkay.infertility_system_api.mapper.TreatmentStepMapper;
+import com.emmkay.infertility_system_api.repository.TreatmentRecordRepository;
+import com.emmkay.infertility_system_api.repository.TreatmentServiceRepository;
+import com.emmkay.infertility_system_api.repository.TreatmentStageRepository;
 import com.emmkay.infertility_system_api.repository.TreatmentStepRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +24,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -27,6 +35,35 @@ public class TreatmentStepService {
 
     TreatmentStepRepository treatmentStepRepository;
     TreatmentStepMapper treatmentStepMapper;
+    TreatmentRecordRepository treatmentRecordRepository;
+    TreatmentServiceRepository treatmentServiceRepository;
+    TreatmentStageRepository treatmentStageRepository;
+
+    public List<SuggestedTreatmentStepResponse> getSuggestedSteps(Long recordId) {
+        TreatmentRecord treatmentRecord = treatmentRecordRepository.findById(recordId)
+                .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
+        TreatmentService treatmentService = treatmentServiceRepository.getTreatmentServicesById(treatmentRecord.getService().getId())
+                .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_SERVICE_NOT_EXISTED));
+        int typeId = treatmentService.getType().getId();
+        List<TreatmentStage> treatmentStages = treatmentStageRepository.findByTypeIdOrderByOrderIndexAsc(typeId);
+        LocalDate cd1 = treatmentRecord.getCd1Date();
+        return treatmentStages.stream()
+                .map(x -> {
+                    LocalDate[] range = TreatmentStageHelper.calculateDateRangeFromCd1(x.getExpectedDayRange(), cd1);
+                    if (range[0] != null && range[1] != null) {
+                        return SuggestedTreatmentStepResponse.builder()
+                                .name(x.getName())
+                                .from(range[0])
+                                .to(range[1])
+                                .expectedRange(x.getExpectedDayRange())
+                                .build();
+                    }
+                    return null;
+                })
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
 
     public List<TreatmentStepResponse> saveAll(List<TreatmentStep> steps) {
         return  treatmentStepRepository.saveAll(steps)
