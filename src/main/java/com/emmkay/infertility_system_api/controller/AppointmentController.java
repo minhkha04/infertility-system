@@ -1,6 +1,7 @@
 package com.emmkay.infertility_system_api.controller;
 
 import com.emmkay.infertility_system_api.dto.request.AppointmentCreateRequest;
+import com.emmkay.infertility_system_api.dto.request.ChangeAppointmentByDoctorOrManagerRequest;
 import com.emmkay.infertility_system_api.dto.request.ConfirmChangeAppointmentRequest;
 import com.emmkay.infertility_system_api.dto.request.ChangeAppointmentByCustomerRequest;
 import com.emmkay.infertility_system_api.dto.response.ApiResponse;
@@ -82,6 +83,13 @@ public class AppointmentController {
     public ApiResponse<List<AppointmentResponse>> getAppointmentsWithStatusPendingChange(@PathVariable String doctorId) {
         return ApiResponse.<List<AppointmentResponse>>builder()
                 .result(appointmentService.getAppointmentWithStatusPendingChangeByDoctorId(doctorId))
+                .build();
+    }
+
+    @PutMapping("change-appointment-by-doctor-or-manager/{appointmentId}")
+    public ApiResponse<AppointmentResponse> changeByDoctorOrManger(@PathVariable Long appointmentId, @RequestBody @Valid ChangeAppointmentByDoctorOrManagerRequest request) {
+        return ApiResponse.<AppointmentResponse>builder()
+                .result(appointmentService.changeAppointmentForManagerOrDoctor(appointmentId, request))
                 .build();
     }
 }

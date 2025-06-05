@@ -10,7 +10,6 @@ import java.util.Optional;
 
 @Repository
 public interface TreatmentRecordRepository extends JpaRepository<TreatmentRecord, Long> {
-    boolean existsByServiceId(Long serviceId);
 
     boolean existsByCustomerIdAndStatusIn(String customerId, Collection<String> statuses);
 

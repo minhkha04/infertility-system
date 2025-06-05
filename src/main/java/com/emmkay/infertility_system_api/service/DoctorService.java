@@ -1,6 +1,5 @@
 package com.emmkay.infertility_system_api.service;
 
-import com.emmkay.infertility_system_api.dto.projection.DoctorRatingProjection;
 import com.emmkay.infertility_system_api.dto.request.DoctorUpdateRequest;
 import com.emmkay.infertility_system_api.dto.response.DoctorRatingResponse;
 import com.emmkay.infertility_system_api.dto.response.DoctorResponse;
@@ -93,7 +92,7 @@ public class DoctorService {
             throw new AppException(ErrorCode.DATE_OUT_OF_RANGE);
         }
 
-        List<String> shiftsToMatch = switch (shift) {
+        List<String> shiftsToMatch = switch (shift.toUpperCase()) {
             case "MORNING", "AFTERNOON" -> List.of(shift, "FULL_DAY");
             case "FULL_DAY" -> List.of("FULL_DAY");
             default -> throw new AppException(ErrorCode.INVALID_SHIFT_VALUE);

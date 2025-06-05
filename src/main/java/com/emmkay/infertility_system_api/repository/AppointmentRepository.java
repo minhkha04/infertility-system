@@ -14,14 +14,14 @@ import java.util.List;
 @Repository
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
 
+
     @Modifying
     @Query(value = """
-            UPDATE appointment a
-            JOIN treatment_step ts ON ts.id = a.treatment_step_id
-            SET a.status = :status
-            WHERE ts.record_id = :recordId
-            AND a.status IN (:statuses)
-            """, nativeQuery = true)
+                UPDATE Appointment a
+                SET a.status = :status
+                WHERE a.treatmentStep.record.id = :recordId
+                AND a.status IN :statuses
+            """)
     void updateStatusByRecordIdNative(
             @Param("recordId") Long recordId,
             @Param("statuses") Collection<String> statuses,
@@ -29,9 +29,9 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     );
 
     @Query("""
-                SELECT COUNT(a) FROM Appointment a 
-                WHERE a.doctor.id = :doctorId 
-                  AND DATE(a.appointmentDate) = :date 
+                SELECT COUNT(a) FROM Appointment a
+                WHERE a.doctor.id = :doctorId
+                  AND DATE(a.appointmentDate) = :date
                   AND a.shift = :shift
                   AND a.status <> 'CANCELLED'
             """)

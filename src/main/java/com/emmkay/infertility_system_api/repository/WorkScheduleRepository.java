@@ -14,10 +14,8 @@ import java.util.Optional;
 
 @Repository
 public interface WorkScheduleRepository extends JpaRepository<WorkSchedule, Long> {
-    boolean existsByDoctorIdAndWorkDate(String doctorId, LocalDate workDate);
 
     List<WorkSchedule> findAllByDoctorIdAndWorkDateBetweenOrderByWorkDateAsc(String doctorId, LocalDate workDateAfter, LocalDate workDateBefore);
-
 
     List<WorkSchedule> findByWorkDateAndShiftIn(LocalDate workDate, Collection<String> shifts);
 
