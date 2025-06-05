@@ -1,9 +1,11 @@
 package com.emmkay.infertility_system_api.service;
 
+import com.emmkay.infertility_system_api.dto.projection.AppointmentInNext7DayProjection;
 import com.emmkay.infertility_system_api.dto.request.AppointmentCreateRequest;
 import com.emmkay.infertility_system_api.dto.request.ChangeAppointmentByCustomerRequest;
 import com.emmkay.infertility_system_api.dto.request.ChangeAppointmentByDoctorOrManagerRequest;
 import com.emmkay.infertility_system_api.dto.request.ConfirmChangeAppointmentRequest;
+import com.emmkay.infertility_system_api.dto.response.AppointmentInNext7DayResponse;
 import com.emmkay.infertility_system_api.dto.response.AppointmentResponse;
 import com.emmkay.infertility_system_api.entity.*;
 import com.emmkay.infertility_system_api.exception.AppException;
@@ -19,8 +21,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 
 @Slf4j
@@ -37,8 +43,6 @@ public class AppointmentService {
     UserRepository userRepository;
     ReminderService reminderService;
     ReminderRepository reminderRepository;
-
-
 
 
     private Appointment isAvailableForChange(Long appointmentId, LocalDate dateChange, String shiftChange) {
@@ -64,6 +68,30 @@ public class AppointmentService {
         }
         return appointment;
     }
+
+    public List<AppointmentInNext7DayResponse> getAppointInNext7Day(String doctorId) {
+        LocalDate startDate = LocalDate.now();
+        LocalDate endDate = LocalDate.now().plusDays(6);
+        List<AppointmentInNext7DayProjection> tmp = appointmentRepository.getAppointmentInNext7Day(doctorId, endDate);
+
+        Map<LocalDate, Integer> dateToCountMap = tmp.stream()
+                .collect(Collectors.toMap(
+                        AppointmentInNext7DayProjection::getAppointmentDate,
+                        AppointmentInNext7DayProjection::getTotalAppointment
+                ));
+
+        // B2: Duyệt 7 ngày → build list response
+        return IntStream.rangeClosed(0, 6)
+                .mapToObj(i -> {
+                    LocalDate date = startDate.plusDays(i);
+                    return AppointmentInNext7DayResponse.builder()
+                            .appointmentDate(date)
+                            .totalAppointment(dateToCountMap.getOrDefault(date, 0))
+                            .build();
+                })
+                .toList();
+    }
+
 
     @PreAuthorize("hasRole('DOCTOR')")
     public List<AppointmentResponse> getAppointmentWithStatusPendingChangeByDoctorId(String doctorId) {

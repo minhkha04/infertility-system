@@ -1,6 +1,8 @@
 package com.emmkay.infertility_system_api.service;
 
+import com.emmkay.infertility_system_api.dto.projection.DoctorDashBoardProjection;
 import com.emmkay.infertility_system_api.dto.request.DoctorUpdateRequest;
+import com.emmkay.infertility_system_api.dto.response.DoctorDashBoardResponse;
 import com.emmkay.infertility_system_api.dto.response.DoctorRatingResponse;
 import com.emmkay.infertility_system_api.dto.response.DoctorResponse;
 import com.emmkay.infertility_system_api.dto.response.DoctorWorkScheduleResponse;
@@ -39,7 +41,6 @@ public class DoctorService {
     UserRepository userRepository;
     WorkScheduleRepository workScheduleRepository;
     AppointmentService appointmentService;
-
 
     public List<DoctorRatingResponse> getAllDoctorRating() {
         return doctorRepository.findAllRatings()
@@ -153,4 +154,19 @@ public class DoctorService {
                 .schedules(grouped)
                 .build();
     }
+
+    @PreAuthorize("hasRole('DOCTOR')")
+    public DoctorDashBoardResponse getDoctorDashBoard(String doctorId) {
+
+        DoctorDashBoardProjection x = doctorRepository.getDoctorDashboardStats(doctorId)
+                .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_NOT_EXISTED));
+        return DoctorDashBoardResponse.builder()
+                .avgRating(x.getAvgRating())
+                .patients(x.getPatients())
+                .workShiftsThisMonth(x.getWorkShiftsThisMonth())
+                .build();
+
+    }
+
+
 }

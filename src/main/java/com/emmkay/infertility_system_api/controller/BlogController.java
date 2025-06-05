@@ -6,6 +6,7 @@ import com.emmkay.infertility_system_api.dto.request.BlogUpdateRequest;
 import com.emmkay.infertility_system_api.dto.response.ApiResponse;
 import com.emmkay.infertility_system_api.dto.response.BlogResponse;
 import com.emmkay.infertility_system_api.service.BlogService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -52,7 +53,8 @@ public class BlogController {
                 .build();
     }
 
-    @PostMapping("/{blogId}/{userId}")
+    @Operation(summary = "approve blog")
+    @PostMapping("/{blogId}/{managerId}")
     public ApiResponse<String> approveBlog(@PathVariable Long blogId, @PathVariable String userId, BlogApprovalRequest request) {
         blogService.approveBlog(blogId, userId, request);
         return ApiResponse.<String>builder()

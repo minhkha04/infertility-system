@@ -5,6 +5,7 @@ import com.emmkay.infertility_system_api.dto.request.ChangeAppointmentByDoctorOr
 import com.emmkay.infertility_system_api.dto.request.ConfirmChangeAppointmentRequest;
 import com.emmkay.infertility_system_api.dto.request.ChangeAppointmentByCustomerRequest;
 import com.emmkay.infertility_system_api.dto.response.ApiResponse;
+import com.emmkay.infertility_system_api.dto.response.AppointmentInNext7DayResponse;
 import com.emmkay.infertility_system_api.dto.response.AppointmentResponse;
 import com.emmkay.infertility_system_api.service.AppointmentService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -90,6 +91,14 @@ public class AppointmentController {
     public ApiResponse<AppointmentResponse> changeByDoctorOrManger(@PathVariable Long appointmentId, @RequestBody @Valid ChangeAppointmentByDoctorOrManagerRequest request) {
         return ApiResponse.<AppointmentResponse>builder()
                 .result(appointmentService.changeAppointmentForManagerOrDoctor(appointmentId, request))
+                .build();
+    }
+
+    @Operation(summary = "for doctor to get appointments in next 7 days")
+    @GetMapping("/appointment-in-next-7-day/{doctorId}")
+    public ApiResponse<List<AppointmentInNext7DayResponse>> getAppointmentInNext7Day(@PathVariable String doctorId) {
+        return ApiResponse.<List<AppointmentInNext7DayResponse>>builder()
+                .result(appointmentService.getAppointInNext7Day(doctorId))
                 .build();
     }
 }

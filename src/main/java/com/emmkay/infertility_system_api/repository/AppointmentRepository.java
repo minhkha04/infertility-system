@@ -1,5 +1,6 @@
 package com.emmkay.infertility_system_api.repository;
 
+import com.emmkay.infertility_system_api.dto.projection.AppointmentInNext7DayProjection;
 import com.emmkay.infertility_system_api.entity.Appointment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -48,4 +49,17 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     List<Appointment> findAllByOrderByAppointmentDateAsc();
 
     List<Appointment> findAllByStatusAndDoctor_Id(String status, String doctorId);
+
+    @Query(value = """
+                    SELECT
+                        COUNT(a) AS totalAppointment,
+                        a.appointmentDate AS appointmentDate
+                    FROM Appointment AS a
+                    WHERE a.doctor.id = :doctorId
+                        AND a.appointmentDate BETWEEN CURRENT_DATE AND :endDate
+                        AND a.status = 'CONFIRMED'
+                    GROUP BY a.appointmentDate
+            """)
+    List<AppointmentInNext7DayProjection> getAppointmentInNext7Day(String doctorId, LocalDate endDate);
+
 }

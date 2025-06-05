@@ -1,12 +1,8 @@
 package com.emmkay.infertility_system_api.controller;
 
 
-import com.emmkay.infertility_system_api.dto.projection.DoctorRatingProjection;
 import com.emmkay.infertility_system_api.dto.request.DoctorUpdateRequest;
-import com.emmkay.infertility_system_api.dto.response.ApiResponse;
-import com.emmkay.infertility_system_api.dto.response.DoctorRatingResponse;
-import com.emmkay.infertility_system_api.dto.response.DoctorResponse;
-import com.emmkay.infertility_system_api.dto.response.DoctorWorkScheduleResponse;
+import com.emmkay.infertility_system_api.dto.response.*;
 import com.emmkay.infertility_system_api.service.DoctorService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -72,4 +68,13 @@ public class DoctorController {
                 .result(doctorService.getAllDoctorRating())
                 .build();
     }
+
+    @GetMapping("/statics/{doctorId}")
+    public ApiResponse<DoctorDashBoardResponse> getDoctorDashBoardResponse(@PathVariable String doctorId) {
+        return ApiResponse.<DoctorDashBoardResponse>builder()
+                .result(doctorService.getDoctorDashBoard(doctorId))
+                .build();
+    }
+
+
 }

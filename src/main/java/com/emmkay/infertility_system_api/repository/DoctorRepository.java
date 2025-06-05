@@ -1,10 +1,12 @@
 package com.emmkay.infertility_system_api.repository;
 
+import com.emmkay.infertility_system_api.dto.projection.DoctorDashBoardProjection;
 import com.emmkay.infertility_system_api.dto.projection.DoctorRatingProjection;
 import com.emmkay.infertility_system_api.entity.Doctor;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -20,13 +22,23 @@ public interface DoctorRepository extends JpaRepository<Doctor, String> {
     Optional<Doctor> findById(String id);
 
     @Query(value = """
-                SELECT u.fullName AS fullName,
-                u.id AS id,
-                u.avatarUrl AS avatarUrl,
-                d.qualifications AS qualifications,
-                d.experienceYears AS experienceYears,
-                d.specialty AS specialty,
-                ROUND(AVG(f.rating), 1) AS rate
+            
+            SELECT d.avgRating AS avgRating, 
+                   d.patients AS patients, 
+                   d.workShiftsThisMonth AS workShiftsThisMonth
+            FROM DoctorDashboardStatsView d
+            WHERE d.doctorId = :doctorId
+            """)
+    Optional<DoctorDashBoardProjection> getDoctorDashboardStats(@Param("doctorId") String doctorId);
+
+    @Query(value = """
+                SELECT  u.fullName AS fullName,
+                        u.id AS id,
+                        u.avatarUrl AS avatarUrl,
+                        d.qualifications AS qualifications,
+                        d.experienceYears AS experienceYears,
+                        d.specialty AS specialty,
+                        ROUND(AVG(f.rating), 1) AS rate
                 FROM Doctor d\s
                 INNER JOIN User u\s
                 ON d.id  = u.id
@@ -36,5 +48,6 @@ public interface DoctorRepository extends JpaRepository<Doctor, String> {
                 GROUP BY u.id, u.avatarUrl, d.qualifications, d.specialty, u.fullName, d.experienceYears
             """)
     List<DoctorRatingProjection> findAllRatings();
+
 
 }

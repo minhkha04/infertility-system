@@ -63,8 +63,6 @@ public class FeedbackService {
 
     public FeedbackResponse createFeedback(FeedbackCreateRequest request) {
 
-
-
         if(!isAvailableFeedBack(request.getRecordId())) {
             throw new AppException(ErrorCode.UNAUTHORIZED_ACTION);
         }
