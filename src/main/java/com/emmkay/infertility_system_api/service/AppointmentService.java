@@ -1,8 +1,9 @@
 package com.emmkay.infertility_system_api.service;
 
 import com.emmkay.infertility_system_api.dto.request.AppointmentCreateRequest;
-import com.emmkay.infertility_system_api.dto.request.AppointmentUpdateStatusRequest;
-import com.emmkay.infertility_system_api.dto.request.RescheduleAppointmentRequest;
+import com.emmkay.infertility_system_api.dto.request.ChangeAppointmentByCustomerRequest;
+import com.emmkay.infertility_system_api.dto.request.ChangeAppointmentByDoctorOrManagerRequest;
+import com.emmkay.infertility_system_api.dto.request.ConfirmChangeAppointmentRequest;
 import com.emmkay.infertility_system_api.dto.response.AppointmentResponse;
 import com.emmkay.infertility_system_api.entity.*;
 import com.emmkay.infertility_system_api.exception.AppException;
@@ -35,6 +36,42 @@ public class AppointmentService {
     DoctorRepository doctorRepository;
     UserRepository userRepository;
     ReminderService reminderService;
+    ReminderRepository reminderRepository;
+
+
+
+
+    private Appointment isAvailableForChange(Long appointmentId, LocalDate dateChange, String shiftChange) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new AppException(ErrorCode.APPOINTMENT_NOT_FOUND));
+
+        // Chỉ cho đổi trong 14 ngày tới
+        LocalDate today = LocalDate.now();
+        if (dateChange.isBefore(today) || dateChange.isAfter(today.plusDays(14))) {
+            throw new AppException(ErrorCode.DATE_OUT_OF_RANGE);
+        }
+
+        // Kiểm tra ca đó có nằm trong lịch làm việc rảnh không
+        String doctorId = appointment.getDoctor().getId();
+        boolean isAvailable = isDoctorAvailable(doctorId, dateChange, shiftChange);
+
+        if (!isAvailable) {
+            throw new AppException(ErrorCode.DOCTOR_NOT_AVAILABLE);
+        }
+        if ("COMPLETED".equalsIgnoreCase(appointment.getStatus())
+                || "CANCELLED".equalsIgnoreCase(appointment.getStatus())) {
+            throw new AppException(ErrorCode.CAN_NOT_BE_UPDATED_STATUS);
+        }
+        return appointment;
+    }
+
+    @PreAuthorize("hasRole('DOCTOR')")
+    public List<AppointmentResponse> getAppointmentWithStatusPendingChangeByDoctorId(String doctorId) {
+        return appointmentRepository.findAllByStatusAndDoctor_Id("PENDING_CHANGE", doctorId)
+                .stream()
+                .map(appointmentMapper::toAppointmentResponse)
+                .toList();
+    }
 
     //auto generate
     public Appointment createInitialAppointment(
@@ -59,10 +96,9 @@ public class AppointmentService {
 
     }
 
-
     // cancel
     public void cancelAppointmentsByRecordId(Long recordId) {
-        List<String> cancellableStatuses = List.of("CONFIRMED");
+        List<String> cancellableStatuses = List.of("CONFIRMED", "PENDING_CHANGE");
         reminderService.deleteByRecordId(recordId);
         appointmentRepository.updateStatusByRecordIdNative(
                 recordId, cancellableStatuses, "CANCELLED"
@@ -99,14 +135,6 @@ public class AppointmentService {
     }
 
     @PreAuthorize("hasRole('DOCTOR') or hasRole('MANAGER')")
-    public List<AppointmentResponse> getAppointmentsForDoctor(String customerId) {
-        return appointmentRepository.findAppointmentByDoctorIdAndStatusNot(customerId, "CANCELLED")
-                .stream()
-                .map(appointmentMapper::toAppointmentResponse)
-                .toList();
-    }
-
-    @PreAuthorize("hasRole('DOCTOR') or hasRole('MANAGER')")
     public List<AppointmentResponse> getAppointmentsForDoctorByDate(String doctorId, LocalDate date) {
         return appointmentRepository.findAppointmentByDoctorIdAndStatusNotAndAppointmentDate(doctorId, "CANCELLED", date)
                 .stream()
@@ -114,41 +142,9 @@ public class AppointmentService {
                 .toList();
     }
 
-
-    //thay đổi lịch hẹn
-    @Transactional
-    @PreAuthorize("hasRole('DOCTOR') or hasRole('MANAGER') or hasRole('CUSTOMER')")
-    public AppointmentResponse rescheduleAppointment(Long appointmentId, RescheduleAppointmentRequest request) {
-        Appointment appointment = appointmentRepository.findById(appointmentId)
-                .orElseThrow(() -> new AppException(ErrorCode.APPOINTMENT_NOT_FOUND));
-
-
-        // Chỉ cho đổi trong 14 ngày tới
-        LocalDate today = LocalDate.now();
-        if (request.getAppointmentDate().isBefore(today) || request.getAppointmentDate().isAfter(today.plusDays(14))) {
-            throw new AppException(ErrorCode.DATE_OUT_OF_RANGE);
-        }
-
-        // Kiểm tra ca đó có nằm trong lịch làm việc rảnh không
-        String doctorId = appointment.getDoctor().getId();
-        boolean isAvailable = isDoctorAvailable(doctorId, request.getAppointmentDate(), request.getShift());
-
-        if (!isAvailable) {
-            throw new AppException(ErrorCode.DOCTOR_NOT_AVAILABLE);
-        }
-
-        if ("COMPLETED".equalsIgnoreCase(appointment.getStatus())) {
-            throw new AppException(ErrorCode.APPOINTMENT_IS_COMPLETED);
-        }
-        request.setShift(request.getShift().toUpperCase());
-        appointmentMapper.updateStatusAppointment(appointment, request);
-        reminderService.updateReminder(appointment);
-        return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
-    }
-
     //create appointment
     @PreAuthorize("hasRole('DOCTOR') or hasRole('MANAGER')")
-    public AppointmentResponse scheduleStepAppointment(AppointmentCreateRequest req) {
+    public AppointmentResponse creatAppointment(AppointmentCreateRequest req) {
         TreatmentStep step = treatmentStepRepository.findById(req.getTreatmentStepId())
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_TYPE_NOT_EXISTED));
 
@@ -180,21 +176,38 @@ public class AppointmentService {
         return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
     }
 
-    //update status appointment by doctor and manager
+    //thay đổi lịch hẹn customer
+    @Transactional
+    public AppointmentResponse changeAppointmentForCustomer(Long appointmentId, ChangeAppointmentByCustomerRequest request) {
+        Appointment appointment = isAvailableForChange(appointmentId, request.getRequestedDate(), request.getRequestedShift());
+
+        request.setRequestedShift(request.getRequestedShift().toUpperCase());
+        appointmentMapper.requestChangeAppointment(appointment, request);
+        appointment.setStatus("PENDING_CHANGE");
+        return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
+    }
+
+    //confirm change appointment by doctor and manager
     @PreAuthorize("hasRole('DOCTOR') or hasRole('MANAGER')")
-    public AppointmentResponse updateAppointmentStatus(Long id, AppointmentUpdateStatusRequest request) {
+    public AppointmentResponse confirmChangeAppointment(Long id, ConfirmChangeAppointmentRequest request) {
         Appointment appointment = appointmentRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.APPOINTMENT_NOT_FOUND));
 
-        if ("COMPLETED".equalsIgnoreCase(appointment.getStatus()) ||
-                "CANCELLED".equalsIgnoreCase(appointment.getStatus())) {
+        if (!"PENDING_CHANGE".equalsIgnoreCase(appointment.getStatus())) {
             throw new AppException(ErrorCode.CAN_NOT_BE_UPDATED_STATUS);
         }
 
-        appointment.setStatus(request.getStatus().toUpperCase());
-        if (request.getNotes() != null) {
-            appointment.setNotes(request.getNotes());
+        if (request.getStatus().equalsIgnoreCase("CONFIRMED")) {
+            appointment.setAppointmentDate(appointment.getRequestedDate());
+            appointment.setShift(appointment.getRequestedShift());
+            reminderRepository.deleteByStep_Id(appointment.getTreatmentStep().getId());
+            reminderService.createReminderForAppointment(appointment);
         }
+
+        appointment.setRequestedDate(null);
+        appointment.setRequestedShift(null);
+        appointment.setStatus(request.getStatus().toUpperCase());
+        appointment.setNotes(request.getNotes());
         return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
     }
 
@@ -204,4 +217,16 @@ public class AppointmentService {
                 .map(appointmentMapper::toAppointmentResponse)
                 .toList();
     }
+
+    @PreAuthorize("hasRole('DOCTOR') or hasRole('MANAGER')")
+    public AppointmentResponse changeAppointmentForManagerOrDoctor(Long appointmentId, ChangeAppointmentByDoctorOrManagerRequest request) {
+        Appointment appointment = isAvailableForChange(appointmentId, request.getAppointmentDate(), request.getShift());
+
+        appointment.setAppointmentDate(request.getAppointmentDate());
+        appointment.setShift(request.getShift().toUpperCase());
+
+        appointment.setStatus("CONFIRMED");
+        return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
+    }
+
 }

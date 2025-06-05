@@ -21,4 +21,6 @@ public interface ReminderRepository extends JpaRepository<Reminder, Long> {
     Optional<Reminder> findByStepId(Long stepId);
 
     List<Reminder> findByReminderDateAndIsSentFalse(LocalDate reminderDate);
+
+    void deleteByStep_Id(Long stepId);
 }

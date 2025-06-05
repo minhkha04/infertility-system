@@ -65,4 +65,11 @@ public class Appointment {
     @Column(name = "created_at")
     private LocalDate createdAt;
 
+    @Column(name = "requested_date")
+    private LocalDate requestedDate;
+
+    @Size(max = 20)
+    @Column(name = "requested_shift", length = 20)
+    private String requestedShift;
+
 }
