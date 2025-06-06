@@ -34,6 +34,14 @@ public class TreatmentRecordService {
     AppointmentService appointmentService;
 
 
+    @PreAuthorize("hasRole('MANAGER') or hasRole('Doctor')")
+    public TreatmentRecordResponse updateTreatmentRecord(Long recordId, String status) {
+        TreatmentRecord treatmentRecord = treatmentRecordRepository.findById(recordId)
+                .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
+        treatmentRecord.setStatus(status.toUpperCase());
+        return treatmentRecordMapper.toTreatmentRecordResponse(treatmentRecordRepository.save(treatmentRecord));
+    }
+
     @PreAuthorize("hasRole('MANAGER')")
     public ManagerDashboardStatisticsResponse getManagerDashboardStatistics() {
         ManagerDashboardStatisticsProjection tmp = treatmentRecordRepository.getManagerDashboardStatistics();

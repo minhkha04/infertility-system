@@ -4,13 +4,11 @@ package com.emmkay.infertility_system_api.controller;
 import com.emmkay.infertility_system_api.dto.response.ApiResponse;
 import com.emmkay.infertility_system_api.dto.response.TreatmentRecordResponse;
 import com.emmkay.infertility_system_api.service.TreatmentRecordService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -47,6 +45,14 @@ public class TreatmentRecordController {
     public ApiResponse<TreatmentRecordResponse> findById(@PathVariable Long id) {
         return ApiResponse.<TreatmentRecordResponse>builder()
                 .result(treatmentRecordService.getTreatmentRecordById(id))
+                .build();
+    }
+
+    @Operation(summary = "to update status", description = "INPROGRESS trong quá trình, COMPLETED hoàn thành, CANCELLED hủy, ko cho cancelled ở đây")
+    @PutMapping("/update-status/{recordId}/{status}")
+    public ApiResponse<TreatmentRecordResponse> updateStatus(@PathVariable Long recordId, @PathVariable String status) {
+        return ApiResponse.<TreatmentRecordResponse>builder()
+                .result(treatmentRecordService.updateTreatmentRecord(recordId, status))
                 .build();
     }
 }
