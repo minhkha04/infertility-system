@@ -4,12 +4,15 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class DoctorDashBoardResponse {
-    double avgRating;
-    int patients;
-    int workShiftsThisMonth;
+public class WorkScheduleForManagerDashboardResponse {
+    String doctorName;
+    String doctorId;
+    String shift;
+    String phoneNumber;
+    int totalAppointments;
+    int completedAppointments;
 }

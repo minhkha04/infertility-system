@@ -257,4 +257,12 @@ public class AppointmentService {
         return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
     }
 
+
+    @PreAuthorize("hasRole('MANAGER')")
+    public List<AppointmentResponse> getAllAppointmentTodayForManager() {
+        return appointmentRepository.findAllByAppointmentDateIsOrderByAppointmentDateAsc(LocalDate.now())
+                .stream()
+                .map(appointmentMapper::toAppointmentResponse)
+                .toList();
+    }
 }

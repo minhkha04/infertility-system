@@ -50,9 +50,9 @@ public class WorkScheduleController {
 
     @PostMapping("/bulk-create")
     public ApiResponse<String> bulkCreateSchedule(@RequestBody @Valid BulkWorkScheduleRequest request) {
-        int createdCount = workScheduleService.bulkCreateMonthlySchedule(request);
+        workScheduleService.bulkCreateMonthlySchedule(request);
         return ApiResponse.<String>builder()
-                .result("Created " + createdCount + " work schedules for doctor " + request.getDoctorId())
+                .result("Created work schedules for doctor success")
                 .build();
     }
 
@@ -62,7 +62,7 @@ public class WorkScheduleController {
             @PathVariable String doctorId) {
         workScheduleService.deleteWorkScheduleByDateAndDoctor(date, doctorId);
         return ApiResponse.<String>builder()
-                .result("Work schedules for doctor " + doctorId + " on date " + date + " have been deleted successfully.")
+                .result("Work schedules have been deleted successfully.")
                 .build();
     }
 

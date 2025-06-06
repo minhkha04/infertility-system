@@ -1,6 +1,6 @@
 package com.emmkay.infertility_system_api.dto.projection;
 
-public interface WorkScheduleForManagerDashBoardProjection {
+public interface WorkScheduleForManagerDashboardProjection {
     String getDoctorName();
     String getDoctorId();
     String getShift();

@@ -1,6 +1,6 @@
 package com.emmkay.infertility_system_api.repository;
 
-import com.emmkay.infertility_system_api.dto.projection.DoctorDashBoardProjection;
+import com.emmkay.infertility_system_api.dto.projection.DoctorDashboardProjection;
 import com.emmkay.infertility_system_api.dto.projection.DoctorRatingProjection;
 import com.emmkay.infertility_system_api.entity.Doctor;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -23,13 +23,13 @@ public interface DoctorRepository extends JpaRepository<Doctor, String> {
 
     @Query(value = """
             
-            SELECT d.avgRating AS avgRating, 
-                   d.patients AS patients, 
+            SELECT d.avgRating AS avgRating,
+                   d.patients AS patients,
                    d.workShiftsThisMonth AS workShiftsThisMonth
             FROM DoctorDashboardStatsView d
             WHERE d.doctorId = :doctorId
             """)
-    Optional<DoctorDashBoardProjection> getDoctorDashboardStats(@Param("doctorId") String doctorId);
+    Optional<DoctorDashboardProjection> getDoctorDashboardStats(@Param("doctorId") String doctorId);
 
     @Query(value = """
                 SELECT  u.fullName AS fullName,

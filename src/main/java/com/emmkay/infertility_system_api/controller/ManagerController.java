@@ -1,11 +1,11 @@
 package com.emmkay.infertility_system_api.controller;
 
 import com.emmkay.infertility_system_api.dto.request.ManagerUpdateRequest;
-import com.emmkay.infertility_system_api.dto.response.ApiResponse;
-import com.emmkay.infertility_system_api.dto.response.ManagerResponse;
-import com.emmkay.infertility_system_api.dto.response.WorkScheduleForManagerDashBoardResponse;
+import com.emmkay.infertility_system_api.dto.response.*;
+import com.emmkay.infertility_system_api.service.AppointmentService;
 import com.emmkay.infertility_system_api.service.ManagerService;
 import com.emmkay.infertility_system_api.service.WorkScheduleService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +24,7 @@ public class ManagerController {
 
     ManagerService managerService;
     WorkScheduleService workScheduleService;
-
+    AppointmentService appointmentService;
 
     @PutMapping()
     public ApiResponse<ManagerResponse> updateManagerProfile(String userId,@RequestBody @Valid ManagerUpdateRequest request) {
@@ -34,9 +34,24 @@ public class ManagerController {
     }
 
     @GetMapping("/dashboard/work-schedules")
-    public ApiResponse<List<WorkScheduleForManagerDashBoardResponse>> getWorkSchedulesForManagerDashboard() {
-        return ApiResponse.<List<WorkScheduleForManagerDashBoardResponse>>builder()
+    public ApiResponse<List<WorkScheduleForManagerDashboardResponse>> getWorkSchedulesForManagerDashboard() {
+        return ApiResponse.<List<WorkScheduleForManagerDashboardResponse>>builder()
                 .result(workScheduleService.getWorkSchedulesForManagerDashboard())
+                .build();
+    }
+
+    @GetMapping("/dashboard/work-schedules/statics/")
+    public ApiResponse<ManagerDashboardWorkScheduleStaticsResponse> getWorkSchedulesForManagerDashboardStatics() {
+        return ApiResponse.<ManagerDashboardWorkScheduleStaticsResponse>builder()
+                .result(workScheduleService.getManagerWorkScheduleTodayDashBoard())
+                .build();
+    }
+
+    @Operation(summary = "for manager to get all appointments today")
+    @GetMapping("/dashboard/get-all-appointments-today")
+    public ApiResponse<List<AppointmentResponse>> getAllAppointmentToday() {
+        return ApiResponse.<List<AppointmentResponse>>builder()
+                .result(appointmentService.getAllAppointmentTodayForManager())
                 .build();
     }
 }

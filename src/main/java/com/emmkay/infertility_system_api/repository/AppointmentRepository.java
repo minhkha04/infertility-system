@@ -1,6 +1,7 @@
 package com.emmkay.infertility_system_api.repository;
 
 import com.emmkay.infertility_system_api.dto.projection.AppointmentInNext7DayProjection;
+import com.emmkay.infertility_system_api.dto.response.AppointmentResponse;
 import com.emmkay.infertility_system_api.entity.Appointment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -62,4 +63,5 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             """)
     List<AppointmentInNext7DayProjection> getAppointmentInNext7Day(String doctorId, LocalDate endDate);
 
+    List<Appointment> findAllByAppointmentDateIsOrderByAppointmentDateAsc(LocalDate appointmentDate);
 }

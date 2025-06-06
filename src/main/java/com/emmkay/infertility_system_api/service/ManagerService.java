@@ -2,7 +2,6 @@ package com.emmkay.infertility_system_api.service;
 
 import com.emmkay.infertility_system_api.dto.request.ManagerUpdateRequest;
 import com.emmkay.infertility_system_api.dto.response.ManagerResponse;
-import com.emmkay.infertility_system_api.dto.response.WorkScheduleForManagerDashBoardResponse;
 import com.emmkay.infertility_system_api.entity.User;
 import com.emmkay.infertility_system_api.exception.AppException;
 import com.emmkay.infertility_system_api.exception.ErrorCode;
@@ -14,8 +13,6 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Slf4j
 @Service

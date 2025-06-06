@@ -1,9 +1,11 @@
 package com.emmkay.infertility_system_api.service;
 
+import com.emmkay.infertility_system_api.dto.projection.ManagerDashboardWorkScheduleStaticsProjection;
 import com.emmkay.infertility_system_api.dto.request.BulkWorkScheduleRequest;
 import com.emmkay.infertility_system_api.dto.request.WorkScheduleCreateRequest;
 import com.emmkay.infertility_system_api.dto.request.WorkScheduleUpdateRequest;
-import com.emmkay.infertility_system_api.dto.response.WorkScheduleForManagerDashBoardResponse;
+import com.emmkay.infertility_system_api.dto.response.ManagerDashboardWorkScheduleStaticsResponse;
+import com.emmkay.infertility_system_api.dto.response.WorkScheduleForManagerDashboardResponse;
 import com.emmkay.infertility_system_api.dto.response.WorkScheduleResponse;
 import com.emmkay.infertility_system_api.dto.response.WorkScheduleMonthlyResponse;
 import com.emmkay.infertility_system_api.entity.Doctor;
@@ -47,11 +49,11 @@ public class WorkScheduleService {
     DoctorScheduleRepository doctorScheduleRepository;
 
 
-    public List<WorkScheduleForManagerDashBoardResponse> getWorkSchedulesForManagerDashboard() {
+    public List<WorkScheduleForManagerDashboardResponse> getWorkSchedulesForManagerDashboard() {
        return doctorScheduleRepository.getDoctorScheduleToday()
                .stream()
                .map(x ->
-                       WorkScheduleForManagerDashBoardResponse.builder()
+                       WorkScheduleForManagerDashboardResponse.builder()
                                .doctorName(x.getDoctorName())
                                .doctorId(x.getDoctorId())
                                .shift(x.getShift())
@@ -167,5 +169,14 @@ public class WorkScheduleService {
     }
 
 
+    @PreAuthorize("hasRole('MANAGER')")
+    public ManagerDashboardWorkScheduleStaticsResponse getManagerWorkScheduleTodayDashBoard() {
+        ManagerDashboardWorkScheduleStaticsProjection tmp = workScheduleRepository.findWorkScheduleTodayForManagerDashBoard();
+        return ManagerDashboardWorkScheduleStaticsResponse.builder()
+                .totalDoctorsToday(tmp.getTotalDoctorsToday())
+                .completedPatientsToday(tmp.getCompletedPatientsToday())
+                .totalPatientsToday(tmp.getTotalPatientsToday())
+                .build();
+    }
 
 }
