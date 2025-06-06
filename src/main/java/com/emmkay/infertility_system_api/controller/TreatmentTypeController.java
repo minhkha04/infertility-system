@@ -29,7 +29,7 @@ public class TreatmentTypeController {
     }
 
     @PostMapping("")
-    public ApiResponse<TreatmentTypeResponse> createTreatmentType(@RequestBody @Valid TreatmentTypeCreateRequest request) {
+    public ApiResponse<TreatmentTypeResponse> createTreatmentType(@RequestBody  @Valid TreatmentTypeCreateRequest request) {
         return ApiResponse.<TreatmentTypeResponse>builder()
                 .result(treatmentTypeService.createTreatmentType(request))
                 .build();
