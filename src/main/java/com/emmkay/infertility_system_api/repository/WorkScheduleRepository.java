@@ -41,7 +41,7 @@ public interface WorkScheduleRepository extends JpaRepository<WorkSchedule, Long
                         x.completedPatientsToday AS completedPatientsToday,
                         x.totalDoctorsToday AS totalDoctorsToday,
                         x.totalPatientsToday AS totalPatientsToday
-            FROM ManagerDashBoardWorkScheduleStaticsView x
+            FROM  ManagerDashboardWorkScheduleStaticsView x
             """)
     ManagerDashboardWorkScheduleStaticsProjection findWorkScheduleTodayForManagerDashBoard();
 }
