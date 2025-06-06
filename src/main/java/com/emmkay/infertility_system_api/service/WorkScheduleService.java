@@ -1,10 +1,10 @@
 package com.emmkay.infertility_system_api.service;
 
-import com.emmkay.infertility_system_api.dto.projection.ManagerDashboardWorkScheduleStaticsProjection;
+import com.emmkay.infertility_system_api.dto.projection.ManagerDashboardWorkScheduleStatisticsProjection;
 import com.emmkay.infertility_system_api.dto.request.BulkWorkScheduleRequest;
 import com.emmkay.infertility_system_api.dto.request.WorkScheduleCreateRequest;
 import com.emmkay.infertility_system_api.dto.request.WorkScheduleUpdateRequest;
-import com.emmkay.infertility_system_api.dto.response.ManagerDashboardWorkScheduleStaticsResponse;
+import com.emmkay.infertility_system_api.dto.response.ManagerDashboardWorkScheduleStatisticsResponse;
 import com.emmkay.infertility_system_api.dto.response.WorkScheduleForManagerDashboardResponse;
 import com.emmkay.infertility_system_api.dto.response.WorkScheduleResponse;
 import com.emmkay.infertility_system_api.dto.response.WorkScheduleMonthlyResponse;
@@ -170,9 +170,9 @@ public class WorkScheduleService {
 
 
     @PreAuthorize("hasRole('MANAGER')")
-    public ManagerDashboardWorkScheduleStaticsResponse getManagerWorkScheduleTodayDashBoard() {
-        ManagerDashboardWorkScheduleStaticsProjection tmp = workScheduleRepository.findWorkScheduleTodayForManagerDashBoard();
-        return ManagerDashboardWorkScheduleStaticsResponse.builder()
+    public ManagerDashboardWorkScheduleStatisticsResponse getManagerWorkScheduleTodayDashBoard() {
+        ManagerDashboardWorkScheduleStatisticsProjection tmp = workScheduleRepository.findWorkScheduleTodayForManagerDashBoard();
+        return ManagerDashboardWorkScheduleStatisticsResponse.builder()
                 .totalDoctorsToday(tmp.getTotalDoctorsToday())
                 .completedPatientsToday(tmp.getCompletedPatientsToday())
                 .totalPatientsToday(tmp.getTotalPatientsToday())

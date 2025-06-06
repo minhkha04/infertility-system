@@ -1,6 +1,6 @@
 package com.emmkay.infertility_system_api.repository;
 
-import com.emmkay.infertility_system_api.dto.projection.ManagerDashboardWorkScheduleStaticsProjection;
+import com.emmkay.infertility_system_api.dto.projection.ManagerDashboardWorkScheduleStatisticsProjection;
 import com.emmkay.infertility_system_api.entity.WorkSchedule;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -41,7 +41,7 @@ public interface WorkScheduleRepository extends JpaRepository<WorkSchedule, Long
                         x.completedPatientsToday AS completedPatientsToday,
                         x.totalDoctorsToday AS totalDoctorsToday,
                         x.totalPatientsToday AS totalPatientsToday
-            FROM  ManagerDashboardWorkScheduleStaticsView x
+            FROM  ManagerDashboardWorkScheduleStatisticsView x
             """)
-    ManagerDashboardWorkScheduleStaticsProjection findWorkScheduleTodayForManagerDashBoard();
+    ManagerDashboardWorkScheduleStatisticsProjection findWorkScheduleTodayForManagerDashBoard();
 }

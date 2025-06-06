@@ -1,5 +1,7 @@
 package com.emmkay.infertility_system_api.service;
 
+import com.emmkay.infertility_system_api.dto.projection.ManagerDashboardStatisticsProjection;
+import com.emmkay.infertility_system_api.dto.response.ManagerDashboardStatisticsResponse;
 import com.emmkay.infertility_system_api.dto.response.TreatmentRecordResponse;
 import com.emmkay.infertility_system_api.entity.*;
 import com.emmkay.infertility_system_api.exception.AppException;
@@ -31,6 +33,16 @@ public class TreatmentRecordService {
     TreatmentStepService treatmentStepService;
     AppointmentService appointmentService;
 
+
+    @PreAuthorize("hasRole('MANAGER')")
+    public ManagerDashboardStatisticsResponse getManagerDashboardStatistics() {
+        ManagerDashboardStatisticsProjection tmp = treatmentRecordRepository.getManagerDashboardStatistics();
+        return ManagerDashboardStatisticsResponse.builder()
+                .totalCustomersTreated(tmp.getTotalCustomersTreated())
+                .totalRevenue(tmp.getTotalRevenue())
+                .totalAppointments(tmp.getTotalAppointments())
+                .build();
+    }
 
     public List<TreatmentRecordResponse> getAllTreatmentRecordsByCustomerId(String customerId) {
         List<TreatmentRecord> records = treatmentRecordRepository.findByCustomerId(customerId);

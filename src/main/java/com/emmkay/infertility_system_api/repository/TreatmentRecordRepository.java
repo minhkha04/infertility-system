@@ -1,7 +1,9 @@
 package com.emmkay.infertility_system_api.repository;
 
+import com.emmkay.infertility_system_api.dto.projection.ManagerDashboardStatisticsProjection;
 import com.emmkay.infertility_system_api.entity.TreatmentRecord;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
@@ -18,4 +20,13 @@ public interface TreatmentRecordRepository extends JpaRepository<TreatmentRecord
     List<TreatmentRecord> findByCustomerId(String customerId);
 
     List<TreatmentRecord> findByDoctorId(String doctorId);
+
+    @Query(value = """
+                    SELECT
+                        x.totalRevenue AS totalRevenue,
+                        x.totalAppointments AS totalAppointments,
+                        x.totalCustomersTreated AS totalCustomersTreated
+                    FROM ManagerDashboardStatisticsView AS x
+            """)
+    ManagerDashboardStatisticsProjection getManagerDashboardStatistics();
 }

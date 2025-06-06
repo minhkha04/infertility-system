@@ -2,9 +2,8 @@ package com.emmkay.infertility_system_api.controller;
 
 import com.emmkay.infertility_system_api.dto.request.ManagerUpdateRequest;
 import com.emmkay.infertility_system_api.dto.response.*;
-import com.emmkay.infertility_system_api.service.AppointmentService;
-import com.emmkay.infertility_system_api.service.ManagerService;
-import com.emmkay.infertility_system_api.service.WorkScheduleService;
+import com.emmkay.infertility_system_api.entity.TreatmentService;
+import com.emmkay.infertility_system_api.service.*;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -25,6 +24,8 @@ public class ManagerController {
     ManagerService managerService;
     WorkScheduleService workScheduleService;
     AppointmentService appointmentService;
+    TreatmentRecordService treatmentRecordService;
+    TreatmentServiceService treatmentServiceService;
 
     @PutMapping()
     public ApiResponse<ManagerResponse> updateManagerProfile(String userId,@RequestBody @Valid ManagerUpdateRequest request) {
@@ -41,8 +42,8 @@ public class ManagerController {
     }
 
     @GetMapping("/dashboard/work-schedules/statics/")
-    public ApiResponse<ManagerDashboardWorkScheduleStaticsResponse> getWorkSchedulesForManagerDashboardStatics() {
-        return ApiResponse.<ManagerDashboardWorkScheduleStaticsResponse>builder()
+    public ApiResponse<ManagerDashboardWorkScheduleStatisticsResponse> getWorkSchedulesForManagerDashboardStatics() {
+        return ApiResponse.<ManagerDashboardWorkScheduleStatisticsResponse>builder()
                 .result(workScheduleService.getManagerWorkScheduleTodayDashBoard())
                 .build();
     }
@@ -52,6 +53,30 @@ public class ManagerController {
     public ApiResponse<List<AppointmentResponse>> getAllAppointmentToday() {
         return ApiResponse.<List<AppointmentResponse>>builder()
                 .result(appointmentService.getAllAppointmentTodayForManager())
+                .build();
+    }
+
+    @Operation(summary = "for manager to statistic")
+    @GetMapping("/dashboard/statistic")
+    public ApiResponse<ManagerDashboardStatisticsResponse> getStatisticForManagerDashboard() {
+        return ApiResponse.<ManagerDashboardStatisticsResponse>builder()
+                .result(treatmentRecordService.getManagerDashboardStatistics())
+                .build();
+    }
+
+    @Operation(summary = "for manager dashboard service")
+    @GetMapping("/dashboard/service")
+    public ApiResponse<List<ManagerDashboardServiceResponse>> getStatisticForManagerDashboardService() {
+        return ApiResponse.<List<ManagerDashboardServiceResponse>>builder()
+                .result(treatmentServiceService.getManagerDashboardService())
+                .build();
+    }
+
+    @Operation(summary = "for manager chart")
+    @GetMapping("/dashboard/chart")
+    public ApiResponse<List<ManagerDashboardChartResponse>> getManagerDashboardChart() {
+        return ApiResponse.<List<ManagerDashboardChartResponse>>builder()
+                .result(treatmentServiceService.getManagerDashboardChart())
                 .build();
     }
 }
