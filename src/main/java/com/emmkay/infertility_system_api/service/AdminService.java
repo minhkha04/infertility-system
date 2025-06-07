@@ -83,6 +83,7 @@ public class AdminService {
         user.setRoleName(role);
         user.setIsRemoved(false);
         user.setIsVerified(true);
+        user.setAvatarUrl("https://res.cloudinary.com/di6hi1r0g/image/upload/v1749288955/default-avatar_qwb4ru.png");
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
         user = userRepository.save(user);

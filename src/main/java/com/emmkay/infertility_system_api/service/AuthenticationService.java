@@ -109,6 +109,7 @@ public class AuthenticationService {
                     .password("")
                     .roleName(role)
                     .isVerified(true)
+                    .avatarUrl("https://res.cloudinary.com/di6hi1r0g/image/upload/v1749288955/default-avatar_qwb4ru.png")
                     .build();
             userRepository.save(user);
         }
@@ -134,6 +135,7 @@ public class AuthenticationService {
         user.setIsRemoved(false);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setIsVerified(false);
+        user.setAvatarUrl("https://res.cloudinary.com/di6hi1r0g/image/upload/v1749288955/default-avatar_qwb4ru.png");
         userRepository.save(user);
         otpHelper.generateAndSendOtp(request.getEmail(), "register");
         return userMapper.toUserResponse(user);
