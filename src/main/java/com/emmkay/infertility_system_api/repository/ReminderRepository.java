@@ -20,7 +20,8 @@ public interface ReminderRepository extends JpaRepository<Reminder, Long> {
 
     Optional<Reminder> findByStepId(Long stepId);
 
-    List<Reminder> findByReminderDateAndIsSentFalse(LocalDate reminderDate);
+    @Query("SELECT r FROM Reminder r JOIN FETCH r.customer WHERE r.reminderDate = :reminderDate AND r.isSent = false")
+    List<Reminder> findByReminderDateAndIsSentFalseWithCustomer(LocalDate reminderDate);
 
     void deleteByStep_Id(Long stepId);
 }

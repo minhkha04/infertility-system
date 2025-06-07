@@ -65,13 +65,13 @@ public class ReminderService {
         reminderRepository.save(reminder);
     }
 
-    @Scheduled(cron = "0 0 8 * * *")
+    @Scheduled(cron = "0 0 8 * * *", zone = "Asia/Ho_Chi_Minh")
     public void sendReminders() {
         LocalDate reminderDate = LocalDate.now().plusDays(2);
 
-        List<Reminder> reminders = reminderRepository.findByReminderDateAndIsSentFalse(reminderDate);
-
+        List<Reminder> reminders = reminderRepository.findByReminderDateAndIsSentFalseWithCustomer(reminderDate);
         reminders.forEach(reminder -> {
+            log.info("Sending reminder to customer: {}", reminder.getCustomer().getFullName());
             String subject = "Appointment Reminder";
             String body = """
                     Hello %s,
