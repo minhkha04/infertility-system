@@ -236,6 +236,7 @@ public class AppointmentService {
         appointment.setRequestedShift(null);
         appointment.setStatus(request.getStatus().toUpperCase());
         appointment.setNotes(request.getNotes());
+        reminderService.updateReminder(appointment);
         return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
     }
 
@@ -254,6 +255,7 @@ public class AppointmentService {
         appointment.setShift(request.getShift().toUpperCase());
 
         appointment.setStatus("CONFIRMED");
+        reminderService.updateReminder(appointment);
         return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
     }
 
