@@ -1,8 +1,6 @@
 package com.emmkay.infertility_system_api.mapper;
 
-import com.emmkay.infertility_system_api.dto.projection.DoctorRatingProjection;
 import com.emmkay.infertility_system_api.dto.request.DoctorUpdateRequest;
-import com.emmkay.infertility_system_api.dto.response.DoctorRatingResponse;
 import com.emmkay.infertility_system_api.dto.response.DoctorResponse;
 import com.emmkay.infertility_system_api.entity.Doctor;
 import org.mapstruct.Mapper;
@@ -20,6 +18,7 @@ public interface DoctorMapper {
     @Mapping(target = "username", source = "users.username")
     @Mapping(target = "email", source = "users.email")
     @Mapping(target = "roleName", source = "users.roleName")
+    @Mapping(target = "avatarUrl", source = "users.avatarUrl")
     DoctorResponse toDoctorResponse(Doctor doctor);
 
     @Mapping(target = "users.roleName", ignore = true)
