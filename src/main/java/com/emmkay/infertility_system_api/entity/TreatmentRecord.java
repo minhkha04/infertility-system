@@ -63,4 +63,8 @@ public class TreatmentRecord {
     @Column(name = "cd1_date")
     private LocalDate cd1Date;
 
+    @ColumnDefault("0")
+    @Column(name = "is_paid")
+    private Boolean isPaid;
+
 }

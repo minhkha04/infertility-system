@@ -38,13 +38,13 @@ public interface DoctorRepository extends JpaRepository<Doctor, String> {
                         d.qualifications AS qualifications,
                         d.experienceYears AS experienceYears,
                         d.specialty AS specialty,
-                        ROUND(AVG(f.rating), 1) AS rate
+                        COALESCE(ROUND(AVG(f.rating), 1), 0) AS rate
                 FROM Doctor d\s
                 INNER JOIN User u\s
                 ON d.id  = u.id
-                INNER JOIN Feedback f\s
+                LEFT JOIN Feedback f\s
                 ON d.id = f.doctor.id
-                WHERE f.isApproved = true
+                   AND f.isApproved = TRUE
                 GROUP BY u.id, u.avatarUrl, d.qualifications, d.specialty, u.fullName, d.experienceYears
             """)
     List<DoctorRatingProjection> findAllRatings();

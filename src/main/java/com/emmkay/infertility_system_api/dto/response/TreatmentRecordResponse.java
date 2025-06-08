@@ -22,4 +22,5 @@ public class TreatmentRecordResponse {
     String status;
     LocalDate createdDate;
     List<TreatmentStepResponse> treatmentSteps;
+    boolean isPaid;
 }
