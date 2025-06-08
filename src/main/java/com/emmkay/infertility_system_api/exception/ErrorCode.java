@@ -57,6 +57,10 @@ public enum ErrorCode {
     INVALID_START_DATE(1044, "The selected date cannot be today or in the past", HttpStatus.BAD_REQUEST),
     REMINDER_NOT_FOUND(1045, "Reminder not found", HttpStatus.BAD_REQUEST),
     FEEDBACK_NOT_EXISTED(1046, "Feedback not found", HttpStatus.BAD_REQUEST),
+    CANNOT_PAY(1047, "Can not pay this record", HttpStatus.BAD_REQUEST),
+    HAS_BEEN_PAID(1048, "Treatment has been paid", HttpStatus.BAD_REQUEST),
+    VERIFY_PAYMENT_FAIL(1049, "Verify payment failed", HttpStatus.UNAUTHORIZED),
+    PAYMENT_FAIL(1050, "Payment failed", HttpStatus.BAD_REQUEST)
     ;
     int code;
     String message;
