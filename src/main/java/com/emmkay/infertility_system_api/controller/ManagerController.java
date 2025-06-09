@@ -34,7 +34,7 @@ public class ManagerController {
                 .build();
     }
 
-    @GetMapping("/dashboard/work-schedules")
+    @GetMapping("/dashboard/work-schedules-doctor-today")
     public ApiResponse<List<WorkScheduleForManagerDashboardResponse>> getWorkSchedulesForManagerDashboard() {
         return ApiResponse.<List<WorkScheduleForManagerDashboardResponse>>builder()
                 .result(workScheduleService.getWorkSchedulesForManagerDashboard())

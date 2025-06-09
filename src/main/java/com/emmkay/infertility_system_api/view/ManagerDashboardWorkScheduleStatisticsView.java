@@ -12,7 +12,7 @@ import jakarta.persistence.Table;
 public class ManagerDashboardWorkScheduleStatisticsView {
     @Id
     @Column(name = "total_doctors_today")
-    private int totalDoctorsToday;
+    private Integer totalDoctorsToday;
 
     @Column(name = "total_patients_today")
     private Integer totalPatientsToday;

@@ -9,7 +9,7 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ManagerDashboardStatisticsResponse {
-    int totalRevenue;
-    int totalAppointments;
-    int totalCustomersTreated;
+    Long totalRevenue;
+    Long totalAppointments;
+    Long totalCustomersTreated;
 }

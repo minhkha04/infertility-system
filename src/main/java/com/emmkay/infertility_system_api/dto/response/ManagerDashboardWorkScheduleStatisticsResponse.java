@@ -10,7 +10,7 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ManagerDashboardWorkScheduleStatisticsResponse {
-     int totalDoctorsToday;
+     Integer totalDoctorsToday;
      Integer totalPatientsToday;
      Integer completedPatientsToday;
 }

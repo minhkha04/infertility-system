@@ -57,7 +57,7 @@ public class WorkScheduleService {
                                .doctorName(x.getDoctorName())
                                .doctorId(x.getDoctorId())
                                .shift(x.getShift())
-                               .phoneNumber(x.phoneNumber())
+                               .phoneNumber(x.getPhoneNumber())
                                .totalAppointments(x.getTotalAppointments())
                                .completedAppointments(x.getCompletedAppointments())
                                .build()

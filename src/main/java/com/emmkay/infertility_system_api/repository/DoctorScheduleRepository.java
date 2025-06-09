@@ -1,6 +1,6 @@
 package com.emmkay.infertility_system_api.repository;
 
-import com.emmkay.infertility_system_api.dto.projection.WorkScheduleForManagerDashboardProjection;
+import com.emmkay.infertility_system_api.dto.projection.ManagerDashboardWorkScheduleDoctorTodayProjection;
 import com.emmkay.infertility_system_api.entity.Doctor;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -13,8 +13,8 @@ public interface DoctorScheduleRepository extends JpaRepository<Doctor, String> 
 
     @Query("""
                 SELECT
-                    d.id AS id,
-                    u.fullName AS fullName,
+                    d.id AS doctorId,
+                    u.fullName AS doctorName,
                     u.phoneNumber AS phoneNumber,
                     ws.shift AS shift,
                     COUNT(a.id) AS totalAppointments,
@@ -27,5 +27,5 @@ public interface DoctorScheduleRepository extends JpaRepository<Doctor, String> 
                 GROUP BY d.id, u.fullName, u.phoneNumber, ws.shift
                 ORDER BY u.fullName
             """)
-    List<WorkScheduleForManagerDashboardProjection> getDoctorScheduleToday();
+    List<ManagerDashboardWorkScheduleDoctorTodayProjection> getDoctorScheduleToday();
 }

@@ -1,7 +1,7 @@
 package com.emmkay.infertility_system_api.dto.projection;
 
 public interface ManagerDashboardStatisticsProjection {
-    int getTotalRevenue();
-    int getTotalAppointments();
-    int getTotalCustomersTreated();
+    Long getTotalRevenue();
+    Long getTotalAppointments();
+    Long getTotalCustomersTreated();
 }

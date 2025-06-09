@@ -1,10 +1,10 @@
 package com.emmkay.infertility_system_api.dto.projection;
 
-public interface WorkScheduleForManagerDashboardProjection {
+public interface ManagerDashboardWorkScheduleDoctorTodayProjection {
     String getDoctorName();
     String getDoctorId();
     String getShift();
-    String phoneNumber();
+    String getPhoneNumber();
     int getTotalAppointments();
     int getCompletedAppointments();
 }

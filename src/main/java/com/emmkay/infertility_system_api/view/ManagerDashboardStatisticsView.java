@@ -12,13 +12,13 @@ import jakarta.persistence.Table;
 public class ManagerDashboardStatisticsView {
     @Id
     @Column(name = "total_revenue")
-    private int totalRevenue;
+    private Long totalRevenue;
 
     @Column(name = "total_appointments")
-    private int totalAppointments;
+    private Long totalAppointments;
 
     @Column(name = "total_customers_treated")
-    private int totalCustomersTreated;
+    private Long totalCustomersTreated;
 
 
 }

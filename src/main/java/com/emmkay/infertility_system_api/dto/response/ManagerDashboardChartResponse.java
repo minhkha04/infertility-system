@@ -10,6 +10,6 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ManagerDashboardChartResponse {
     String month;
-    double totalRevenue;
-    int totalTreatmentServiceInMonth;
+    String totalRevenue;
+    String totalTreatmentServiceInMonth;
 }
