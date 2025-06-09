@@ -17,5 +17,5 @@ public class TreatmentServiceResponse {
     int treatmentTypeId;
     String treatmentTypeName;
     String createdBy;
-    boolean isRemoved;
+    boolean isRemove;
 }
