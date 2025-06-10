@@ -93,6 +93,14 @@ public class AppointmentService {
     }
 
 
+    @PreAuthorize("hasRole('DOCTOR') or hasRole('MANAGER')")
+    public AppointmentResponse updateStatus(Long appointmentId, String status) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new AppException(ErrorCode.APPOINTMENT_NOT_FOUND));
+        appointment.setStatus(status);
+        return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
+    }
+
     @PreAuthorize("hasRole('DOCTOR')")
     public List<AppointmentResponse> getAppointmentWithStatusPendingChangeByDoctorId(String doctorId) {
         return appointmentRepository.findAllByStatusAndDoctor_Id("PENDING_CHANGE", doctorId)

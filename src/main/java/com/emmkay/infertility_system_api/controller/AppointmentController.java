@@ -101,4 +101,11 @@ public class AppointmentController {
                 .result(appointmentService.getAppointInNext7Day(doctorId))
                 .build();
     }
+
+    @PutMapping("/update-status/{appointmentId}/{status}")
+    public ApiResponse<AppointmentResponse> updateAppointmentStatus(@PathVariable Long appointmentId, @PathVariable String status) {
+        return ApiResponse.<AppointmentResponse>builder()
+                .result(appointmentService.updateStatus(appointmentId, status))
+                .build();
+    }
 }
