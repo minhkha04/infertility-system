@@ -137,7 +137,7 @@ public class AuthenticationService {
         user.setIsVerified(false);
         user.setAvatarUrl("https://res.cloudinary.com/di6hi1r0g/image/upload/v1749288955/default-avatar_qwb4ru.png");
         userRepository.save(user);
-        otpHelper.generateAndSendOtp(request.getEmail(), "register");
+        otpHelper.generateAndSendOtp(request.getEmail(), "đăng ký tài khoản");
         return userMapper.toUserResponse(user);
     }
 
@@ -164,14 +164,14 @@ public class AuthenticationService {
         if (user.getIsVerified()) {
             throw new AppException(ErrorCode.USER_ALREADY_ACTIVE);
         }
-        otpHelper.generateAndSendOtp(email, "verify");
+        otpHelper.generateAndSendOtp(email, "xác thực");
     }
 
     public void forgotPassword(ForgotPasswordRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         validateUserIsActiveAndVerified(user);
-        otpHelper.generateAndSendOtp(request.getEmail(), "reset password");
+        otpHelper.generateAndSendOtp(request.getEmail(), "thay đổi");
     }
 
     public void resetPassword(ResetPasswordRequest request) {
@@ -188,7 +188,7 @@ public class AuthenticationService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         validateUserIsActiveAndVerified(user);
-        otpHelper.generateAndSendOtp(request.getEmail(), "change password");
+        otpHelper.generateAndSendOtp(request.getEmail(), "thay đổi");
     }
 
     public AuthenticationResponse refreshToken(RefreshTokenRequest request) {

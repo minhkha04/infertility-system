@@ -34,8 +34,8 @@ public class ReminderService {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy", Locale.ENGLISH);
         String formattedDate = date.format(formatter);
 
-        return "Reminder: You have appointment with Dr. " + doctor.getUsers().getFullName()
-                + " on " + formattedDate + " at " + shift + " for " + purpose + ".";
+        return "Nhắc nhở: Bạn có lịch hẹn với bác sĩ " + doctor.getUsers().getFullName()
+                + " vào ngày " + formattedDate + " buổi " + shift + " cho việc " + purpose + ".";
     }
 
     public void createReminderForAppointment(Appointment appointment) {
@@ -68,21 +68,21 @@ public class ReminderService {
 
     @Scheduled(cron = "0 0 8 * * *", zone = "Asia/Ho_Chi_Minh")
     public void sendReminders() {
-        LocalDate reminderDate = LocalDate.now().plusDays(2);
+        LocalDate reminderDate = LocalDate.now().plusDays(1);
 
         List<Reminder> reminders = reminderRepository.findByReminderDateAndIsSentFalseWithCustomer(reminderDate);
         reminders.forEach(reminder -> {
             log.info("Sending reminder to customer: {}", reminder.getCustomer().getFullName());
-            String subject = "Appointment Reminder";
+            String subject = "Thông báo lịch hẹn";
             String body = """
-                    Hello %s,
+                    Xin chào %s,
                     
-                    This is a friendly reminder for your upcoming appointment.
+                    Đây là lời nhắc nhở thân thiện về lịch hẹn sắp tới của bạn.
                     
-                    ➤ Details:
+                    ➤ Chi tiết:
                     %s
                     
-                    Please arrive on time.
+                    Vui lòng đến đúng giờ.
                     """.formatted(reminder.getCustomer().getFullName(), reminder.getMessage());
             try {
                 emailService.sendEmail(reminder.getCustomer().getEmail(), subject, body);

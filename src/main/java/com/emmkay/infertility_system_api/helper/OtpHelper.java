@@ -26,7 +26,7 @@ public class OtpHelper {
                 .otp(otp)
                 .expiryTime(LocalDateTime.now().plusMinutes(5))
                 .build());
-        emailService.sendEmail(email, "OTP for " + type, "Your OTP is: " + otp + "\nIt is valid for 5 minutes.");
+        emailService.sendEmail(email, "OTP " + type, "Mã OTP của bạn là: " + otp + "\nMã có hiệu lực trong 5 phút.");
     }
 
 
