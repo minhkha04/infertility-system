@@ -149,7 +149,6 @@ public class AppointmentService {
         if (workScheduleOpt.isEmpty()) return false;
         String actualShift = workScheduleOpt.get().getShift();
 
-
         // Nếu bác sĩ không làm ca đó (không phải ca tương ứng và cũng không phải full_day)
         if (!actualShift.equals(shift) && !"FULL_DAY".equals(actualShift)) {
             return false;

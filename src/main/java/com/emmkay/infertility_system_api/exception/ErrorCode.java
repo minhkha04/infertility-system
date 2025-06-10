@@ -37,7 +37,7 @@ public enum ErrorCode {
     UPLOAD_IMAGE_FAILED(1024, "Tải ảnh lên thất bạ", HttpStatus.INTERNAL_SERVER_ERROR),
     WORK_SCHEDULE_NOT_EXISTED(1025, "Không tìm thấy lịch làm việc", HttpStatus.NOT_FOUND),
     DATE_OUT_OF_RANGE(1026, "Ngày được chọn phải nằm trong phạm vi 14 ngày tới", HttpStatus.BAD_REQUEST),
-    INVALID_SHIFT_VALUE(1027, "Giá trị ca làm không hợp lệ. Phải là 'morning', 'afternoon'", HttpStatus.BAD_REQUEST),
+    INVALID_SHIFT_VALUE(1027, "Giá trị ca làm không hợp lệ. Phải là 'morning', 'afternoon', 'full_day", HttpStatus.BAD_REQUEST),
     TREATMENT_RECORD_NOT_FOUND(1028, "Không tìm thấy hồ sơ điều trị", HttpStatus.BAD_REQUEST),
     TREATMENT_STEP_NOT_FOUND(1029, "Không tìm thấy bước điều trị", HttpStatus.NOT_FOUND),
     TREATMENT_ALREADY_IN_PROGRESS(1030, "Bạn đang có hồ sơ điều trị chưa hoàn tất. Vui lòng hoàn tất trước khi đăng ký dịch vụ mới", HttpStatus.BAD_REQUEST),

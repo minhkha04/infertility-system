@@ -49,19 +49,20 @@ public class WorkScheduleService {
     DoctorScheduleRepository doctorScheduleRepository;
 
 
+
     public List<WorkScheduleForManagerDashboardResponse> getWorkSchedulesForManagerDashboard() {
-       return doctorScheduleRepository.getDoctorScheduleToday()
-               .stream()
-               .map(x ->
-                       WorkScheduleForManagerDashboardResponse.builder()
-                               .doctorName(x.getDoctorName())
-                               .doctorId(x.getDoctorId())
-                               .shift(x.getShift())
-                               .phoneNumber(x.getPhoneNumber())
-                               .totalAppointments(x.getTotalAppointments())
-                               .completedAppointments(x.getCompletedAppointments())
-                               .build()
-               ).toList();
+        return doctorScheduleRepository.getDoctorScheduleToday()
+                .stream()
+                .map(x ->
+                        WorkScheduleForManagerDashboardResponse.builder()
+                                .doctorName(x.getDoctorName())
+                                .doctorId(x.getDoctorId())
+                                .shift(x.getShift())
+                                .phoneNumber(x.getPhoneNumber())
+                                .totalAppointments(x.getTotalAppointments())
+                                .completedAppointments(x.getCompletedAppointments())
+                                .build()
+                ).toList();
 
     }
 
@@ -83,7 +84,6 @@ public class WorkScheduleService {
         workSchedule.setCreatedBy(manager);
         workSchedule.setDoctor(doctor);
         workSchedule.setShift(workSchedule.getShift().toUpperCase());
-
         return workScheduleMapper.toWorkScheduleResponse(workScheduleRepository.save(workSchedule));
     }
 

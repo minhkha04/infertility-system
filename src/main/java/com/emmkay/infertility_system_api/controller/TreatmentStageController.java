@@ -36,8 +36,8 @@ public class TreatmentStageController {
     }
 
     @PostMapping()
-    public ApiResponse<List<TreatmentStageBulkCreateRequest>> createTreatmentStage(@RequestBody TreatmentStageBulkCreateRequest request) {
-        return ApiResponse.<List<TreatmentStageBulkCreateRequest>>builder()
+    public ApiResponse<List<TreatmentStageResponse>> createTreatmentStage(@RequestBody TreatmentStageBulkCreateRequest request) {
+        return ApiResponse.<List<TreatmentStageResponse>>builder()
                 .result(treatmentStageService.bulkCreateTreatmentStage(request))
                 .build();
     }

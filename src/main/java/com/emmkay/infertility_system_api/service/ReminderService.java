@@ -29,13 +29,22 @@ public class ReminderService {
     ReminderRepository reminderRepository;
     EmailService emailService;
 
+     String generateShift(String shift) {
+        return switch (shift.toUpperCase()) {
+            case "MORNING" -> "SÁNG";
+            case "AFTERNOON" -> "CHIỀU";
+            case "FULL_DAY" -> "CẢ NGÀY";
+            default -> throw new AppException(ErrorCode.INVALID_SHIFT_VALUE);
+        };
+    }
+
     String buildMess(Doctor doctor, String shift, LocalDate date, String purpose) {
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy", Locale.ENGLISH);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, 'ngày' d 'tháng' M, yyyy", new Locale("vi", "VN"));
         String formattedDate = date.format(formatter);
 
         return "Nhắc nhở: Bạn có lịch hẹn với bác sĩ " + doctor.getUsers().getFullName()
-                + " vào ngày " + formattedDate + " buổi " + shift + " cho việc " + purpose + ".";
+                + " vào " + formattedDate + " buổi " + generateShift(shift) + " cho việc " + purpose + ".";
     }
 
     public void createReminderForAppointment(Appointment appointment) {
