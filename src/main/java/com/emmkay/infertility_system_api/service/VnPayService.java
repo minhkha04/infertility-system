@@ -2,15 +2,11 @@ package com.emmkay.infertility_system_api.service;
 
 import com.emmkay.infertility_system_api.configuration.VnPayConfig;
 import com.emmkay.infertility_system_api.dto.response.TreatmentRecordResponse;
-import com.emmkay.infertility_system_api.dto.response.UserResponse;
 import com.emmkay.infertility_system_api.entity.TreatmentRecord;
-import com.emmkay.infertility_system_api.entity.User;
 import com.emmkay.infertility_system_api.exception.AppException;
 import com.emmkay.infertility_system_api.exception.ErrorCode;
 import com.emmkay.infertility_system_api.mapper.TreatmentRecordMapper;
 import com.emmkay.infertility_system_api.repository.TreatmentRecordRepository;
-import com.emmkay.infertility_system_api.repository.TreatmentServiceRepository;
-import com.emmkay.infertility_system_api.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +30,32 @@ public class VnPayService {
     VnPayConfig vnPayConfig;
     TreatmentRecordRepository treatmentRecordRepository;
     TreatmentRecordMapper treatmentRecordMapper;
+
+    private void verifyVnPayReturn(HttpServletRequest request) {
+        Map<String, String> fields = new HashMap<>();
+        for (Enumeration<String> params = request.getParameterNames(); params.hasMoreElements(); ) {
+            String paramName = params.nextElement();
+            String value = request.getParameter(paramName);
+            if (paramName.startsWith("vnp_")) {
+                fields.put(paramName, value);
+            }
+        }
+        String receivedHash = fields.remove("vnp_SecureHash");
+        List<String> fieldNames = new ArrayList<>(fields.keySet());
+        Collections.sort(fieldNames);
+        StringBuilder hashData = new StringBuilder();
+
+        for (int i = 0; i < fieldNames.size(); i++) {
+            String fieldName = fieldNames.get(i);
+            String fieldValue = fields.get(fieldName);
+            hashData.append(fieldName).append('=').append(URLEncoder.encode(fieldValue, StandardCharsets.UTF_8));
+            if (i != fieldNames.size() - 1) hashData.append('&');
+        }
+        String calculatedHash = VnPayConfig.hmacSHA512(vnPayConfig.getHashSecret(), hashData.toString());
+        if (!calculatedHash.equals(receivedHash)) {
+            throw new AppException(ErrorCode.VERIFY_PAYMENT_FAIL);
+        }
+    }
 
     public String urlVnPay(HttpServletRequest req, Long recordId) throws UnsupportedEncodingException {
         TreatmentRecord treatmentRecord = treatmentRecordRepository.findById(recordId)
@@ -110,32 +132,6 @@ public class VnPayService {
         String paymentUrl = vnPayConfig.getPaymentUrl() + "?" + queryUrl;
 //        System.out.println(paymentUrl);
         return paymentUrl;
-    }
-
-    private void verifyVnPayReturn(HttpServletRequest request) {
-        Map<String, String> fields = new HashMap<>();
-        for (Enumeration<String> params = request.getParameterNames(); params.hasMoreElements(); ) {
-            String paramName = params.nextElement();
-            String value = request.getParameter(paramName);
-            if (paramName.startsWith("vnp_")) {
-                fields.put(paramName, value);
-            }
-        }
-        String receivedHash = fields.remove("vnp_SecureHash");
-        List<String> fieldNames = new ArrayList<>(fields.keySet());
-        Collections.sort(fieldNames);
-        StringBuilder hashData = new StringBuilder();
-
-        for (int i = 0; i < fieldNames.size(); i++) {
-            String fieldName = fieldNames.get(i);
-            String fieldValue = fields.get(fieldName);
-            hashData.append(fieldName).append('=').append(URLEncoder.encode(fieldValue, StandardCharsets.UTF_8));
-            if (i != fieldNames.size() - 1) hashData.append('&');
-        }
-        String calculatedHash = VnPayConfig.hmacSHA512(vnPayConfig.getHashSecret(), hashData.toString());
-        if (!calculatedHash.equals(receivedHash)) {
-            throw new AppException(ErrorCode.VERIFY_PAYMENT_FAIL);
-        }
     }
 
     public TreatmentRecordResponse resultPaymentVnPay(HttpServletRequest request) {

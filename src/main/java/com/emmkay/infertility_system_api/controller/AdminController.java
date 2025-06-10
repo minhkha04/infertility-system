@@ -62,7 +62,7 @@ public class AdminController {
     public ApiResponse<String> removeUser(@PathVariable String userId) {
         adminService.removeUser(userId);
         return ApiResponse.<String>builder()
-                .result("User has been removed successfully!")
+                .result("Tài khoản đã được tắt trạng thái hoạt động thành công")
                 .build();
     }
 
@@ -70,7 +70,7 @@ public class AdminController {
     public ApiResponse<String> restoreUser(@PathVariable String userId) {
         adminService.restoreUser(userId);
         return ApiResponse.<String>builder()
-                .result("User has been restored successfully!")
+                .result("Tài khoản đã được khôi phục thành công")
                 .build();
     }
 
@@ -100,16 +100,7 @@ public class AdminController {
         adminService.updateUserPassword(userId, request);
 
         return ApiResponse.<String>builder()
-                .result("User password has been updated successfully!")
-                .build();
-    }
-
-
-    @DeleteMapping("/delete-user-database/{userId}")
-    public ApiResponse<String> deleteUserFromDatabase(@PathVariable String userId) {
-        adminService.deleteUserFromDatabase(userId);
-        return ApiResponse.<String>builder()
-                .result("User has been deleted from the database successfully!")
+                .result("Thay đổi mật khẩu thành công")
                 .build();
     }
 }

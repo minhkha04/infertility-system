@@ -97,7 +97,7 @@ public class AppointmentService {
     public AppointmentResponse updateStatus(Long appointmentId, String status) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new AppException(ErrorCode.APPOINTMENT_NOT_FOUND));
-        appointment.setStatus(status);
+        appointment.setStatus(status.toUpperCase());
         return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
     }
 
@@ -212,7 +212,7 @@ public class AppointmentService {
         return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
     }
 
-    //thay đổi lịch hẹn customer
+    //thay đổi lịch hẹn customer yêu cầu
     @Transactional
     public AppointmentResponse changeAppointmentForCustomer(Long appointmentId, ChangeAppointmentByCustomerRequest request) {
         Appointment appointment = isAvailableForChange(appointmentId, request.getRequestedDate(), request.getRequestedShift());
@@ -236,7 +236,7 @@ public class AppointmentService {
         if (request.getStatus().equalsIgnoreCase("CONFIRMED")) {
             appointment.setAppointmentDate(appointment.getRequestedDate());
             appointment.setShift(appointment.getRequestedShift());
-            reminderRepository.deleteByStep_Id(appointment.getTreatmentStep().getId());
+            reminderRepository.deleteByAppointment(appointment);
             reminderService.createReminderForAppointment(appointment);
         }
 

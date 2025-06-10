@@ -29,7 +29,7 @@ public class TreatmentStepController {
                 .build();
     }
 
-    @GetMapping("/getSuggest/{recordId}")
+    @GetMapping("/get-suggest/{recordId}")
     public ApiResponse<List<SuggestedTreatmentStepResponse>> getSuggest(@PathVariable Long recordId) {
         return ApiResponse.<List<SuggestedTreatmentStepResponse>>builder()
                 .result(treatmentStepService.getSuggestedSteps(recordId))

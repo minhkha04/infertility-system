@@ -52,7 +52,7 @@ public class WorkScheduleController {
     public ApiResponse<String> bulkCreateSchedule(@RequestBody @Valid BulkWorkScheduleRequest request) {
         workScheduleService.bulkCreateMonthlySchedule(request);
         return ApiResponse.<String>builder()
-                .result("Created work schedules for doctor success")
+                .result("Tạo lịch làm cho bác sĩ thành công")
                 .build();
     }
 
@@ -62,7 +62,7 @@ public class WorkScheduleController {
             @PathVariable String doctorId) {
         workScheduleService.deleteWorkScheduleByDateAndDoctor(date, doctorId);
         return ApiResponse.<String>builder()
-                .result("Work schedules have been deleted successfully.")
+                .result("Xóa lịch làm cho bác sĩ thành công")
                 .build();
     }
 

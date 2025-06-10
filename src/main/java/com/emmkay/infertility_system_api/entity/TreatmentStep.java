@@ -54,9 +54,6 @@ public class TreatmentStep {
     @Column(name = "notes")
     private String notes;
 
-    @OneToMany(mappedBy = "step")
-    private Set<Reminder> reminders = new LinkedHashSet<>();
-
 
     @OneToMany(mappedBy = "treatmentStep")
     private Set<Appointment> appointments = new LinkedHashSet<>();

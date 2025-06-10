@@ -58,7 +58,7 @@ public class BlogController {
     public ApiResponse<String> approveBlog(@PathVariable Long blogId, @PathVariable String managerId, BlogApprovalRequest request) {
         blogService.approveBlog(blogId, managerId, request);
         return ApiResponse.<String>builder()
-                .result("Blog approved successfully")
+                .result("Blog đã được xét duyệt")
                 .build();
     }
 

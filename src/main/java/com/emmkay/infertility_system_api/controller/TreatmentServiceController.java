@@ -63,7 +63,7 @@ public class TreatmentServiceController {
     public ApiResponse<String> removeTreatmentService(@PathVariable Long id) {
         treatmentServiceService.removeTreatmentService(id);
         return ApiResponse.<String>builder()
-                .result("Treatment service removed successfully")
+                .result("Dịch vụ đã được tắt trạng thái hoạt động")
                 .build();
     }
 
@@ -79,7 +79,7 @@ public class TreatmentServiceController {
             @RequestBody @Valid TreatmentServiceRegisterRequest request) {
         treatmentServiceService.registerTreatmentService(request);
         return ApiResponse.<String>builder()
-                .result("Treatment service registered successfully")
+                .result("Đăng ký dịch vụ thành công")
                 .build();
     }
 
@@ -87,7 +87,7 @@ public class TreatmentServiceController {
     public ApiResponse<String> cancelTreatmentRecord(@PathVariable Long recordId, @PathVariable String customerId) {
         treatmentServiceService.cancelTreatmentService(recordId, customerId);
         return ApiResponse.<String>builder()
-                .result("Treatment record cancelled successfully")
+                .result("Hủy dịch vụ thành công")
                 .build();
     }
 }

@@ -145,13 +145,4 @@ public class AdminService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         userRepository.save(user);
     }
-
-    public void deleteUserFromDatabase(String userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-        if (!user.getIsRemoved()) {
-            throw new AppException(ErrorCode.USER_ALREADY_ACTIVE);
-        }
-        userRepository.delete(user);
-    }
 }

@@ -5,7 +5,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
-import java.time.Instant;
 import java.time.LocalDate;
 
 @Getter
@@ -35,12 +34,14 @@ public class Reminder {
     @Column(name = "reminder_date", nullable = false)
     private LocalDate reminderDate;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "step_id")
-    private TreatmentStep step;
 
     @ColumnDefault("0")
     @Column(name = "is_sent")
     private Boolean isSent;
+
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "appointment_id", nullable = false)
+    private Appointment appointment;
 
 }

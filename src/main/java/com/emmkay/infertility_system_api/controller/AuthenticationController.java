@@ -58,7 +58,7 @@ public class AuthenticationController {
     public ApiResponse<String> verifyOtp(@RequestBody @Valid VerifyOtpRequest request) {
         authenticationService.verifyOtp(request);
         return ApiResponse.<String>builder()
-                .result("Email verified successfully!")
+                .result("Email đã được xác thực")
                 .build();
     }
 
@@ -66,7 +66,7 @@ public class AuthenticationController {
     public ApiResponse<String> resendOtp(@RequestBody @Valid ResendOtpRequest request) {
         authenticationService.resendOtp(request.getEmail());
         return ApiResponse.<String>builder()
-                .result("OTP resent successfully!")
+                .result("OTP đã được gửi đến email")
                 .build();
     }
 
@@ -74,7 +74,7 @@ public class AuthenticationController {
     public ApiResponse<String> forgotPassword(@RequestBody @Valid ForgotPasswordRequest request) {
         authenticationService.forgotPassword(request);
         return ApiResponse.<String>builder()
-                .result("OTP sent to your email!")
+                .result("OTP đã được gửi đến email")
                 .build();
     }
 
@@ -82,7 +82,7 @@ public class AuthenticationController {
     public ApiResponse<String> resetPassword(@RequestBody @Valid ResetPasswordRequest request) {
         authenticationService.resetPassword(request);
         return ApiResponse.<String>builder()
-                .result("Password reset successfully!")
+                .result("Thay đổi mật khẩu thành công")
                 .build();
     }
 
@@ -90,7 +90,7 @@ public class AuthenticationController {
     public ApiResponse<String> changePassword(@RequestBody @Valid ChangePasswordOtpRequest request) {
         authenticationService.changePassword(request);
         return ApiResponse.<String>builder()
-                .result("OTP sent to your email for password change!")
+                .result("OTP thay đổi mật khẩu đã được gửi đến email")
                 .build();
     }
 

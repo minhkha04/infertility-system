@@ -52,7 +52,7 @@ public class TreatmentStageController {
     public ApiResponse<String> deleteTreatmentStage(@PathVariable Integer id) {
         treatmentStageService.deleteTreatmentStage(id);
         return ApiResponse.<String>builder()
-                .result("Treatment stage deleted successfully")
+                .result("Xóa giai đoạn điều trị thành công")
                 .build();
     }
 }

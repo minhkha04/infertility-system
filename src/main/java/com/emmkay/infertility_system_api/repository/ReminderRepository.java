@@ -1,5 +1,6 @@
 package com.emmkay.infertility_system_api.repository;
 
+import com.emmkay.infertility_system_api.entity.Appointment;
 import com.emmkay.infertility_system_api.entity.Reminder;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -15,13 +16,14 @@ import java.util.Optional;
 public interface ReminderRepository extends JpaRepository<Reminder, Long> {
 
     @Modifying
-    @Query("DELETE FROM Reminder r WHERE r.step.record.id = :recordId")
+    @Query("DELETE FROM Reminder r WHERE r.appointment.treatmentStep.record.id = :recordId")
     void deleteByRecordId(@Param("recordId") Long recordId);
 
-    Optional<Reminder> findByStepId(Long stepId);
 
     @Query("SELECT r FROM Reminder r JOIN FETCH r.customer WHERE r.reminderDate = :reminderDate AND r.isSent = false")
     List<Reminder> findByReminderDateAndIsSentFalseWithCustomer(LocalDate reminderDate);
 
-    void deleteByStep_Id(Long stepId);
+    void deleteByAppointment(Appointment appointment);
+
+    Optional<Reminder> getRemindersByAppointment(Appointment appointment);
 }

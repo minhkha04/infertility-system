@@ -107,7 +107,7 @@ public class TreatmentStepService {
     public TreatmentStepResponse updateTreatmentStepById(Long id, TreatmentStepUpdateRequest request) {
         TreatmentStep treatmentStep = treatmentStepRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_STEP_NOT_FOUND));
-
+        request.setStatus(request.getStatus().toUpperCase());
         treatmentStepMapper.updateTreatmentStep(treatmentStep, request);
         return treatmentStepMapper.toTreatmentStepResponse(treatmentStepRepository.save(treatmentStep));
     }

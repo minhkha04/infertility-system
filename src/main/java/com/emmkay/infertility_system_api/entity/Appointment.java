@@ -9,6 +9,8 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDate;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -72,4 +74,6 @@ public class Appointment {
     @Column(name = "requested_shift", length = 20)
     private String requestedShift;
 
+    @OneToMany(mappedBy = "appointment")
+    private Set<Reminder> reminders = new LinkedHashSet<>();
 }

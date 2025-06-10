@@ -43,7 +43,7 @@ public class ReminderService {
                 .customer(appointment.getCustomer())
                 .reminderDate(appointment.getAppointmentDate())
                 .message(buildMess(appointment.getDoctor(), appointment.getShift(), appointment.getAppointmentDate(), appointment.getPurpose()))
-                .step(appointment.getTreatmentStep())
+                .appointment(appointment)
                 .isSent(false)
                 .build();
         reminderRepository.save(reminder);
@@ -54,12 +54,13 @@ public class ReminderService {
     }
 
     public void updateReminder(Appointment appointment) {
-        Reminder reminder = reminderRepository.findByStepId(appointment.getTreatmentStep().getId())
+        Reminder reminder = reminderRepository.getRemindersByAppointment(appointment)
                 .orElseThrow(() -> new AppException(ErrorCode.REMINDER_NOT_FOUND));
+
         reminder = Reminder.builder()
                 .reminderDate(appointment.getAppointmentDate())
                 .message(buildMess(appointment.getDoctor(), appointment.getShift(), appointment.getAppointmentDate(), appointment.getPurpose()))
-                .step(appointment.getTreatmentStep())
+                .appointment(appointment)
                 .isSent(false)
                 .build();
         reminderRepository.save(reminder);
