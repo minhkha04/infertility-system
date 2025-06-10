@@ -55,8 +55,8 @@ public class BlogController {
 
     @Operation(summary = "approve blog")
     @PostMapping("/{blogId}/{managerId}")
-    public ApiResponse<String> approveBlog(@PathVariable Long blogId, @PathVariable String userId, BlogApprovalRequest request) {
-        blogService.approveBlog(blogId, userId, request);
+    public ApiResponse<String> approveBlog(@PathVariable Long blogId, @PathVariable String managerId, BlogApprovalRequest request) {
+        blogService.approveBlog(blogId, managerId, request);
         return ApiResponse.<String>builder()
                 .result("Blog approved successfully")
                 .build();
