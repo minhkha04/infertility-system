@@ -19,9 +19,6 @@ import lombok.experimental.SuperBuilder;
 public class TreatmentStageCreateRequest {
 
     @NotBlank(message = "{validation.required}")
-    Integer typeId;
-
-    @NotBlank(message = "{validation.required}")
     @Size(max = 255, message = "{validation.size}")
     String name;
 

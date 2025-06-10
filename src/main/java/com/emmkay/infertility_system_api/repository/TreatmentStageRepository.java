@@ -10,7 +10,5 @@ import java.util.List;
 public interface TreatmentStageRepository extends JpaRepository<TreatmentStage, Integer> {
     List<TreatmentStage> findByTypeIdOrderByOrderIndexAsc(Integer typeId);
 
-    boolean existsByNameAndTypeIdAndOrderIndexAndDescription(String name, Integer typeId, Integer orderIndex, String description);
-
-    boolean existsByNameAndTypeIdAndOrderIndexAndDescriptionAndIdNot(String name, Integer typeId, Integer orderIndex, String description, Integer id);
+    boolean existsByName(String name);
 }

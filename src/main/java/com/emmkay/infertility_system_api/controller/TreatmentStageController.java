@@ -1,5 +1,6 @@
 package com.emmkay.infertility_system_api.controller;
 
+import com.emmkay.infertility_system_api.dto.request.TreatmentStageBulkCreateRequest;
 import com.emmkay.infertility_system_api.dto.request.TreatmentStageCreateRequest;
 import com.emmkay.infertility_system_api.dto.request.TreatmentStageUpdateRequest;
 import com.emmkay.infertility_system_api.dto.response.ApiResponse;
@@ -35,9 +36,9 @@ public class TreatmentStageController {
     }
 
     @PostMapping()
-    public ApiResponse<TreatmentStageResponse> createTreatmentStage(@RequestBody TreatmentStageCreateRequest request) {
-        return ApiResponse.<TreatmentStageResponse>builder()
-                .result(treatmentStageService.createTreatmentStages(request))
+    public ApiResponse<List<TreatmentStageBulkCreateRequest>> createTreatmentStage(@RequestBody TreatmentStageBulkCreateRequest request) {
+        return ApiResponse.<List<TreatmentStageBulkCreateRequest>>builder()
+                .result(treatmentStageService.bulkCreateTreatmentStage(request))
                 .build();
     }
 
