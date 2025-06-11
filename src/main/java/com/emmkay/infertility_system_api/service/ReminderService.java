@@ -31,9 +31,8 @@ public class ReminderService {
 
      String generateShift(String shift) {
         return switch (shift.toUpperCase()) {
-            case "MORNING" -> "SÁNG";
-            case "AFTERNOON" -> "CHIỀU";
-            case "FULL_DAY" -> "CẢ NGÀY";
+            case "MORNING" -> "sáng";
+            case "AFTERNOON" -> "chiều";
             default -> throw new AppException(ErrorCode.INVALID_SHIFT_VALUE);
         };
     }
@@ -75,7 +74,7 @@ public class ReminderService {
         reminderRepository.save(reminder);
     }
 
-    @Scheduled(cron = "0 0 8 * * *", zone = "Asia/Ho_Chi_Minh")
+    @Scheduled(cron = "0 0/30 * * * *", zone = "Asia/Ho_Chi_Minh")
     public void sendReminders() {
         LocalDate reminderDate = LocalDate.now().plusDays(1);
 
