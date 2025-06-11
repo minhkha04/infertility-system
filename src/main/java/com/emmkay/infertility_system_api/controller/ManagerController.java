@@ -2,7 +2,6 @@ package com.emmkay.infertility_system_api.controller;
 
 import com.emmkay.infertility_system_api.dto.request.ManagerUpdateRequest;
 import com.emmkay.infertility_system_api.dto.response.*;
-import com.emmkay.infertility_system_api.entity.TreatmentService;
 import com.emmkay.infertility_system_api.service.*;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;

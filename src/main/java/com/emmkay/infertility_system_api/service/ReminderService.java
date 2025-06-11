@@ -25,7 +25,6 @@ import java.util.Locale;
 @Slf4j
 public class ReminderService {
 
-    AppointmentRepository appointmentRepository;
     ReminderRepository reminderRepository;
     EmailService emailService;
 

@@ -54,14 +54,15 @@ public enum ErrorCode {
     BLOG_APPROVED_ERROR(1041, "Chỉ bài viết nháp hoặc bị từ chối mới được gửi duyệt", HttpStatus.BAD_REQUEST),
     INVALID_STATUS(1042, "Trạng thái không hợp lệ", HttpStatus.BAD_REQUEST),
     BLOG_NOT_IN_REVIEW(1043, "Bài viết chưa ở trạng thái chờ duyệt", HttpStatus.BAD_REQUEST),
-    INVALID_START_DATE(1044, "Ngày bắt đầu không thể là hôm nay hoặc trong quá khứ", HttpStatus.BAD_REQUEST),
+    INVALID_START_DATE(1044, "Ngày bắt đầu phải cách hiện tại ít nhất 2 ngày", HttpStatus.BAD_REQUEST),
     REMINDER_NOT_FOUND(1045, "Không tìm thấy nhắc lịch", HttpStatus.BAD_REQUEST),
     FEEDBACK_NOT_EXISTED(1046, "Không tìm thấy feedback", HttpStatus.BAD_REQUEST),
     CANNOT_PAY(1047, "Không thể thanh toán hồ sơ điều trị này", HttpStatus.BAD_REQUEST),
-    HAS_BEEN_PAID(1048, "THồ sơ điều trị đã được thanh toán", HttpStatus.BAD_REQUEST),
+    HAS_BEEN_PAID(1048, "Hồ sơ điều trị đã được thanh toán", HttpStatus.BAD_REQUEST),
     VERIFY_PAYMENT_FAIL(1049, "Xác minh thanh toán thất bại", HttpStatus.UNAUTHORIZED),
     PAYMENT_FAIL(1050, "Thanh toán thất bại", HttpStatus.BAD_REQUEST),
-    TREATMENT_STAGE_DUPLICATE(1051, "Trùng giai đoạn điều trị", HttpStatus.BAD_REQUEST)
+    TREATMENT_STAGE_DUPLICATE(1051, "Trùng giai đoạn điều trị", HttpStatus.BAD_REQUEST),
+    BLOG_ID_INVALID(1052, "Blog ID sai định dạng", HttpStatus.BAD_REQUEST),
     ;
     int code;
     String message;

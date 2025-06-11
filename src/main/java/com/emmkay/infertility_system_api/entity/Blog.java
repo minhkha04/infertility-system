@@ -68,4 +68,8 @@ public class Blog {
     @Column(name = "rejection_reason")
     private String rejectionReason;
 
+    @Size(max = 500)
+    @Column(name = "cover_image_url", length = 500)
+    private String coverImageUrl;
+
 }

@@ -21,4 +21,6 @@ public class BlogResponse {
     String sourceReference;
     LocalDate createdAt;
     LocalDate publishedAt;
+    String coverImageUrl;
+    String rejectionReason;
 }

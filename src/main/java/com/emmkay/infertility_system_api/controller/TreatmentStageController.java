@@ -1,7 +1,6 @@
 package com.emmkay.infertility_system_api.controller;
 
 import com.emmkay.infertility_system_api.dto.request.TreatmentStageBulkCreateRequest;
-import com.emmkay.infertility_system_api.dto.request.TreatmentStageCreateRequest;
 import com.emmkay.infertility_system_api.dto.request.TreatmentStageUpdateRequest;
 import com.emmkay.infertility_system_api.dto.response.ApiResponse;
 import com.emmkay.infertility_system_api.dto.response.TreatmentStageResponse;

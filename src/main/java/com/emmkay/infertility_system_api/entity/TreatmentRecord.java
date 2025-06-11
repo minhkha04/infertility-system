@@ -7,7 +7,6 @@ import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -48,7 +47,6 @@ public class TreatmentRecord {
     @Column(name = "end_date")
     private LocalDate endDate;
 
-    @ColumnDefault("'Pending'")
     @Lob
     @Column(name = "status")
     private String status;

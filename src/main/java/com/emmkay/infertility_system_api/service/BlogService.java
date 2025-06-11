@@ -132,4 +132,17 @@ public class BlogService {
         return blogs.stream().map(blogMapper::toBlogResponse).toList();
     }
 
+    public BlogResponse updateImg(String blogId_string, String url) {
+        Long blogId;
+        try {
+            blogId = Long.parseLong(blogId_string);
+        } catch (NumberFormatException e) {
+            throw new AppException(ErrorCode.BLOG_ID_INVALID);
+        }
+        Blog blog = blogRepository.findById(blogId)
+                .orElseThrow(() -> new AppException(ErrorCode.BLOG_NOT_EXISTED));
+        blog.setCoverImageUrl(url);
+        blog.setStatus("PENDING_REVIEW");
+        return  blogMapper.toBlogResponse(blogRepository.save(blog));
+    }
 }
