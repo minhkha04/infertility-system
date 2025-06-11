@@ -157,6 +157,10 @@ public class TreatmentRecordService {
             throw new AppException(ErrorCode.CANNOT_CANCEL_TREATMENT);
         }
 
+        if (record.getIsPaid()) {
+            throw new AppException(ErrorCode.TREATMENT_RECORD_IS_PAID);
+        }
+
         record.setStatus("CANCELLED");
         treatmentRecordRepository.save(record);
         treatmentStepService.cancelStepsByRecordId(recordId);

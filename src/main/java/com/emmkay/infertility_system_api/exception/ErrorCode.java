@@ -63,6 +63,7 @@ public enum ErrorCode {
     PAYMENT_FAIL(1050, "Thanh toán thất bại", HttpStatus.BAD_REQUEST),
     TREATMENT_STAGE_DUPLICATE(1051, "Trùng giai đoạn điều trị", HttpStatus.BAD_REQUEST),
     BLOG_ID_INVALID(1052, "Blog ID sai định dạng", HttpStatus.BAD_REQUEST),
+    TREATMENT_RECORD_IS_PAID(1053, "Bạn không thể hủy dịch vụ này vì đã thanh toán, vui lòng gửi mail cho bệnh viện nếu muốn hủy", HttpStatus.BAD_REQUEST),
     ;
     int code;
     String message;

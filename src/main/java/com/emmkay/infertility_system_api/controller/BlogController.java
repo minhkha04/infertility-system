@@ -6,7 +6,6 @@ import com.emmkay.infertility_system_api.dto.request.BlogUpdateRequest;
 import com.emmkay.infertility_system_api.dto.request.UploadImageRequest;
 import com.emmkay.infertility_system_api.dto.response.ApiResponse;
 import com.emmkay.infertility_system_api.dto.response.BlogResponse;
-import com.emmkay.infertility_system_api.dto.response.UserResponse;
 import com.emmkay.infertility_system_api.service.BlogService;
 import com.emmkay.infertility_system_api.service.CloudinaryService;
 import io.swagger.v3.oas.annotations.Operation;
