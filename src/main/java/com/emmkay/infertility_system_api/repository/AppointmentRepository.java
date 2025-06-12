@@ -1,7 +1,6 @@
 package com.emmkay.infertility_system_api.repository;
 
 import com.emmkay.infertility_system_api.dto.projection.AppointmentInNext7DayProjection;
-import com.emmkay.infertility_system_api.dto.response.AppointmentResponse;
 import com.emmkay.infertility_system_api.entity.Appointment;
 import com.emmkay.infertility_system_api.entity.TreatmentStep;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -35,11 +34,9 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             """)
     int countActiveByDoctorIdAndDateAndShift(@Param("doctorId") String doctorId, @Param("date") LocalDate date, @Param("shift") String shift);
 
-    List<Appointment> findAppointmentByCustomerId(String customerId);
 
     List<Appointment> findAppointmentByCustomerIdAndStatusNot(String customerId, String status);
 
-    List<Appointment> findAppointmentByDoctorIdAndStatusNot(String doctorId, String status);
 
     List<Appointment> findAppointmentByDoctorIdAndStatusNotAndAppointmentDate(String doctorId, String status, LocalDate appointmentDate);
 

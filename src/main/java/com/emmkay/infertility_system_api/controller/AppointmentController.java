@@ -1,9 +1,6 @@
 package com.emmkay.infertility_system_api.controller;
 
-import com.emmkay.infertility_system_api.dto.request.AppointmentCreateRequest;
-import com.emmkay.infertility_system_api.dto.request.ChangeAppointmentByDoctorOrManagerRequest;
-import com.emmkay.infertility_system_api.dto.request.ConfirmChangeAppointmentRequest;
-import com.emmkay.infertility_system_api.dto.request.ChangeAppointmentByCustomerRequest;
+import com.emmkay.infertility_system_api.dto.request.*;
 import com.emmkay.infertility_system_api.dto.response.ApiResponse;
 import com.emmkay.infertility_system_api.dto.response.AppointmentInNext7DayResponse;
 import com.emmkay.infertility_system_api.dto.response.AppointmentResponse;
@@ -58,7 +55,7 @@ public class AppointmentController {
     public ApiResponse<AppointmentResponse> createAppointment(
             @RequestBody @Valid AppointmentCreateRequest request) {
         return ApiResponse.<AppointmentResponse>builder()
-                .result(appointmentService.creatAppointment(request))
+                .result(appointmentService.createAppointment(request))
                 .build();
     }
 
@@ -106,6 +103,15 @@ public class AppointmentController {
     public ApiResponse<AppointmentResponse> updateAppointmentStatus(@PathVariable Long appointmentId, @PathVariable String status) {
         return ApiResponse.<AppointmentResponse>builder()
                 .result(appointmentService.updateStatus(appointmentId, status))
+                .build();
+    }
+
+    @Operation(summary = "for doctor or manager cancel appointment")
+    @PutMapping("/cancel")
+    public ApiResponse<AppointmentResponse> cancelAppointment(
+            @RequestBody @Valid AppointmentCancelRequest request) {
+        return ApiResponse.<AppointmentResponse>builder()
+                .result(appointmentService.cancelAppointment(request))
                 .build();
     }
 }

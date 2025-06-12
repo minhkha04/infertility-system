@@ -1,10 +1,7 @@
 package com.emmkay.infertility_system_api.service;
 
 import com.emmkay.infertility_system_api.dto.projection.AppointmentInNext7DayProjection;
-import com.emmkay.infertility_system_api.dto.request.AppointmentCreateRequest;
-import com.emmkay.infertility_system_api.dto.request.ChangeAppointmentByCustomerRequest;
-import com.emmkay.infertility_system_api.dto.request.ChangeAppointmentByDoctorOrManagerRequest;
-import com.emmkay.infertility_system_api.dto.request.ConfirmChangeAppointmentRequest;
+import com.emmkay.infertility_system_api.dto.request.*;
 import com.emmkay.infertility_system_api.dto.response.AppointmentInNext7DayResponse;
 import com.emmkay.infertility_system_api.dto.response.AppointmentResponse;
 import com.emmkay.infertility_system_api.entity.*;
@@ -92,7 +89,6 @@ public class AppointmentService {
                 .toList();
     }
 
-
     @PreAuthorize("hasRole('DOCTOR') or hasRole('MANAGER')")
     public AppointmentResponse updateStatus(Long appointmentId, String status) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
@@ -130,15 +126,6 @@ public class AppointmentService {
         reminderService.createReminderForAppointment(appointment);
         return appointment;
 
-    }
-
-    // cancel
-    public void cancelAppointmentsByRecordId(Long recordId) {
-        List<String> cancellableStatuses = List.of("CONFIRMED", "PENDING_CHANGE", "REJECTED_CHANGE");
-        reminderService.deleteByRecordId(recordId);
-        appointmentRepository.updateStatusByRecordId(
-                recordId, cancellableStatuses, "CANCELLED"
-        );
     }
 
     public boolean isDoctorAvailable(String doctorId, LocalDate date, String shift) {
@@ -179,7 +166,7 @@ public class AppointmentService {
 
     //create appointment
     @PreAuthorize("hasRole('DOCTOR') or hasRole('MANAGER')")
-    public AppointmentResponse creatAppointment(AppointmentCreateRequest req) {
+    public AppointmentResponse createAppointment(AppointmentCreateRequest req) {
         TreatmentStep step = treatmentStepRepository.findById(req.getTreatmentStepId())
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_TYPE_NOT_EXISTED));
 
@@ -187,9 +174,6 @@ public class AppointmentService {
             throw new AppException(ErrorCode.INVALID_START_DATE);
         }
 
-        if (step.getScheduledDate() != null) {
-            throw new AppException(ErrorCode.TREATMENT_STEP_HAS_SCHEDULE);
-        }
 
         Doctor doctor = doctorRepository.findById(req.getDoctorId())
                 .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_NOT_EXISTED));
@@ -204,7 +188,6 @@ public class AppointmentService {
         appointment.setDoctor(doctor);
         appointment.setTreatmentStep(step);
         appointment.setStatus("CONFIRMED");
-        appointment.setPurpose(step.getStage().getName());
         appointment.setCreatedAt(LocalDate.now());
         appointment.setCustomer(customer);
         appointment = appointmentRepository.save(appointment);
@@ -234,9 +217,9 @@ public class AppointmentService {
         }
 
         if (request.getStatus().equalsIgnoreCase("CONFIRMED")) {
+            reminderRepository.deleteByAppointment_Id(appointment.getId());
             appointment.setAppointmentDate(appointment.getRequestedDate());
             appointment.setShift(appointment.getRequestedShift());
-            reminderRepository.deleteByAppointment(appointment);
             reminderService.createReminderForAppointment(appointment);
         }
 
@@ -262,7 +245,8 @@ public class AppointmentService {
         appointment.setShift(request.getShift().toUpperCase());
 
         appointment.setStatus("CONFIRMED");
-        reminderService.updateReminder(appointment);
+        reminderRepository.deleteByAppointment_Id(appointment.getId());
+        reminderService.createReminderForAppointment(appointment);
         return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
     }
 
@@ -273,5 +257,15 @@ public class AppointmentService {
                 .stream()
                 .map(appointmentMapper::toAppointmentResponse)
                 .toList();
+    }
+
+    @PreAuthorize("hasRole('DOCTOR') or hasRole('MANAGER')")
+    public AppointmentResponse cancelAppointment(AppointmentCancelRequest request) {
+        Appointment appointment = appointmentRepository.findById(request.getAppointmentId())
+                .orElseThrow(() -> new AppException(ErrorCode.APPOINTMENT_NOT_FOUND));
+        appointment.setStatus("CANCELLED");
+        appointment.setNotes(request.getNote());
+        reminderRepository.deleteByAppointment_Id(request.getAppointmentId());
+        return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
     }
 }

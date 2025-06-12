@@ -5,25 +5,14 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.time.LocalDate;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class AppointmentCreateRequest {
+public class AppointmentCancelRequest {
     @NotNull(message = "{validation.required}")
-    Long treatmentStepId;
+    Long appointmentId;
     @NotBlank(message = "{validation.required}")
-    String shift;
-    @NotBlank(message = "{validation.required}")
-    String customerId;
-    @NotBlank(message = "{validation.required}")
-    String doctorId;
-    @NotNull(message = "{validation.required}")
-    LocalDate appointmentDate;
-    String purpose;
-    String notes;
-
+    String note;
 }

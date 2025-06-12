@@ -23,7 +23,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 @Slf4j
 @Service
@@ -37,6 +36,7 @@ public class TreatmentStepService {
     TreatmentServiceRepository treatmentServiceRepository;
     TreatmentStageRepository treatmentStageRepository;
     AppointmentRepository appointmentRepository;
+    ReminderRepository reminderRepository;
 
     public List<SuggestedTreatmentStepResponse> getSuggestedSteps(Long recordId) {
         TreatmentRecord treatmentRecord = treatmentRecordRepository.findById(recordId)
@@ -97,6 +97,7 @@ public class TreatmentStepService {
         );
         List<TreatmentStep> treatmentStepList = treatmentStepRepository.findByRecord_Id(recordId);
         treatmentStepList.forEach(x -> {
+            x.getAppointments().forEach(reminderRepository::deleteByAppointment);
             appointmentRepository.updateStatusByTreatmentStep("CANCELLED", x);
         });
     }

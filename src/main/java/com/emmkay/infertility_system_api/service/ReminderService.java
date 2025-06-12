@@ -56,24 +56,7 @@ public class ReminderService {
         reminderRepository.save(reminder);
     }
 
-    public void deleteByRecordId(Long recordId) {
-        reminderRepository.deleteByRecordId(recordId);
-    }
-
-    public void updateReminder(Appointment appointment) {
-        Reminder reminder = reminderRepository.getRemindersByAppointment(appointment)
-                .orElseThrow(() -> new AppException(ErrorCode.REMINDER_NOT_FOUND));
-
-        reminder = Reminder.builder()
-                .reminderDate(appointment.getAppointmentDate())
-                .message(buildMess(appointment.getDoctor(), appointment.getShift(), appointment.getAppointmentDate(), appointment.getPurpose()))
-                .appointment(appointment)
-                .isSent(false)
-                .build();
-        reminderRepository.save(reminder);
-    }
-
-    @Scheduled(cron = "0 0/30 * * * *", zone = "Asia/Ho_Chi_Minh")
+    @Scheduled(cron = "0 0 8 * * *", zone = "Asia/Ho_Chi_Minh")
     public void sendReminders() {
         LocalDate reminderDate = LocalDate.now().plusDays(1);
 
