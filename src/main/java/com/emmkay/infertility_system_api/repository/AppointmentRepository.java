@@ -3,6 +3,7 @@ package com.emmkay.infertility_system_api.repository;
 import com.emmkay.infertility_system_api.dto.projection.AppointmentInNext7DayProjection;
 import com.emmkay.infertility_system_api.dto.response.AppointmentResponse;
 import com.emmkay.infertility_system_api.entity.Appointment;
+import com.emmkay.infertility_system_api.entity.TreatmentStep;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -18,13 +19,8 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
 
     @Modifying
-    @Query(value = """
-                UPDATE Appointment a
-                SET a.status = :status
-                WHERE a.treatmentStep.record.id = :recordId
-                AND a.status IN :statuses
-            """)
-    void updateStatusByRecordIdNative(
+    @Query("update Appointment a set a.status = :status where a.treatmentStep.record.id = :recordId and a.status in :statuses")
+    void updateStatusByRecordId(
             @Param("recordId") Long recordId,
             @Param("statuses") Collection<String> statuses,
             @Param("status") String status
@@ -64,4 +60,8 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     List<AppointmentInNext7DayProjection> getAppointmentInNext7Day(String doctorId, LocalDate endDate);
 
     List<Appointment> findAllByAppointmentDateIsOrderByAppointmentDateAsc(LocalDate appointmentDate);
+
+    @Query("update Appointment a set a.status = :status where a.treatmentStep = :treatmentStep")
+    @Modifying
+    void updateStatusByTreatmentStep(String status, TreatmentStep treatmentStep);
 }

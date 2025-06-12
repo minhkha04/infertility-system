@@ -11,15 +11,13 @@ import com.emmkay.infertility_system_api.exception.AppException;
 import com.emmkay.infertility_system_api.exception.ErrorCode;
 import com.emmkay.infertility_system_api.helper.TreatmentStageHelper;
 import com.emmkay.infertility_system_api.mapper.TreatmentStepMapper;
-import com.emmkay.infertility_system_api.repository.TreatmentRecordRepository;
-import com.emmkay.infertility_system_api.repository.TreatmentServiceRepository;
-import com.emmkay.infertility_system_api.repository.TreatmentStageRepository;
-import com.emmkay.infertility_system_api.repository.TreatmentStepRepository;
+import com.emmkay.infertility_system_api.repository.*;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -38,6 +36,7 @@ public class TreatmentStepService {
     TreatmentRecordRepository treatmentRecordRepository;
     TreatmentServiceRepository treatmentServiceRepository;
     TreatmentStageRepository treatmentStageRepository;
+    AppointmentRepository appointmentRepository;
 
     public List<SuggestedTreatmentStepResponse> getSuggestedSteps(Long recordId) {
         TreatmentRecord treatmentRecord = treatmentRecordRepository.findById(recordId)
@@ -90,11 +89,16 @@ public class TreatmentStepService {
         return steps;
     }
 
+    @Transactional
     public void cancelStepsByRecordId(Long recordId) {
         List<String> cancellableStatuses = List.of("PLANNED", "CONFIRMED");
         treatmentStepRepository.updateStatusByRecordIdAndStatusIn(
                 recordId,  cancellableStatuses, "CANCELLED"
         );
+        List<TreatmentStep> treatmentStepList = treatmentStepRepository.findByRecord_Id(recordId);
+        treatmentStepList.forEach(x -> {
+            appointmentRepository.updateStatusByTreatmentStep("CANCELLED", x);
+        });
     }
 
     public List<TreatmentStepResponse> getStepsByRecordId(Long recordId) {

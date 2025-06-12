@@ -165,7 +165,6 @@ public class TreatmentRecordService {
         record.setStatus("CANCELLED");
         treatmentRecordRepository.save(record);
         treatmentStepService.cancelStepsByRecordId(recordId);
-        appointmentService.cancelAppointmentsByRecordId(recordId);
     }
 
     public TreatmentRecordResponse updateCd1(Long recordId, LocalDate cd1) {

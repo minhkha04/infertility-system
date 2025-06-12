@@ -17,4 +17,6 @@ public interface TreatmentStepRepository extends JpaRepository<TreatmentStep, Lo
     void updateStatusByRecordIdAndStatusIn(Long recordId, Collection<String> statuses,  String status);
 
     List<TreatmentStep> findByRecordIdOrderByIdAsc(Long recordId);
+
+    List<TreatmentStep> findByRecord_Id(Long recordId);
 }

@@ -134,9 +134,9 @@ public class AppointmentService {
 
     // cancel
     public void cancelAppointmentsByRecordId(Long recordId) {
-        List<String> cancellableStatuses = List.of("CONFIRMED", "PENDING_CHANGE");
+        List<String> cancellableStatuses = List.of("CONFIRMED", "PENDING_CHANGE", "REJECTED_CHANGE");
         reminderService.deleteByRecordId(recordId);
-        appointmentRepository.updateStatusByRecordIdNative(
+        appointmentRepository.updateStatusByRecordId(
                 recordId, cancellableStatuses, "CANCELLED"
         );
     }
