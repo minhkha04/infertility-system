@@ -42,8 +42,8 @@ public class BlogController {
                 .build();
     }
 
-    @PostMapping("")
-    public ApiResponse<BlogResponse> createBlog(@RequestBody @Valid BlogCreateRequest request, String userId) {
+    @PostMapping("/{userId}")
+    public ApiResponse<BlogResponse> createBlog(@RequestBody @Valid BlogCreateRequest request, @PathVariable String userId) {
         return ApiResponse.<BlogResponse>builder()
                 .result(blogService.createBlog(request, userId))
                 .build();

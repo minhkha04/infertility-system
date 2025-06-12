@@ -38,9 +38,9 @@ public class DoctorController {
                 .build();
     }
 
-    @PutMapping()
-    public ApiResponse<DoctorResponse> updateDoctor(@RequestBody @Valid DoctorUpdateRequest request, String id) {
-        DoctorResponse updatedDoctor = doctorService.updateDoctor(id, request);
+    @PutMapping("/{doctorId}")
+    public ApiResponse<DoctorResponse> updateDoctor(@RequestBody @Valid DoctorUpdateRequest request, @PathVariable String doctorId) {
+        DoctorResponse updatedDoctor = doctorService.updateDoctor(doctorId, request);
         return ApiResponse.<DoctorResponse>builder()
                 .result(updatedDoctor)
                 .build();
