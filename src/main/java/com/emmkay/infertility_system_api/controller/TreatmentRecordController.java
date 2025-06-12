@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -53,6 +54,13 @@ public class TreatmentRecordController {
     public ApiResponse<TreatmentRecordResponse> updateStatus(@PathVariable Long recordId, @PathVariable String status) {
         return ApiResponse.<TreatmentRecordResponse>builder()
                 .result(treatmentRecordService.updateTreatmentRecord(recordId, status))
+                .build();
+    }
+
+    @PutMapping("/update-cd1/{cd1}")
+    public ApiResponse<TreatmentRecordResponse> updateCd1(@PathVariable Long recordId, @PathVariable LocalDate cd1) {
+        return ApiResponse.<TreatmentRecordResponse>builder()
+                .result(treatmentRecordService.updateCd1(recordId, cd1))
                 .build();
     }
 }

@@ -207,8 +207,9 @@ public class AppointmentService {
         appointment.setPurpose(step.getStage().getName());
         appointment.setCreatedAt(LocalDate.now());
         appointment.setCustomer(customer);
+        appointment = appointmentRepository.save(appointment);
         reminderService.createReminderForAppointment(appointment);
-        return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
+        return appointmentMapper.toAppointmentResponse(appointment);
     }
 
     //thay đổi lịch hẹn customer yêu cầu
@@ -243,7 +244,6 @@ public class AppointmentService {
         appointment.setRequestedShift(null);
         appointment.setStatus(request.getStatus().toUpperCase());
         appointment.setNotes(request.getNotes());
-        reminderService.updateReminder(appointment);
         return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
     }
 

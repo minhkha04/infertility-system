@@ -129,6 +129,7 @@ public class TreatmentRecordService {
                 .status("PENDING")
                 .createdDate(LocalDate.now())
                 .cd1Date(cd1Date)
+                .isPaid(false)
                 .build();
         TreatmentRecord saveTreatmentRecord = treatmentRecordRepository.save(treatmentRecord);
 
@@ -165,5 +166,16 @@ public class TreatmentRecordService {
         treatmentRecordRepository.save(record);
         treatmentStepService.cancelStepsByRecordId(recordId);
         appointmentService.cancelAppointmentsByRecordId(recordId);
+    }
+
+    public TreatmentRecordResponse updateCd1(Long recordId, LocalDate cd1) {
+        TreatmentRecord record = treatmentRecordRepository.findById(recordId)
+                .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
+
+        if (record.getStatus().equals("COMPLETED") || record.getStatus().equals("CANCELLED")) {
+            throw new AppException(ErrorCode.CANNOT_CANCEL_TREATMENT);
+        }
+        record.setCd1Date(cd1);
+        return treatmentRecordMapper.toTreatmentRecordResponse(treatmentRecordRepository.save(record));
     }
 }
