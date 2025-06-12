@@ -61,4 +61,6 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     @Query("update Appointment a set a.status = :status where a.treatmentStep = :treatmentStep")
     @Modifying
     void updateStatusByTreatmentStep(String status, TreatmentStep treatmentStep);
+
+    List<Appointment> findByTreatmentStep_Id(Long treatmentStepId);
 }

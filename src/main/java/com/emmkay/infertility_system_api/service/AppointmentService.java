@@ -268,4 +268,12 @@ public class AppointmentService {
         reminderRepository.deleteByAppointment_Id(request.getAppointmentId());
         return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
     }
+
+    public List<AppointmentResponse> getAppointmentByStepId(Long stepId) {
+        List<Appointment> appointments = appointmentRepository.findByTreatmentStep_Id(stepId);
+        return appointments
+                .stream()
+                .map(appointmentMapper::toAppointmentResponse)
+                .toList();
+    }
 }

@@ -114,4 +114,12 @@ public class AppointmentController {
                 .result(appointmentService.cancelAppointment(request))
                 .build();
     }
+
+    @GetMapping("get-by-step-id/{stepId}")
+    public ApiResponse<List<AppointmentResponse>> getAppointmentByStepId(@PathVariable Long stepId) {
+        return ApiResponse.<List<AppointmentResponse>>builder()
+                .result(appointmentService.getAppointmentByStepId(stepId))
+                .build();
+    }
+
 }
