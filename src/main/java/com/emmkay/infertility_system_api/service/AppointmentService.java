@@ -40,7 +40,7 @@ public class AppointmentService {
     UserRepository userRepository;
     ReminderService reminderService;
     ReminderRepository reminderRepository;
-
+    TreatmentRecordRepository treatmentRecordRepository;
 
     private Appointment isAvailableForChange(Long appointmentId, LocalDate dateChange, String shiftChange) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
@@ -174,6 +174,13 @@ public class AppointmentService {
             throw new AppException(ErrorCode.INVALID_START_DATE);
         }
 
+        TreatmentRecord treatmentRecord = treatmentRecordRepository.findById(step.getRecord().getId())
+                .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
+
+        if (treatmentRecord.getStatus().equalsIgnoreCase("COMPLETED")
+                || treatmentRecord.getStatus().equalsIgnoreCase("CANCELLED")) {
+            throw new AppException(ErrorCode.TREATMENT_RECORD_IS_COMPLETED_OR_CANCELLED);
+        }
 
         Doctor doctor = doctorRepository.findById(req.getDoctorId())
                 .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_NOT_EXISTED));
