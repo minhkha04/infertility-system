@@ -50,7 +50,7 @@ public class DoctorService {
                         .fullName(x.getFullName())
                         .avatarUrl(x.getAvatarUrl())
                         .qualifications(x.getQualifications())
-                        .experienceYears(x.getExperienceYears())
+                        .experienceYears(x.getExperienceYears() == null ? 0 : x.getExperienceYears())
                         .specialty(x.getSpecialty())
                         .rate(x.getRate())
                         .build())
