@@ -5,6 +5,6 @@ public interface ManagerDashboardWorkScheduleDoctorTodayProjection {
     String getDoctorId();
     String getShift();
     String getPhoneNumber();
-    int getTotalAppointments();
-    int getCompletedAppointments();
+    Integer getTotalAppointments();
+    Integer getCompletedAppointments();
 }

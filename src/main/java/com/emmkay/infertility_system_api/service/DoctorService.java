@@ -52,7 +52,7 @@ public class DoctorService {
                         .qualifications(x.getQualifications())
                         .experienceYears(x.getExperienceYears() == null ? 0 : x.getExperienceYears())
                         .specialty(x.getSpecialty())
-                        .rate(x.getRate())
+                        .rate(x.getRate() == null ? 0 : x.getRate())
                         .build())
                 .toList();
     }
@@ -161,9 +161,9 @@ public class DoctorService {
         DoctorDashboardProjection x = doctorRepository.getDoctorDashboardStats(doctorId)
                 .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_NOT_EXISTED));
         return DoctorDashboardResponse.builder()
-                .avgRating(x.getAvgRating())
-                .patients(x.getPatients())
-                .workShiftsThisMonth(x.getWorkShiftsThisMonth())
+                .avgRating(x.getAvgRating() == null ? 0 : x.getAvgRating())
+                .patients(x.getPatients() == null ? 0 : x.getPatients())
+                .workShiftsThisMonth(x.getWorkShiftsThisMonth() == null ? 0 : x.getWorkShiftsThisMonth())
                 .build();
 
     }
