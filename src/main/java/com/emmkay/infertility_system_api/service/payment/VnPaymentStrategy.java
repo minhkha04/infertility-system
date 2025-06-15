@@ -5,6 +5,7 @@ import com.emmkay.infertility_system_api.dto.response.TreatmentRecordResponse;
 import com.emmkay.infertility_system_api.entity.TreatmentRecord;
 import com.emmkay.infertility_system_api.exception.AppException;
 import com.emmkay.infertility_system_api.exception.ErrorCode;
+import com.emmkay.infertility_system_api.helper.PaymentHelper;
 import com.emmkay.infertility_system_api.mapper.TreatmentRecordMapper;
 import com.emmkay.infertility_system_api.repository.TreatmentRecordRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -74,7 +75,7 @@ public class VnPaymentStrategy implements PaymentStrategy {
         String vnp_Version = "2.1.0";
         String vnp_Command = "pay";
         String orderType = "other";
-        String vnp_TxnRef = vnPayConfig.getRandomNumber(8) + "TR" + treatmentRecord.getId();
+        String vnp_TxnRef = PaymentHelper.getOrderId(recordId);
         String vnp_IpAddr = VnPayConfig.getIpAddress(req);
 
         Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
