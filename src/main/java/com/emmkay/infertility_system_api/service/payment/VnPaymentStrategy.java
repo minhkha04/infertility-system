@@ -1,4 +1,4 @@
-package com.emmkay.infertility_system_api.service;
+package com.emmkay.infertility_system_api.service.payment;
 
 import com.emmkay.infertility_system_api.configuration.VnPayConfig;
 import com.emmkay.infertility_system_api.dto.response.TreatmentRecordResponse;
@@ -25,7 +25,7 @@ import java.util.*;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
-public class VnPayService {
+public class VnPaymentStrategy implements PaymentStrategy {
 
     VnPayConfig vnPayConfig;
     TreatmentRecordRepository treatmentRecordRepository;
@@ -57,7 +57,8 @@ public class VnPayService {
         }
     }
 
-    public String createPaymentUrl(String method, HttpServletRequest req, Long recordId) throws UnsupportedEncodingException {
+    @Override
+    public String createPaymentUrl(HttpServletRequest req, Long recordId) throws UnsupportedEncodingException {
         TreatmentRecord treatmentRecord = treatmentRecordRepository.findById(recordId)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
 
@@ -130,11 +131,12 @@ public class VnPayService {
         String vnp_SecureHash = VnPayConfig.hmacSHA512(vnPayConfig.getHashSecret(), hashData.toString());
         queryUrl += "&vnp_SecureHash=" + vnp_SecureHash;
         String paymentUrl = vnPayConfig.getPaymentUrl() + "?" + queryUrl;
-        System.out.println(paymentUrl);
+//        System.out.println(paymentUrl);
         return paymentUrl;
     }
 
-    public TreatmentRecordResponse processReturnUrl(String method, HttpServletRequest request) {
+    @Override
+    public TreatmentRecordResponse processReturnUrl(HttpServletRequest request) {
         verifyVnPayReturn(request);
 
         String vnp_ResponseCode = request.getParameter("vnp_ResponseCode");
@@ -153,5 +155,8 @@ public class VnPayService {
         }
     }
 
-
+    @Override
+    public String getPaymentMethod() {
+        return "VNPAY";
+    }
 }

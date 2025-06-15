@@ -65,6 +65,7 @@ public enum ErrorCode {
     BLOG_ID_INVALID(1052, "Blog ID sai định dạng", HttpStatus.BAD_REQUEST),
     TREATMENT_RECORD_IS_PAID(1053, "Bạn không thể hủy dịch vụ này vì đã thanh toán, vui lòng gửi mail cho bệnh viện nếu muốn hủy", HttpStatus.BAD_REQUEST),
     TREATMENT_RECORD_IS_COMPLETED_OR_CANCELLED(1053, "Bạn không thể đặt lịch hẹn vì hồ sơ này đã hoàn thành hoặc đã bị hủy", HttpStatus.BAD_REQUEST),
+    PAYMENT_METHOD_NOT_SUPPORTED(1054, "Phương thức thanh toán không được hỗ trợ", HttpStatus.BAD_REQUEST),
     ;
     int code;
     String message;

@@ -2,6 +2,7 @@ package com.emmkay.infertility_system_api.controller;
 
 import com.emmkay.infertility_system_api.dto.response.ApiResponse;
 import com.emmkay.infertility_system_api.dto.response.TreatmentRecordResponse;
+import com.emmkay.infertility_system_api.service.PaymentService;
 import com.emmkay.infertility_system_api.service.VnPayService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -19,18 +20,18 @@ import java.io.UnsupportedEncodingException;
 @FieldDefaults(makeFinal = true)
 public class PaymentController {
 
+//    PaymentService paymentService;
     VnPayService paymentService;
-
     @GetMapping("/vnpay/{recordId}")
     public ApiResponse<String> url(HttpServletRequest request, @PathVariable Long recordId) throws UnsupportedEncodingException {
         return ApiResponse.<String>builder()
-                .result(paymentService.urlVnPay(request, recordId)).build();
+                .result(paymentService.createPaymentUrl("VNPAY",request, recordId)).build();
     }
 
     @GetMapping("/vnpay-return")
     public ApiResponse<TreatmentRecordResponse> handleVnPayReturn(HttpServletRequest request) {
         return ApiResponse.<TreatmentRecordResponse>builder()
-                .result(paymentService.resultPaymentVnPay(request))
+                .result(paymentService.processReturnUrl("VNPAY",request))
                 .build();
     }
 
