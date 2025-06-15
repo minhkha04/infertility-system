@@ -89,6 +89,6 @@ public class FeedbackService {
     public boolean isAvailableFeedBack(Long recordId) {
         TreatmentRecord treatmentRecord = treatmentRecordRepository.findById(recordId)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
-        return treatmentRecord.getStatus().equalsIgnoreCase("COMPLETE");
+        return treatmentRecord.getStatus().equalsIgnoreCase("COMPLETED");
     }
 }
