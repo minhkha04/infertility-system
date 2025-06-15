@@ -22,7 +22,10 @@ public interface DoctorScheduleRepository extends JpaRepository<Doctor, String> 
                 FROM Doctor d
                 JOIN User u ON d.id = u.id
                 JOIN WorkSchedule ws ON ws.doctor.id = d.id
-                LEFT JOIN Appointment a ON a.doctor.id = d.id AND a.appointmentDate = LOCAL_DATE
+                LEFT JOIN Appointment a
+                            ON a.doctor.id = d.id
+                            AND a.appointmentDate = LOCAL_DATE
+                            AND a.status != 'CANCELLED'
                 WHERE ws.workDate = LOCAL_DATE
                 GROUP BY d.id, u.fullName, u.phoneNumber, ws.shift
                 ORDER BY u.fullName

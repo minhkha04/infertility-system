@@ -34,7 +34,7 @@ public class TreatmentRecordService {
     AppointmentService appointmentService;
 
 
-    @PreAuthorize("hasRole('MANAGER') or hasRole('Doctor')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('DOCTOR')")
     public TreatmentRecordResponse updateTreatmentRecord(Long recordId, String status) {
         TreatmentRecord treatmentRecord = treatmentRecordRepository.findById(recordId)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
