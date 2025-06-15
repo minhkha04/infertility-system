@@ -21,6 +21,6 @@ public class FeedbackCreateRequest {
     int rating;
     @NotBlank(message = "{validation.required}")
     String comment;
-    @NotBlank(message = "{validation.required}")
+    @NotNull(message = "{validation.required}")
     Long recordId;
 }
