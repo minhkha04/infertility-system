@@ -1,6 +1,6 @@
 package com.emmkay.infertility_system_api.service.payment;
 
-import com.emmkay.infertility_system_api.configuration.VnPayConfig;
+import com.emmkay.infertility_system_api.configuration.payment.VnPayConfig;
 import com.emmkay.infertility_system_api.dto.response.TreatmentRecordResponse;
 import com.emmkay.infertility_system_api.entity.TreatmentRecord;
 import com.emmkay.infertility_system_api.exception.AppException;
@@ -31,6 +31,7 @@ public class VnPaymentStrategy implements PaymentStrategy {
     VnPayConfig vnPayConfig;
     TreatmentRecordRepository treatmentRecordRepository;
     TreatmentRecordMapper treatmentRecordMapper;
+    PaymentHelper paymentHelper;
 
     private void verifyVnPayReturn(HttpServletRequest request) {
         Map<String, String> fields = new HashMap<>();
@@ -60,22 +61,14 @@ public class VnPaymentStrategy implements PaymentStrategy {
 
     @Override
     public String createPaymentUrl(HttpServletRequest req, Long recordId) throws UnsupportedEncodingException {
-        TreatmentRecord treatmentRecord = treatmentRecordRepository.findById(recordId)
-                .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
-
-        if (treatmentRecord.getStatus().equalsIgnoreCase("CANCELLED")) {
-            throw new AppException(ErrorCode.CANNOT_PAY);
-        }
-        if (treatmentRecord.getIsPaid()) {
-            throw new AppException(ErrorCode.HAS_BEEN_PAID);
-        }
+        TreatmentRecord treatmentRecord = paymentHelper.isAvailable(recordId);
 
         BigDecimal price = treatmentRecord.getService().getPrice().multiply(BigDecimal.valueOf(100));
         String amount = price.toBigInteger().toString();
         String vnp_Version = "2.1.0";
         String vnp_Command = "pay";
         String orderType = "other";
-        String vnp_TxnRef = PaymentHelper.getOrderId(recordId);
+        String vnp_TxnRef = paymentHelper.getOrderId(recordId);
         String vnp_IpAddr = VnPayConfig.getIpAddress(req);
 
         Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
@@ -128,13 +121,14 @@ public class VnPaymentStrategy implements PaymentStrategy {
                 }
             }
         }
+        System.out.println("Hash data " + hashData);
         String queryUrl = query.toString();
         String vnp_SecureHash = VnPayConfig.hmacSHA512(vnPayConfig.getHashSecret(), hashData.toString());
         queryUrl += "&vnp_SecureHash=" + vnp_SecureHash;
         String paymentUrl = vnPayConfig.getPaymentUrl() + "?" + queryUrl;
-//        System.out.println(paymentUrl);
         return paymentUrl;
     }
+
 
     @Override
     public TreatmentRecordResponse processReturnUrl(HttpServletRequest request) {
@@ -148,7 +142,7 @@ public class VnPaymentStrategy implements PaymentStrategy {
             int idx = vnp_TxnRef.indexOf(' ');
             long recordId = Long.parseLong(vnp_TxnRef.substring(idx + 1));
             TreatmentRecord treatmentRecord = treatmentRecordRepository.findById(recordId)
-                    .orElseThrow(() ->new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
+                    .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
             treatmentRecord.setIsPaid(true);
             return treatmentRecordMapper.toTreatmentRecordResponse(treatmentRecordRepository.save(treatmentRecord));
         } else {

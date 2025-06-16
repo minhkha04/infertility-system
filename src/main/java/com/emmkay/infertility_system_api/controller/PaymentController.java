@@ -15,7 +15,7 @@ import java.io.UnsupportedEncodingException;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/payment")
+@RequestMapping("/payment")
 @FieldDefaults(makeFinal = true)
 public class PaymentController {
 
@@ -26,7 +26,7 @@ public class PaymentController {
                 .result(paymentService.createPaymentUrl("VNPAY",request, recordId)).build();
     }
 
-    @GetMapping("/vnpay-return")
+    @GetMapping("/vnpay/return")
     public ApiResponse<TreatmentRecordResponse> handleVnPayReturn(HttpServletRequest request) {
         return ApiResponse.<TreatmentRecordResponse>builder()
                 .result(paymentService.processReturnUrl("VNPAY",request))

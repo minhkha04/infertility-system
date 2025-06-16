@@ -1,5 +1,5 @@
 
-package com.emmkay.infertility_system_api.configuration;
+package com.emmkay.infertility_system_api.configuration.payment;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.Data;
@@ -21,7 +21,7 @@ public class VnPayConfig {
     private String returnUrl;
     private String ipnUrl;
 
-    public static String hmacSHA512(final String key, final String data) {
+    public static String hmacSHA512(String key, String data) {
         try {
 
             if (key == null || data == null) {
