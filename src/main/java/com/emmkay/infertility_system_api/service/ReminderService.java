@@ -56,7 +56,7 @@ public class ReminderService {
         reminderRepository.save(reminder);
     }
 
-    @Scheduled(cron = "0 0 8 * * *", zone = "Asia/Ho_Chi_Minh")
+    @Scheduled(cron = "0 0/30 * * * *", zone = "Asia/Ho_Chi_Minh")
     public void sendReminders() {
         LocalDate reminderDate = LocalDate.now().plusDays(1);
 

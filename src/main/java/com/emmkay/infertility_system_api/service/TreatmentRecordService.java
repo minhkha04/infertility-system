@@ -107,7 +107,7 @@ public class TreatmentRecordService {
             throw new AppException(ErrorCode.TREATMENT_ALREADY_IN_PROGRESS);
         }
 
-        if (startDate.isBefore(LocalDate.now().plusDays(2))) {
+        if (startDate.isBefore(LocalDate.now().plusDays(1))) {
             throw new AppException(ErrorCode.INVALID_START_DATE);
         }
 

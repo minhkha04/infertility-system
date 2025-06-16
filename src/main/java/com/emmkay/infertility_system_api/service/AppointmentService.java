@@ -182,6 +182,11 @@ public class AppointmentService {
             throw new AppException(ErrorCode.TREATMENT_RECORD_IS_COMPLETED_OR_CANCELLED);
         }
 
+        if (step.getStatus().equalsIgnoreCase("COMPLETED")
+                || step.getStatus().equalsIgnoreCase("CANCELLED")) {
+            throw new AppException(ErrorCode.APPOINTMENT_NOT_CHANGE);
+        }
+
         Doctor doctor = doctorRepository.findById(req.getDoctorId())
                 .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_NOT_EXISTED));
         User customer = userRepository.findById(req.getCustomerId())
@@ -206,7 +211,10 @@ public class AppointmentService {
     @Transactional
     public AppointmentResponse changeAppointmentForCustomer(Long appointmentId, ChangeAppointmentByCustomerRequest request) {
         Appointment appointment = isAvailableForChange(appointmentId, request.getRequestedDate(), request.getRequestedShift());
-
+        if (appointment.getTreatmentStep().getStatus().equalsIgnoreCase("COMPLETED")
+                || appointment.getTreatmentStep().getStatus().equalsIgnoreCase("CANCELLED")) {
+            throw new AppException(ErrorCode.APPOINTMENT_NOT_CHANGE);
+        }
         request.setRequestedShift(request.getRequestedShift().toUpperCase());
         appointmentMapper.requestChangeAppointment(appointment, request);
         appointment.setStatus("PENDING_CHANGE");
@@ -248,6 +256,11 @@ public class AppointmentService {
     public AppointmentResponse changeAppointmentForManagerOrDoctor(Long appointmentId, ChangeAppointmentByDoctorOrManagerRequest request) {
         Appointment appointment = isAvailableForChange(appointmentId, request.getAppointmentDate(), request.getShift());
 
+        if (appointment.getTreatmentStep().getStatus().equalsIgnoreCase("COMPLETED")
+                || appointment.getTreatmentStep().getStatus().equalsIgnoreCase("CANCELLED")) {
+            throw new AppException(ErrorCode.APPOINTMENT_NOT_CHANGE);
+        }
+
         appointment.setAppointmentDate(request.getAppointmentDate());
         appointment.setShift(request.getShift().toUpperCase());
 
@@ -278,6 +291,14 @@ public class AppointmentService {
 
     public List<AppointmentResponse> getAppointmentByStepId(Long stepId) {
         List<Appointment> appointments = appointmentRepository.findByTreatmentStep_Id(stepId);
+        return appointments
+                .stream()
+                .map(appointmentMapper::toAppointmentResponse)
+                .toList();
+    }
+
+    public List<AppointmentResponse> getAppointmentByDoctorId(String doctorId) {
+        List<Appointment> appointments = appointmentRepository.findAllByDoctor_Id(doctorId);
         return appointments
                 .stream()
                 .map(appointmentMapper::toAppointmentResponse)

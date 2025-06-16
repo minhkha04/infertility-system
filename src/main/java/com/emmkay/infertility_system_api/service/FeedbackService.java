@@ -14,6 +14,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -58,6 +59,7 @@ public class FeedbackService {
 
         feedback.setIsApproved(request.isApproved());
         feedback.setApprovedBy(manager);
+        feedback.setSubmitDate(LocalDate.now());
         return feedbackMapper.toResponse(feedbackRepository.save(feedback));
     }
 

@@ -147,7 +147,7 @@ public class TreatmentServiceService {
         return treatmentServiceMapper.toTreatmentServiceResponse(treatmentServiceRepository.save(treatmentService));
     }
 
-    @PreAuthorize("hasRole('MANAGER') or hasRole('DOCTOR') or hasRole('CUSTOMER')")
+    @PreAuthorize("hasRole('CUSTOMER')")
     public void registerTreatmentService(TreatmentServiceRegisterRequest request) {
         TreatmentService treatmentService = treatmentServiceRepository.findById(request.getTreatmentServiceId())
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_SERVICE_NOT_EXISTED));
