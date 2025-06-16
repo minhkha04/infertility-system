@@ -11,4 +11,6 @@ import lombok.experimental.FieldDefaults;
 public class FeedbackUpdateStatusRequest {
     boolean isApproved;
     String approveBy;
+    String note;
+    String status;
 }

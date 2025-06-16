@@ -2,6 +2,7 @@ package com.emmkay.infertility_system_api.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
@@ -55,5 +56,13 @@ public class Feedback {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "approved_by")
     private User approvedBy;
+
+    @Size(max = 50)
+    @Column(name = "status", length = 50)
+    private String status;
+
+    @Lob
+    @Column(name = "note")
+    private String note;
 
 }

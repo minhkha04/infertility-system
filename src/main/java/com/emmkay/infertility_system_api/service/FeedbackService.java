@@ -60,6 +60,8 @@ public class FeedbackService {
         feedback.setIsApproved(request.isApproved());
         feedback.setApprovedBy(manager);
         feedback.setSubmitDate(LocalDate.now());
+        feedback.setStatus(request.getStatus());
+        feedback.setNote(request.getNote());
         return feedbackMapper.toResponse(feedbackRepository.save(feedback));
     }
 
@@ -84,6 +86,7 @@ public class FeedbackService {
         feedback.setCustomer(customer);
         feedback.setDoctor(doctor);
         feedback.setIsApproved(false);
+        feedback.setStatus("PENDING");
         return feedbackMapper.toResponse(feedbackRepository.save(feedback));
 
     }
