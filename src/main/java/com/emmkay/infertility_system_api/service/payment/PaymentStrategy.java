@@ -6,7 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
 
 public interface PaymentStrategy {
-    String createPaymentUrl(HttpServletRequest request, Long recordId) throws UnsupportedEncodingException;
+    String createPaymentUrl(Object request, Long recordId) throws UnsupportedEncodingException;
     TreatmentRecordResponse processReturnUrl(HttpServletRequest request);
     String getPaymentMethod();
 }

@@ -18,7 +18,7 @@ public class MomoCreateRequest {
     String requestId;
     String redirectUrl;
     String lang;
-    String extraDate;
+    String extraData;
     String signature;
 
 }

@@ -1,7 +1,9 @@
 package com.emmkay.infertility_system_api.configuration.payment;
 
+import com.emmkay.infertility_system_api.client.MomoApi;
 import lombok.AccessLevel;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -10,6 +12,7 @@ import org.springframework.stereotype.Component;
 @Data
 @ConfigurationProperties(prefix = "momo")
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@RequiredArgsConstructor
 public class MomoConfig {
     String partnerCode;
     String returnUrl;
@@ -18,4 +21,5 @@ public class MomoConfig {
     String accessKey;
     String secretKey;
     String requestType;
+
 }

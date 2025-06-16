@@ -60,7 +60,13 @@ public class VnPaymentStrategy implements PaymentStrategy {
     }
 
     @Override
-    public String createPaymentUrl(HttpServletRequest req, Long recordId) throws UnsupportedEncodingException {
+    public String createPaymentUrl(Object request, Long recordId) throws UnsupportedEncodingException {
+        HttpServletRequest req;
+        try {
+            req = (HttpServletRequest) request;
+        } catch (Exception e) {
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
         TreatmentRecord treatmentRecord = paymentHelper.isAvailable(recordId);
 
         BigDecimal price = treatmentRecord.getService().getPrice().multiply(BigDecimal.valueOf(100));

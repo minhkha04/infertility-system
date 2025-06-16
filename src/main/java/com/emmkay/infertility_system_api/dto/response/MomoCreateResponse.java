@@ -9,5 +9,14 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class MomoCreateResponse {
-    String par
+    String partnerCode;
+    String orderId;
+    String requestId;
+    long amount;
+    long responseTime;
+    String message;
+    int resultCode;
+    String payUrl;
+    String deeplink;
+    String qrCodeUrl;
 }
