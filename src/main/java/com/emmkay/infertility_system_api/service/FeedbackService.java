@@ -75,6 +75,9 @@ public class FeedbackService {
             throw new AppException(ErrorCode.FEEDBACK_IS_EXISTED);
         }
 
+        TreatmentRecord treatmentRecord = treatmentRecordRepository.findById(request.getRecordId())
+                .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
+
         User customer = userRepository.findById(request.getCustomerId())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         Doctor doctor = null;
@@ -92,6 +95,7 @@ public class FeedbackService {
         feedback.setDoctor(doctor);
         feedback.setIsApproved(false);
         feedback.setStatus("PENDING");
+        feedback.setRecord(treatmentRecord);
         return feedbackMapper.toResponse(feedbackRepository.save(feedback));
 
     }
