@@ -65,4 +65,9 @@ public class Feedback {
     @Column(name = "note")
     private String note;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JoinColumn(name = "record_id")
+    private TreatmentRecord record;
+
 }

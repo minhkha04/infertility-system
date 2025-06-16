@@ -70,6 +70,11 @@ public class FeedbackService {
         if(!isAvailableFeedBack(request.getRecordId())) {
             throw new AppException(ErrorCode.UNAUTHORIZED_ACTION);
         }
+
+        if (feedbackRepository.existsByCustomerIdAndRecordId(request.getCustomerId(), request.getRecordId())) {
+            throw new AppException(ErrorCode.FEEDBACK_IS_EXISTED);
+        }
+
         User customer = userRepository.findById(request.getCustomerId())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         Doctor doctor = null;

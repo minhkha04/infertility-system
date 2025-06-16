@@ -66,6 +66,7 @@ public enum ErrorCode {
     TREATMENT_RECORD_IS_PAID(1053, "Bạn không thể hủy dịch vụ này vì đã thanh toán, vui lòng gửi mail cho bệnh viện nếu muốn hủy", HttpStatus.BAD_REQUEST),
     TREATMENT_RECORD_IS_COMPLETED_OR_CANCELLED(1053, "Bạn không thể đặt lịch hẹn vì hồ sơ này đã hoàn thành hoặc đã bị hủy", HttpStatus.BAD_REQUEST),
     APPOINTMENT_NOT_CHANGE(1054, "Bước điều trị đã hoàn thành hoặc bị hủy", HttpStatus.BAD_REQUEST),
+    FEEDBACK_IS_EXISTED(1055, "Bạn đã feedback dịch vụ này rồi", HttpStatus.BAD_REQUEST),
     ;
     int code;
     String message;
