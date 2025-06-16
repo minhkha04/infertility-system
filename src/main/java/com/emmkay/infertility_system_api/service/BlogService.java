@@ -115,7 +115,10 @@ public class BlogService {
         }
 
         blogMapper.updateBlog(blog, request);
-
+        blog.setStatus("DRAFT");
+        blog.setApprovedBy(null);
+        blog.setNote(null);
+        blog.setPublishedAt(null);
         return  blogMapper.toBlogResponse(blogRepository.save(blog));
     }
 
@@ -143,6 +146,9 @@ public class BlogService {
                 .orElseThrow(() -> new AppException(ErrorCode.BLOG_NOT_EXISTED));
         blog.setCoverImageUrl(url);
         blog.setStatus("PENDING_REVIEW");
+        blog.setApprovedBy(null);
+        blog.setNote(null);
+        blog.setPublishedAt(null);
         return  blogMapper.toBlogResponse(blogRepository.save(blog));
     }
 }

@@ -1,6 +1,7 @@
 package com.emmkay.infertility_system_api.service;
 
 import com.emmkay.infertility_system_api.dto.request.FeedbackCreateRequest;
+import com.emmkay.infertility_system_api.dto.request.FeedbackUpdateRequest;
 import com.emmkay.infertility_system_api.dto.request.FeedbackUpdateStatusRequest;
 import com.emmkay.infertility_system_api.dto.response.FeedbackResponse;
 import com.emmkay.infertility_system_api.entity.*;
@@ -28,6 +29,20 @@ public class FeedbackService {
     TreatmentRecordRepository treatmentRecordRepository;
     FeedbackMapper feedbackMapper;
     DoctorRepository doctorRepository;
+
+
+    public FeedbackResponse updateFeedback(Long feedbackId, FeedbackUpdateRequest request) {
+        Feedback feedback = feedbackRepository.findById(feedbackId)
+                .orElseThrow(() -> new AppException(ErrorCode.FEEDBACK_NOT_EXISTED));
+
+        feedbackMapper.updateFeedback(feedback, request);
+        feedback.setStatus("PENDING");
+        feedback.setNote("");
+        feedback.setSubmitDate(null);
+        feedback.setApprovedBy(null);
+        feedback.setIsApproved(false);
+        return feedbackMapper.toResponse(feedbackRepository.save(feedback));
+    }
 
     @PreAuthorize( "hasRole('MANAGER')")
     public List<FeedbackResponse> getAll() {
