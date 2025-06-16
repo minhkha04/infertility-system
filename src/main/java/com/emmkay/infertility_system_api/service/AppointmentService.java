@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -215,6 +214,11 @@ public class AppointmentService {
                 || appointment.getTreatmentStep().getStatus().equalsIgnoreCase("CANCELLED")) {
             throw new AppException(ErrorCode.APPOINTMENT_NOT_CHANGE);
         }
+
+        if (request.getRequestedDate().isBefore(LocalDate.now().plusDays(1))) {
+            throw new AppException(ErrorCode.INVALID_START_DATE);
+        }
+
         request.setRequestedShift(request.getRequestedShift().toUpperCase());
         appointmentMapper.requestChangeAppointment(appointment, request);
         appointment.setStatus("PENDING_CHANGE");
@@ -223,6 +227,7 @@ public class AppointmentService {
 
     //confirm change appointment by doctor and manager
     @PreAuthorize("hasRole('DOCTOR') or hasRole('MANAGER')")
+    @Transactional
     public AppointmentResponse confirmChangeAppointment(Long id, ConfirmChangeAppointmentRequest request) {
         Appointment appointment = appointmentRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.APPOINTMENT_NOT_FOUND));
@@ -231,17 +236,22 @@ public class AppointmentService {
             throw new AppException(ErrorCode.CAN_NOT_BE_UPDATED_STATUS);
         }
 
-        if (request.getStatus().equalsIgnoreCase("CONFIRMED")) {
-            reminderRepository.deleteByAppointment_Id(appointment.getId());
-            appointment.setAppointmentDate(appointment.getRequestedDate());
-            appointment.setShift(appointment.getRequestedShift());
-            reminderService.createReminderForAppointment(appointment);
+        switch (request.getStatus().toUpperCase()) {
+            case "CONFIRMED":
+                reminderRepository.deleteByAppointment_Id(appointment.getId());
+                appointment.setAppointmentDate(appointment.getRequestedDate());
+                appointment.setShift(appointment.getRequestedShift());
+                reminderService.createReminderForAppointment(appointment);
+                break;
+            case "REJECTED":
+                appointment.setRequestedDate(null);
+                appointment.setRequestedShift(null);
+                appointment.setNotes(request.getNotes());
+                break;
+            default:
+                throw new AppException(ErrorCode.STATUS_IS_INVALID);
         }
-
-        appointment.setRequestedDate(null);
-        appointment.setRequestedShift(null);
         appointment.setStatus(request.getStatus().toUpperCase());
-        appointment.setNotes(request.getNotes());
         return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
     }
 
@@ -259,6 +269,10 @@ public class AppointmentService {
         if (appointment.getTreatmentStep().getStatus().equalsIgnoreCase("COMPLETED")
                 || appointment.getTreatmentStep().getStatus().equalsIgnoreCase("CANCELLED")) {
             throw new AppException(ErrorCode.APPOINTMENT_NOT_CHANGE);
+        }
+
+        if (request.getAppointmentDate().isBefore(LocalDate.now().plusDays(1))) {
+            throw new AppException(ErrorCode.INVALID_START_DATE);
         }
 
         appointment.setAppointmentDate(request.getAppointmentDate());

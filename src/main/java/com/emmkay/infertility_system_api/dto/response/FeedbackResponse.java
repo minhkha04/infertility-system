@@ -22,4 +22,5 @@ public class FeedbackResponse {
     String status;
     String note;
     String approvedBy;
+    String recordId;
 }

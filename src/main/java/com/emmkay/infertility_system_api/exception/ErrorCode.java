@@ -54,7 +54,7 @@ public enum ErrorCode {
     BLOG_APPROVED_ERROR(1041, "Chỉ bài viết nháp hoặc bị từ chối mới được gửi duyệt", HttpStatus.BAD_REQUEST),
     INVALID_STATUS(1042, "Trạng thái không hợp lệ", HttpStatus.BAD_REQUEST),
     BLOG_NOT_IN_REVIEW(1043, "Bài viết chưa ở trạng thái chờ duyệt", HttpStatus.BAD_REQUEST),
-    INVALID_START_DATE(1044, "Ngày bắt đầu phải cách hiện tại ít nhất 2 ngày", HttpStatus.BAD_REQUEST),
+    INVALID_START_DATE(1044, "Ngày đặt lịch phải cách hiện tại ít nhất 1 ngày", HttpStatus.BAD_REQUEST),
     REMINDER_NOT_FOUND(1045, "Không tìm thấy nhắc lịch", HttpStatus.BAD_REQUEST),
     FEEDBACK_NOT_EXISTED(1046, "Không tìm thấy feedback", HttpStatus.BAD_REQUEST),
     CANNOT_PAY(1047, "Không thể thanh toán hồ sơ điều trị này", HttpStatus.BAD_REQUEST),
@@ -67,6 +67,7 @@ public enum ErrorCode {
     TREATMENT_RECORD_IS_COMPLETED_OR_CANCELLED(1053, "Bạn không thể đặt lịch hẹn vì hồ sơ này đã hoàn thành hoặc đã bị hủy", HttpStatus.BAD_REQUEST),
     APPOINTMENT_NOT_CHANGE(1054, "Bước điều trị đã hoàn thành hoặc bị hủy", HttpStatus.BAD_REQUEST),
     FEEDBACK_IS_EXISTED(1055, "Bạn đã feedback dịch vụ này rồi", HttpStatus.BAD_REQUEST),
+    STATUS_IS_INVALID(1056, "Trạng thái truyền vào sai", HttpStatus.BAD_REQUEST),
     ;
     int code;
     String message;

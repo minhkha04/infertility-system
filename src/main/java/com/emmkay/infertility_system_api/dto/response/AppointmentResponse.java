@@ -22,4 +22,6 @@ public class AppointmentResponse {
     LocalDate createdAt;
     String serviceName;
     String doctorName;
+    LocalDate requestedDate;
+    String requestedShift;
 }
