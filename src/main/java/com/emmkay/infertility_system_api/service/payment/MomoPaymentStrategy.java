@@ -10,6 +10,7 @@ import com.emmkay.infertility_system_api.entity.TreatmentRecord;
 import com.emmkay.infertility_system_api.exception.AppException;
 import com.emmkay.infertility_system_api.exception.ErrorCode;
 import com.emmkay.infertility_system_api.helper.PaymentHelper;
+import com.emmkay.infertility_system_api.service.TreatmentRecordService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -32,27 +33,16 @@ public class MomoPaymentStrategy implements PaymentStrategy {
     PaymentHelper paymentHelper;
     MomoConfig momoConfig;
     MomoApi momoApi;
+    TreatmentRecordService treatmentRecordService;
 
     @Override
-    public String createPaymentUrl(Object request, Long recordId) throws UnsupportedEncodingException {
-
-
-
+    public String createPaymentUrl(Object request, Long recordId) {
         TreatmentRecord treatmentRecord = paymentHelper.isAvailable(recordId);
         String orderId = paymentHelper.getOrderId(recordId);
-        String amount = treatmentRecord.getService().getPrice().multiply(new java.math.BigDecimal(100)).toBigInteger().toString();
-
-        return "";
-    }
-
-    // code mẫu hàm createPaymentUrl
-    public MomoCreateResponse createQr() {
-
-        String orderId = UUID.randomUUID().toString();
-        String orderInfo = "Thanh toan don hang: " + orderId;
+        long amount = treatmentRecord.getService().getPrice().longValue();
         String requestId = UUID.randomUUID().toString();
+        String orderInfo = "Thanh toan don hang: " + orderId;
         String extraData = "";
-        long amount = 100000;
 
         String rawSignature = String.format(
                 "accessKey=%s&amount=%s&extraData=%s&ipnUrl=%s&orderId=%s&orderInfo=%s&partnerCode=%s&redirectUrl=%s&requestId=%s&requestType=%s",
@@ -68,9 +58,8 @@ public class MomoPaymentStrategy implements PaymentStrategy {
                 momoConfig.getRequestType()
         );
 
-
         String signature = paymentHelper.hmacSHA256(rawSignature, momoConfig.getSecretKey());
-        MomoCreateRequest request = MomoCreateRequest.builder()
+        MomoCreateRequest momoCreateRequest = MomoCreateRequest.builder()
                 .partnerCode(momoConfig.getPartnerCode())
                 .requestType(momoConfig.getRequestType())
                 .ipnUrl(momoConfig.getIpnUrl())
@@ -84,14 +73,14 @@ public class MomoPaymentStrategy implements PaymentStrategy {
                 .lang("vi")
                 .build();
 
-//        return momoApi.createMomoQr(request).getQrCodeUrl();
-        return momoApi.createMomoQr(request);
+        return momoApi.createMomoQr(momoCreateRequest).getQrCodeUrl();
     }
 
-    // code mẫu hàm processReturnUrl
-    public TreatmentRecordResponse result(MomoIpnRequest request) {
+    @Override
+    public TreatmentRecordResponse processReturnUrl(Object object) {
         try {
             // 1. Build rawData để verify chữ ký
+            MomoIpnRequest request = (MomoIpnRequest) object;
             String rawData = String.format(
                     "accessKey=%s&amount=%s&extraData=%s&message=%s&orderId=%s&orderInfo=%s&orderType=%s&partnerCode=%s&payType=%s&requestId=%s&responseTime=%s&resultCode=%s&transId=%s",
                     momoConfig.getAccessKey(),
@@ -118,26 +107,16 @@ public class MomoPaymentStrategy implements PaymentStrategy {
             // 3. Xử lý logic thanh toán
             if (request.getResultCode() == 0) {
                 log.info("Payment successful: {}", request);
-                return TreatmentRecordResponse.builder()
-                        .customerName("Thanh cong")
-                        .isPaid(true)
-                        .build();
+                long recordId = paymentHelper.extractRecordId(request.getOrderId());
+                return treatmentRecordService.updatePaid(recordId);
             } else {
-                log.info("Payment failed: {}", request);
-                return TreatmentRecordResponse.builder()
-                        .customerName("That bai")
-                        .isPaid(false)
-                        .build();
+                log.info(request.getMessage());
+                throw new AppException(ErrorCode.PAYMENT_FAIL);
             }
 
         } catch (Exception e) {
             throw new AppException(ErrorCode.VERIFY_PAYMENT_FAIL);
         }
-    }
-
-    @Override
-    public TreatmentRecordResponse processReturnUrl(Object object) {
-        return null;
     }
 
     @Override

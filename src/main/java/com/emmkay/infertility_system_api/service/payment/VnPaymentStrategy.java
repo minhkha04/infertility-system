@@ -152,9 +152,7 @@ public class VnPaymentStrategy implements PaymentStrategy {
 
         String vnp_TxnRef = request.getParameter("vnp_TxnRef");
         if (vnp_ResponseCode.equals("00")) {
-            vnp_TxnRef = vnp_TxnRef.replace("TR", " ");
-            int idx = vnp_TxnRef.indexOf(' ');
-            long recordId = Long.parseLong(vnp_TxnRef.substring(idx + 1));
+            long recordId = paymentHelper.extractRecordId(vnp_TxnRef);
             TreatmentRecord treatmentRecord = treatmentRecordRepository.findById(recordId)
                     .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
             treatmentRecord.setIsPaid(true);

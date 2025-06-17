@@ -71,7 +71,8 @@ public enum ErrorCode {
     APPOINTMENT_NOT_CHANGE(1058, "Bước điều trị đã hoàn thành hoặc bị hủy", HttpStatus.BAD_REQUEST),
     FEEDBACK_IS_EXISTED(1059, "Bạn đã feedback dịch vụ này rồi", HttpStatus.BAD_REQUEST),
     STATUS_IS_INVALID(1060, "Trạng thái truyền vào sai", HttpStatus.BAD_REQUEST),
-            ;
+    ;
+
     int code;
     String message;
     HttpStatus httpStatus;

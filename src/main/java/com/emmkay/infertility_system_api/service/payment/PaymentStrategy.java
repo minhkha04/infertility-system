@@ -1,7 +1,6 @@
 package com.emmkay.infertility_system_api.service.payment;
 
 import com.emmkay.infertility_system_api.dto.response.TreatmentRecordResponse;
-import jakarta.servlet.http.HttpServletRequest;
 
 import java.io.UnsupportedEncodingException;
 

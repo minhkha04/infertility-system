@@ -1,6 +1,5 @@
 package com.emmkay.infertility_system_api.helper;
 
-import com.emmkay.infertility_system_api.dto.response.TreatmentRecordResponse;
 import com.emmkay.infertility_system_api.entity.TreatmentRecord;
 import com.emmkay.infertility_system_api.exception.AppException;
 import com.emmkay.infertility_system_api.exception.ErrorCode;
@@ -68,4 +67,11 @@ public class PaymentHelper {
             throw new RuntimeException("Failed to generate HMAC SHA256 signature", e);
         }
     }
+
+    public long extractRecordId(String orderId) {
+        orderId = orderId.replace("TR", " ");
+        int idx = orderId.indexOf(' ');
+        return Long.parseLong(orderId.substring(idx + 1));
+    }
+
 }

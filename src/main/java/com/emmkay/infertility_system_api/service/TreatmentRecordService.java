@@ -179,4 +179,11 @@ public class TreatmentRecordService {
         record.setCd1Date(cd1);
         return treatmentRecordMapper.toTreatmentRecordResponse(treatmentRecordRepository.save(record));
     }
+
+    public TreatmentRecordResponse updatePaid(Long recordId) {
+        TreatmentRecord treatmentRecord = treatmentRecordRepository.findById(recordId)
+                .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
+        treatmentRecord.setIsPaid(true);
+        return treatmentRecordMapper.toTreatmentRecordResponse(treatmentRecordRepository.save(treatmentRecord));
+    }
 }

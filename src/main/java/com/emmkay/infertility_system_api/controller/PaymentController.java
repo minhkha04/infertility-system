@@ -21,35 +21,34 @@ import java.io.UnsupportedEncodingException;
 public class PaymentController {
 
     PaymentService paymentService;
-    MomoPaymentStrategy momoPaymentStrategy;
     QrCodeHelper qrCodeHelper;
 
     @GetMapping("/vnpay/{recordId}")
     public ApiResponse<String> url(HttpServletRequest request, @PathVariable Long recordId) throws UnsupportedEncodingException {
         return ApiResponse.<String>builder()
-                .result(paymentService.createPaymentUrl("VNPAY",request, recordId)).build();
+                .result(paymentService.createPaymentUrl("VNPAY", request, recordId)).build();
     }
 
     @GetMapping("/vnpay/return")
     public ApiResponse<TreatmentRecordResponse> handleVnPayReturn(HttpServletRequest request) {
         return ApiResponse.<TreatmentRecordResponse>builder()
-                .result(paymentService.processReturnUrl("VNPAY",request))
+                .result(paymentService.processReturnUrl("VNPAY", request))
                 .build();
     }
 
-    @PostMapping("/momo/create")
-    public ApiResponse<MomoCreateResponse> test() {
-//        String result = qrCodeHelper.generateQrBase64(momoPaymentStrategy.createQr());
-        MomoCreateResponse result = momoPaymentStrategy.createQr();
-        return ApiResponse.<MomoCreateResponse>builder()
+    @PostMapping("/momo/create/{recordId}")
+    public ApiResponse<String> createQrMomo(@PathVariable Long recordId) throws UnsupportedEncodingException {
+        String qrMomo = paymentService.createPaymentUrl("MOMO", null, recordId);
+        String result = qrCodeHelper.generateQrBase64(qrMomo);
+        return ApiResponse.<String>builder()
                 .result(result)
-                    .build();
+                .build();
     }
 
     @PostMapping("/momo/ipn")
     public ApiResponse<TreatmentRecordResponse> handleMomoIpn(@RequestBody MomoIpnRequest request) {
         return ApiResponse.<TreatmentRecordResponse>builder()
-                .result(momoPaymentStrategy.result(request))
+                .result(paymentService.processReturnUrl("MOMO", request))
                 .build();
     }
 

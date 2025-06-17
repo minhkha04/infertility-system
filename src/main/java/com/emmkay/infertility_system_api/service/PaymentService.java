@@ -19,7 +19,7 @@ import java.io.UnsupportedEncodingException;
 public class PaymentService {
     PaymentStrategyFactory paymentStrategyFactory;
 
-    public String createPaymentUrl(String paymentMethod, HttpServletRequest request, Long recordId) throws UnsupportedEncodingException {
+    public String createPaymentUrl(String paymentMethod, Object request, Long recordId) throws UnsupportedEncodingException {
         PaymentStrategy strategy = paymentStrategyFactory.getStrategy(paymentMethod);
         return strategy.createPaymentUrl(request, recordId);
     }
