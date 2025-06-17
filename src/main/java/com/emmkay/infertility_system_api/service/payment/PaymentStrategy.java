@@ -7,6 +7,6 @@ import java.io.UnsupportedEncodingException;
 
 public interface PaymentStrategy {
     String createPaymentUrl(Object request, Long recordId) throws UnsupportedEncodingException;
-    TreatmentRecordResponse processReturnUrl(HttpServletRequest request);
+    TreatmentRecordResponse processReturnUrl(Object object);
     String getPaymentMethod();
 }

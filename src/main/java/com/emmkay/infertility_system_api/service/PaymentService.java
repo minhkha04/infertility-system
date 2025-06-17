@@ -24,8 +24,8 @@ public class PaymentService {
         return strategy.createPaymentUrl(request, recordId);
     }
 
-    public TreatmentRecordResponse processReturnUrl(String method, HttpServletRequest request) {
+    public TreatmentRecordResponse processReturnUrl(String method, Object object) {
         PaymentStrategy strategy = paymentStrategyFactory.getStrategy(method);
-        return strategy.processReturnUrl(request);
+        return strategy.processReturnUrl(object);
     }
 }

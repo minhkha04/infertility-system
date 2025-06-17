@@ -3,9 +3,12 @@ package com.emmkay.infertility_system_api.service.payment;
 import com.emmkay.infertility_system_api.client.MomoApi;
 import com.emmkay.infertility_system_api.configuration.payment.MomoConfig;
 import com.emmkay.infertility_system_api.dto.request.MomoCreateRequest;
+import com.emmkay.infertility_system_api.dto.request.MomoIpnRequest;
 import com.emmkay.infertility_system_api.dto.response.MomoCreateResponse;
 import com.emmkay.infertility_system_api.dto.response.TreatmentRecordResponse;
 import com.emmkay.infertility_system_api.entity.TreatmentRecord;
+import com.emmkay.infertility_system_api.exception.AppException;
+import com.emmkay.infertility_system_api.exception.ErrorCode;
 import com.emmkay.infertility_system_api.helper.PaymentHelper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AccessLevel;
@@ -42,17 +45,31 @@ public class MomoPaymentStrategy implements PaymentStrategy {
         return "";
     }
 
+    // code mẫu hàm createPaymentUrl
     public MomoCreateResponse createQr() {
 
         String orderId = UUID.randomUUID().toString();
         String orderInfo = "Thanh toan don hang: " + orderId;
         String requestId = UUID.randomUUID().toString();
-        String extraData = "Khong co khuyen mai";
+        String extraData = "";
         long amount = 100000;
 
-        String rawSignature = String.format("accessKey=$accessKey&amount=$amount&extraData=$extraData&ipnUrl=$ipnUrl&orderId=$orderId&orderInfo=$orderInfo&partnerCode=$partnerCode&redirectUrl=$redirectUrl&requestId=$requestId&requestType=$requestType", momoConfig.getAccessKey(), amount, extraData, momoConfig.getIpnUrl(), orderId, orderInfo, momoConfig.getPartnerCode(), momoConfig.getReturnUrl(), requestId, momoConfig.getRequestType());
+        String rawSignature = String.format(
+                "accessKey=%s&amount=%s&extraData=%s&ipnUrl=%s&orderId=%s&orderInfo=%s&partnerCode=%s&redirectUrl=%s&requestId=%s&requestType=%s",
+                momoConfig.getAccessKey(),
+                amount,
+                extraData,
+                momoConfig.getIpnUrl(),
+                orderId,
+                orderInfo,
+                momoConfig.getPartnerCode(),
+                momoConfig.getReturnUrl(),
+                requestId,
+                momoConfig.getRequestType()
+        );
 
-        String signature = hmacSHA256(rawSignature, momoConfig.getSecretKey());
+
+        String signature = paymentHelper.hmacSHA256(rawSignature, momoConfig.getSecretKey());
         MomoCreateRequest request = MomoCreateRequest.builder()
                 .partnerCode(momoConfig.getPartnerCode())
                 .requestType(momoConfig.getRequestType())
@@ -61,35 +78,65 @@ public class MomoPaymentStrategy implements PaymentStrategy {
                 .orderId(orderId)
                 .orderInfo(orderInfo)
                 .requestId(requestId)
-                .extraData(extraData)
+                .extraData("")
                 .amount(amount)
                 .signature(signature)
                 .lang("vi")
                 .build();
+
+//        return momoApi.createMomoQr(request).getQrCodeUrl();
+        return momoApi.createMomoQr(request);
     }
 
-
-    public static String hmacSHA256(String data, String secretKey) {
+    // code mẫu hàm processReturnUrl
+    public TreatmentRecordResponse result(MomoIpnRequest request) {
         try {
-            SecretKeySpec secretKeySpec = new SecretKeySpec(secretKey.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
-            Mac mac = Mac.getInstance("HmacSHA256");
-            mac.init(secretKeySpec);
-            byte[] hmacBytes = mac.doFinal(data.getBytes(StandardCharsets.UTF_8));
+            // 1. Build rawData để verify chữ ký
+            String rawData = String.format(
+                    "accessKey=%s&amount=%s&extraData=%s&message=%s&orderId=%s&orderInfo=%s&orderType=%s&partnerCode=%s&payType=%s&requestId=%s&responseTime=%s&resultCode=%s&transId=%s",
+                    momoConfig.getAccessKey(),
+                    request.getAmount(),
+                    request.getExtraData(),
+                    request.getMessage(),
+                    request.getOrderId(),
+                    request.getOrderInfo(),
+                    request.getOrderType(),
+                    request.getPartnerCode(),
+                    request.getPayType(),
+                    request.getRequestId(),
+                    request.getResponseTime(),
+                    request.getResultCode(),
+                    request.getTransId()
+            );
 
-            // Convert to hex
-            StringBuilder sb = new StringBuilder();
-            for (byte b : hmacBytes) {
-                sb.append(String.format("%02x", b & 0xff));
+            // 2. So sánh chữ ký
+            String expectedSignature = paymentHelper.hmacSHA256(rawData, momoConfig.getSecretKey());
+            if (!expectedSignature.equals(request.getSignature())) {
+                throw new AppException(ErrorCode.VERIFY_PAYMENT_FAIL);
             }
-            return sb.toString();
+
+            // 3. Xử lý logic thanh toán
+            if (request.getResultCode() == 0) {
+                log.info("Payment successful: {}", request);
+                return TreatmentRecordResponse.builder()
+                        .customerName("Thanh cong")
+                        .isPaid(true)
+                        .build();
+            } else {
+                log.info("Payment failed: {}", request);
+                return TreatmentRecordResponse.builder()
+                        .customerName("That bai")
+                        .isPaid(false)
+                        .build();
+            }
 
         } catch (Exception e) {
-            throw new RuntimeException("Failed to generate HMAC SHA256 signature", e);
+            throw new AppException(ErrorCode.VERIFY_PAYMENT_FAIL);
         }
     }
 
     @Override
-    public TreatmentRecordResponse processReturnUrl(HttpServletRequest request) {
+    public TreatmentRecordResponse processReturnUrl(Object object) {
         return null;
     }
 

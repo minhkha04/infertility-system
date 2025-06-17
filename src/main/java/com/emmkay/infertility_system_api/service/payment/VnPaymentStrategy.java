@@ -65,6 +65,7 @@ public class VnPaymentStrategy implements PaymentStrategy {
         try {
             req = (HttpServletRequest) request;
         } catch (Exception e) {
+            log.error("Error when create payment url: {}", e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
         TreatmentRecord treatmentRecord = paymentHelper.isAvailable(recordId);
@@ -137,7 +138,14 @@ public class VnPaymentStrategy implements PaymentStrategy {
 
 
     @Override
-    public TreatmentRecordResponse processReturnUrl(HttpServletRequest request) {
+    public TreatmentRecordResponse processReturnUrl(Object object) {
+        HttpServletRequest request;
+        try {
+            request = (HttpServletRequest) object;
+        } catch (Exception e) {
+            log.error("Error when process return url: {}", e.getMessage());
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
         verifyVnPayReturn(request);
 
         String vnp_ResponseCode = request.getParameter("vnp_ResponseCode");

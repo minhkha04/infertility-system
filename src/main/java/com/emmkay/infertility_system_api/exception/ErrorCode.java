@@ -34,7 +34,7 @@ public enum ErrorCode {
     TREATMENT_SERVICE_IS_EXISTED(1021, "Dịch vụ điều trị đã tồn tại", HttpStatus.BAD_REQUEST),
     TREATMENT_SERVICE_NOT_EXISTED(1022, "Không tìm thấy dịch vụ điều trị", HttpStatus.NOT_FOUND),
     WORK_SCHEDULE_EXISTED(1023, "Lịch làm việc cho bác sĩ vào ngày này đã tồn tại", HttpStatus.BAD_REQUEST),
-    UPLOAD_IMAGE_FAILED(1024, "Tải ảnh lên thất bạ", HttpStatus.INTERNAL_SERVER_ERROR),
+    UPLOAD_IMAGE_FAILED(1024, "Tải ảnh lên thất bại", HttpStatus.INTERNAL_SERVER_ERROR),
     WORK_SCHEDULE_NOT_EXISTED(1025, "Không tìm thấy lịch làm việc", HttpStatus.NOT_FOUND),
     DATE_OUT_OF_RANGE(1026, "Ngày được chọn phải nằm trong phạm vi 14 ngày tới", HttpStatus.BAD_REQUEST),
     INVALID_SHIFT_VALUE(1027, "Giá trị ca làm không hợp lệ. Phải là 'morning', 'afternoon', 'full_day", HttpStatus.BAD_REQUEST),
@@ -64,8 +64,10 @@ public enum ErrorCode {
     TREATMENT_STAGE_DUPLICATE(1051, "Trùng giai đoạn điều trị", HttpStatus.BAD_REQUEST),
     BLOG_ID_INVALID(1052, "Blog ID sai định dạng", HttpStatus.BAD_REQUEST),
     TREATMENT_RECORD_IS_PAID(1053, "Bạn không thể hủy dịch vụ này vì đã thanh toán, vui lòng gửi mail cho bệnh viện nếu muốn hủy", HttpStatus.BAD_REQUEST),
-    TREATMENT_RECORD_IS_COMPLETED_OR_CANCELLED(1053, "Bạn không thể đặt lịch hẹn vì hồ sơ này đã hoàn thành hoặc đã bị hủy", HttpStatus.BAD_REQUEST),
-    PAYMENT_METHOD_NOT_SUPPORTED(1054, "Phương thức thanh toán không được hỗ trợ", HttpStatus.BAD_REQUEST),
+    TREATMENT_RECORD_IS_COMPLETED_OR_CANCELLED(1054, "Bạn không thể đặt lịch hẹn vì hồ sơ này đã hoàn thành hoặc đã bị hủy", HttpStatus.BAD_REQUEST),
+    PAYMENT_METHOD_NOT_SUPPORTED(1055, "Phương thức thanh toán không được hỗ trợ", HttpStatus.BAD_REQUEST),
+    GENERATE_QR_FAILED(1056, "Tạo qr thanh toán thất bại", HttpStatus.INTERNAL_SERVER_ERROR),
+    CONVERT_TO_BASE64_FAILED(1057, "Convert to base 64 failed", HttpStatus.INTERNAL_SERVER_ERROR)
     ;
     int code;
     String message;
