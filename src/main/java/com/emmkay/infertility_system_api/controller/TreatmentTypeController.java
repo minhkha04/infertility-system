@@ -43,10 +43,9 @@ public class TreatmentTypeController {
     }
 
     @DeleteMapping("{id}")
-    public ApiResponse<String> deleteTreatmentType(@PathVariable Integer id) {
-        treatmentTypeService.deleteTreatmentType(id);
-        return ApiResponse.<String>builder()
-                .message("Xóa phương pháp điều trị thành công")
+    public ApiResponse<TreatmentTypeResponse> deleteTreatmentType(@PathVariable Integer id) {
+        return ApiResponse.<TreatmentTypeResponse>builder()
+                .result(treatmentTypeService.deleteTreatmentType(id))
                 .build();
     }
 

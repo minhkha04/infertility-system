@@ -71,7 +71,7 @@ public class DoctorController {
                 .build();
     }
 
-    @GetMapping("dashboard/statics/{doctorId}")
+    @GetMapping("/dashboard/statics/{doctorId}")
     public ApiResponse<DoctorDashboardResponse> getDoctorDashBoardResponse(@PathVariable String doctorId) {
         return ApiResponse.<DoctorDashboardResponse>builder()
                 .result(doctorService.getDoctorDashBoard(doctorId))

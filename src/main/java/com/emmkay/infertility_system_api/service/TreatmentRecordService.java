@@ -32,7 +32,7 @@ public class TreatmentRecordService {
     TreatmentRecordMapper treatmentRecordMapper;
     TreatmentStepService treatmentStepService;
     AppointmentService appointmentService;
-
+    DoctorService doctorService;
 
     @PreAuthorize("hasRole('MANAGER') or hasRole('DOCTOR')")
     public TreatmentRecordResponse updateTreatmentRecord(Long recordId, String status) {
@@ -110,14 +110,17 @@ public class TreatmentRecordService {
         if (startDate.isBefore(LocalDate.now().plusDays(1))) {
             throw new AppException(ErrorCode.INVALID_START_DATE);
         }
-
+        Doctor doctor;
         User customer = userRepository.findById(customerId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-        Doctor doctor = doctorRepository.findById(doctorId)
-                .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_NOT_EXISTED));
-
-
-        if (!appointmentService.isDoctorAvailable(doctorId, startDate, shift)) {
+        if (!doctorId.isEmpty()) {
+             doctor = doctorRepository.findById(doctorId)
+                    .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_NOT_EXISTED));
+        } else {
+            doctor = doctorService.findBestDoctor(startDate, shift)
+                    .orElseThrow(() -> new AppException(ErrorCode.USERNAME_EXISTED));
+        }
+        if (!appointmentService.isDoctorAvailable(doctor.getId(), startDate, shift)) {
             throw new AppException(ErrorCode.DOCTOR_NOT_AVAILABLE);
         }
 

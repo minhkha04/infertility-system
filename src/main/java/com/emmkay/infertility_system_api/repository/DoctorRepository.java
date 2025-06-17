@@ -3,12 +3,14 @@ package com.emmkay.infertility_system_api.repository;
 import com.emmkay.infertility_system_api.dto.projection.DoctorDashboardProjection;
 import com.emmkay.infertility_system_api.dto.projection.DoctorRatingProjection;
 import com.emmkay.infertility_system_api.entity.Doctor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -49,5 +51,21 @@ public interface DoctorRepository extends JpaRepository<Doctor, String> {
             """)
     List<DoctorRatingProjection> findAllRatings();
 
-
+    @Query("""
+                SELECT d
+                FROM Doctor d
+                JOIN WorkSchedule ws ON d.id = ws.doctor.id
+                LEFT JOIN Appointment a ON a.doctor.id = d.id
+                    AND a.appointmentDate = :inputDate
+                    AND a.shift = :shift
+                    AND a.status NOT IN ('CANCELLED')
+                WHERE ws.workDate = :inputDate
+                  AND (ws.shift = :shift OR ws.shift = 'FULL_DAY')
+                GROUP BY d
+                HAVING COUNT(a.id) < 10
+                ORDER BY COUNT(a.id)
+            """)
+    List<Doctor> findAvailableDoctorByDateAndShift(@Param("inputDate") LocalDate inputDate,
+                                                   @Param("shift") String shift,
+                                                   Pageable pageable);
 }

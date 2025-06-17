@@ -4,6 +4,7 @@ import com.emmkay.infertility_system_api.dto.request.AdminUserCreateRequest;
 import com.emmkay.infertility_system_api.dto.request.AdminUserUpdatePasswordRequest;
 import com.emmkay.infertility_system_api.dto.request.AdminUserUpdateRequest;
 import com.emmkay.infertility_system_api.dto.response.AdminUserResponse;
+import com.emmkay.infertility_system_api.dto.response.UserResponse;
 import com.emmkay.infertility_system_api.entity.Doctor;
 import com.emmkay.infertility_system_api.entity.Role;
 import com.emmkay.infertility_system_api.entity.User;
@@ -96,24 +97,24 @@ public class AdminService {
         return userMapper.toAdminUserResponse(user);
     }
 
-    public void removeUser(String userId) {
+    public UserResponse removeUser(String userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         if (user.getIsRemoved()) {
             throw new AppException(ErrorCode.USER_NOT_ACTIVE);
         }
         user.setIsRemoved(true);
-        userRepository.save(user);
+        return userMapper.toUserResponse(userRepository.save(user));
     }
 
-    public void restoreUser(String userId) {
+    public UserResponse restoreUser(String userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         if (!user.getIsRemoved()) {
             throw new AppException(ErrorCode.USER_ALREADY_ACTIVE);
         }
         user.setIsRemoved(false);
-        userRepository.save(user);
+        return userMapper.toUserResponse(userRepository.save(user));
     }
 
     public AdminUserResponse getUserById(String userId) {
@@ -139,10 +140,10 @@ public class AdminService {
         return userMapper.toAdminUserResponse(userRepository.save(user));
     }
 
-    public void updateUserPassword(String userId, AdminUserUpdatePasswordRequest request) {
+    public UserResponse updateUserPassword(String userId, AdminUserUpdatePasswordRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        userRepository.save(user);
+        return userMapper.toAdminUserResponse(userRepository.save(user));
     }
 }

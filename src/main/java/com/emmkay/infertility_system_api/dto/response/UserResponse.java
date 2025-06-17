@@ -22,4 +22,6 @@ public class UserResponse {
     RoleResponse roleName;
     String address;
     String avatarUrl;
+    Boolean isRemoved;
+    Boolean isVerified;
 }

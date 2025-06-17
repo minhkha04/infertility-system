@@ -132,11 +132,11 @@ public class TreatmentServiceService {
     }
 
     @PreAuthorize("hasRole('MANAGER')")
-    public void removeTreatmentService(Long id) {
+    public TreatmentServiceResponse removeTreatmentService(Long id) {
         TreatmentService treatmentService = treatmentServiceRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_SERVICE_NOT_EXISTED));
         treatmentService.setIsRemove(true);
-        treatmentServiceRepository.save(treatmentService);
+        return treatmentServiceMapper.toTreatmentServiceResponse(treatmentServiceRepository.save(treatmentService));
     }
 
     @PreAuthorize("hasRole('MANAGER')")
