@@ -56,10 +56,11 @@ public class TreatmentTypeService {
     }
 
     @PreAuthorize("hasRole('MANAGER')")
-    public void deleteTreatmentType(Integer id) {
-       treatmentTypeRepository.findById(id)
+    public TreatmentTypeResponse deleteTreatmentType(Integer id) {
+       TreatmentType treatmentType = treatmentTypeRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_TYPE_NOT_EXISTED));
-        treatmentTypeRepository.deleteById(id);
+        treatmentType.setIsRemove(true);
+        return treatmentTypeMapper.toTreatmentTypeResponse(treatmentTypeRepository.save(treatmentType));
     }
 
     @PreAuthorize("hasRole('MANAGER')")

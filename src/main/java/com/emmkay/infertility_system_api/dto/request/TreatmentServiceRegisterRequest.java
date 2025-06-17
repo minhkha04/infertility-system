@@ -16,7 +16,6 @@ public class TreatmentServiceRegisterRequest {
     @NotBlank(message = "{validation.required}")
     String customerId;
 
-    @NotBlank(message = "{validation.required}")
     String doctorId;
 
     @NotNull(message = "{validation.required}")

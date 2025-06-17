@@ -5,6 +5,7 @@ import com.emmkay.infertility_system_api.dto.request.AdminUserUpdatePasswordRequ
 import com.emmkay.infertility_system_api.dto.request.AdminUserUpdateRequest;
 import com.emmkay.infertility_system_api.dto.response.AdminUserResponse;
 import com.emmkay.infertility_system_api.dto.response.ApiResponse;
+import com.emmkay.infertility_system_api.dto.response.UserResponse;
 import com.emmkay.infertility_system_api.service.AdminService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -59,18 +60,16 @@ public class AdminController {
     }
 
     @DeleteMapping("/remove-user/{userId}")
-    public ApiResponse<String> removeUser(@PathVariable String userId) {
-        adminService.removeUser(userId);
-        return ApiResponse.<String>builder()
-                .result("Tài khoản đã được tắt trạng thái hoạt động thành công")
+    public ApiResponse<UserResponse> removeUser(@PathVariable String userId) {
+        return ApiResponse.<UserResponse>builder()
+                .result(adminService.removeUser(userId))
                 .build();
     }
 
     @PutMapping("/restore-user/{userId}")
-    public ApiResponse<String> restoreUser(@PathVariable String userId) {
-        adminService.restoreUser(userId);
-        return ApiResponse.<String>builder()
-                .result("Tài khoản đã được khôi phục thành công")
+    public ApiResponse<UserResponse> restoreUser(@PathVariable String userId) {
+        return ApiResponse.<UserResponse>builder()
+                .result(adminService.restoreUser(userId))
                 .build();
     }
 
@@ -96,11 +95,9 @@ public class AdminController {
     }
 
     @PutMapping("/update-user-password/{userId}")
-    public ApiResponse<String> updateUserPassword(@PathVariable String userId, @RequestBody @Valid AdminUserUpdatePasswordRequest request) {
-        adminService.updateUserPassword(userId, request);
-
-        return ApiResponse.<String>builder()
-                .result("Thay đổi mật khẩu thành công")
+    public ApiResponse<UserResponse> updateUserPassword(@PathVariable String userId, @RequestBody @Valid AdminUserUpdatePasswordRequest request) {
+        return ApiResponse.<UserResponse>builder()
+                .result(adminService.updateUserPassword(userId, request))
                 .build();
     }
 }

@@ -60,10 +60,9 @@ public class TreatmentServiceController {
     }
 
     @DeleteMapping("/{id}")
-    public ApiResponse<String> removeTreatmentService(@PathVariable Long id) {
-        treatmentServiceService.removeTreatmentService(id);
-        return ApiResponse.<String>builder()
-                .result("Dịch vụ đã được tắt trạng thái hoạt động")
+    public ApiResponse<TreatmentServiceResponse> removeTreatmentService(@PathVariable Long id) {
+        return ApiResponse.<TreatmentServiceResponse>builder()
+                .result(treatmentServiceService.removeTreatmentService(id))
                 .build();
     }
 

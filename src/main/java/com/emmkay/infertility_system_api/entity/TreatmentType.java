@@ -37,4 +37,8 @@ public class TreatmentType {
     @OneToMany(mappedBy = "type")
     private Set<TreatmentStage> treatmentStages = new LinkedHashSet<>();
 
+    @ColumnDefault("0")
+    @Column(name = "is_remove")
+    private Boolean isRemove;
+
 }

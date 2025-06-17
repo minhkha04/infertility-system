@@ -20,8 +20,6 @@ public interface WorkScheduleRepository extends JpaRepository<WorkSchedule, Long
 
     List<WorkSchedule> findByWorkDateAndShiftIn(LocalDate workDate, Collection<String> shifts);
 
-    List<WorkSchedule> findByDoctorIdAndWorkDateBetween(String doctorId, LocalDate workDateAfter, LocalDate workDateBefore);
-
     boolean existsByDoctorIdAndWorkDateAndShift(String doctorId, LocalDate workDate, String shift);
 
     Optional<WorkSchedule> findByDoctorIdAndWorkDate(String doctorId, LocalDate workDate);
@@ -44,4 +42,6 @@ public interface WorkScheduleRepository extends JpaRepository<WorkSchedule, Long
             FROM  ManagerDashboardWorkScheduleStatisticsView x
             """)
     ManagerDashboardWorkScheduleStatisticsProjection findWorkScheduleTodayForManagerDashBoard();
+
+    List<WorkSchedule> findByDoctorIdAndWorkDateGreaterThanEqual(String doctorId, LocalDate workDateIsGreaterThan);
 }

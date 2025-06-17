@@ -50,7 +50,7 @@ public class BlogService {
     }
 
     @PreAuthorize("hasRole('MANAGER')")
-    public void approveBlog(Long blogId, String userId, BlogApprovalRequest request) {
+    public BlogResponse approveBlog(Long blogId, String userId, BlogApprovalRequest request) {
         User manager = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
@@ -74,7 +74,7 @@ public class BlogService {
         }
         blog.setNote(request.getComment());
         blog.setApprovedBy(manager);
-        blogRepository.save(blog);
+        return blogMapper.toBlogResponse(blogRepository.save(blog));
     }
 
     public BlogResponse createBlog(BlogCreateRequest request, String userId) {

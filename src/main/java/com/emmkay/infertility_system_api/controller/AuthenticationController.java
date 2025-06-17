@@ -97,10 +97,4 @@ public class AuthenticationController {
                 .result(authenticationService.refreshToken(request))
                 .build();
     }
-    @GetMapping("/test")
-    public ApiResponse<String> test() {
-        return ApiResponse.<String>builder()
-                .result("Thay đổi mật khẩu thành công")
-                .build();
-    }
 }

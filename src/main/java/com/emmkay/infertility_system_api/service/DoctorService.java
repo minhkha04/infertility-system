@@ -20,14 +20,12 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -108,12 +106,10 @@ public class DoctorService {
                 .toList();
     }
 
-    public DoctorWorkScheduleResponse getDoctorScheduleNext14Days(String doctorId) {
+    public DoctorWorkScheduleResponse getDoctorSchedule(String doctorId) {
         LocalDate from = LocalDate.now();
-        LocalDate to = from.plusDays(13);
-
         List<WorkSchedule> schedules = workScheduleRepository
-                .findByDoctorIdAndWorkDateBetween(doctorId, from, to);
+                .findByDoctorIdAndWorkDateGreaterThanEqual(doctorId, from);
 
         Map<String, List<String>> grouped = new LinkedHashMap<>();
 
@@ -150,7 +146,6 @@ public class DoctorService {
         return DoctorWorkScheduleResponse.builder()
                 .doctorId(doctorId)
                 .from(from.toString())
-                .to(to.toString())
                 .schedules(grouped)
                 .build();
     }
@@ -168,5 +163,11 @@ public class DoctorService {
 
     }
 
+    public Optional<Doctor> findBestDoctor(LocalDate date, String shift) {
+        return doctorRepository
+                .findAvailableDoctorByDateAndShift(date, shift, PageRequest.of(0, 1))
+                .stream()
+                .findFirst();
+    }
 
 }

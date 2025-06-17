@@ -12,4 +12,5 @@ public class TreatmentTypeResponse {
     Integer id;
     String name;
     String description;
+    Boolean isRemove;
 }
