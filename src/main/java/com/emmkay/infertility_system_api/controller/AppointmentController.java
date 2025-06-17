@@ -60,7 +60,7 @@ public class AppointmentController {
     }
 
     @Operation(summary = "for doctor or manager to confirm appointment")
-    @PutMapping("confirm-appointment/{appointmentId}")
+    @PutMapping("/confirm-appointment/{appointmentId}")
     public ApiResponse<AppointmentResponse> updateAppointmentStatus(
             @PathVariable Long appointmentId,
             @RequestBody @Valid ConfirmChangeAppointmentRequest request) {
@@ -119,6 +119,13 @@ public class AppointmentController {
     public ApiResponse<List<AppointmentResponse>> getAppointmentByStepId(@PathVariable Long stepId) {
         return ApiResponse.<List<AppointmentResponse>>builder()
                 .result(appointmentService.getAppointmentByStepId(stepId))
+                .build();
+    }
+
+    @GetMapping("get-all-for-doctor/{doctorId}")
+    public ApiResponse<List<AppointmentResponse>> getAppointmentByStepId(@PathVariable String doctorId) {
+        return ApiResponse.<List<AppointmentResponse>>builder()
+                .result(appointmentService.getAppointmentByDoctorId(doctorId))
                 .build();
     }
 

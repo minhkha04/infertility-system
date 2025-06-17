@@ -1,6 +1,7 @@
 package com.emmkay.infertility_system_api.controller;
 
 import com.emmkay.infertility_system_api.dto.request.FeedbackCreateRequest;
+import com.emmkay.infertility_system_api.dto.request.FeedbackUpdateRequest;
 import com.emmkay.infertility_system_api.dto.request.FeedbackUpdateStatusRequest;
 import com.emmkay.infertility_system_api.dto.response.ApiResponse;
 import com.emmkay.infertility_system_api.dto.response.FeedbackResponse;
@@ -67,6 +68,13 @@ public class FeedbackController {
     public ApiResponse<Boolean> isValidToFeedback(@PathVariable Long recordId) {
         return  ApiResponse.<Boolean>builder()
                 .result(feedbackService.isAvailableFeedBack(recordId))
+                .build();
+    }
+
+    @PutMapping("/update-feedback/{feedbackId}")
+    public ApiResponse<FeedbackResponse> updateFeedback(@PathVariable Long feedbackId, @RequestBody @Valid FeedbackUpdateRequest request) {
+        return ApiResponse.<FeedbackResponse>builder()
+                .result(feedbackService.updateFeedback(feedbackId, request))
                 .build();
     }
 

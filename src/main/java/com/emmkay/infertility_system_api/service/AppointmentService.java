@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -182,6 +181,11 @@ public class AppointmentService {
             throw new AppException(ErrorCode.TREATMENT_RECORD_IS_COMPLETED_OR_CANCELLED);
         }
 
+        if (step.getStatus().equalsIgnoreCase("COMPLETED")
+                || step.getStatus().equalsIgnoreCase("CANCELLED")) {
+            throw new AppException(ErrorCode.APPOINTMENT_NOT_CHANGE);
+        }
+
         Doctor doctor = doctorRepository.findById(req.getDoctorId())
                 .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_NOT_EXISTED));
         User customer = userRepository.findById(req.getCustomerId())
@@ -206,6 +210,14 @@ public class AppointmentService {
     @Transactional
     public AppointmentResponse changeAppointmentForCustomer(Long appointmentId, ChangeAppointmentByCustomerRequest request) {
         Appointment appointment = isAvailableForChange(appointmentId, request.getRequestedDate(), request.getRequestedShift());
+        if (appointment.getTreatmentStep().getStatus().equalsIgnoreCase("COMPLETED")
+                || appointment.getTreatmentStep().getStatus().equalsIgnoreCase("CANCELLED")) {
+            throw new AppException(ErrorCode.APPOINTMENT_NOT_CHANGE);
+        }
+
+        if (request.getRequestedDate().isBefore(LocalDate.now().plusDays(1))) {
+            throw new AppException(ErrorCode.INVALID_START_DATE);
+        }
 
         request.setRequestedShift(request.getRequestedShift().toUpperCase());
         appointmentMapper.requestChangeAppointment(appointment, request);
@@ -215,6 +227,7 @@ public class AppointmentService {
 
     //confirm change appointment by doctor and manager
     @PreAuthorize("hasRole('DOCTOR') or hasRole('MANAGER')")
+    @Transactional
     public AppointmentResponse confirmChangeAppointment(Long id, ConfirmChangeAppointmentRequest request) {
         Appointment appointment = appointmentRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.APPOINTMENT_NOT_FOUND));
@@ -223,17 +236,22 @@ public class AppointmentService {
             throw new AppException(ErrorCode.CAN_NOT_BE_UPDATED_STATUS);
         }
 
-        if (request.getStatus().equalsIgnoreCase("CONFIRMED")) {
-            reminderRepository.deleteByAppointment_Id(appointment.getId());
-            appointment.setAppointmentDate(appointment.getRequestedDate());
-            appointment.setShift(appointment.getRequestedShift());
-            reminderService.createReminderForAppointment(appointment);
+        switch (request.getStatus().toUpperCase()) {
+            case "CONFIRMED":
+                reminderRepository.deleteByAppointment_Id(appointment.getId());
+                appointment.setAppointmentDate(appointment.getRequestedDate());
+                appointment.setShift(appointment.getRequestedShift());
+                reminderService.createReminderForAppointment(appointment);
+                break;
+            case "REJECTED":
+                appointment.setRequestedDate(null);
+                appointment.setRequestedShift(null);
+                appointment.setNotes(request.getNotes());
+                break;
+            default:
+                throw new AppException(ErrorCode.STATUS_IS_INVALID);
         }
-
-        appointment.setRequestedDate(null);
-        appointment.setRequestedShift(null);
         appointment.setStatus(request.getStatus().toUpperCase());
-        appointment.setNotes(request.getNotes());
         return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
     }
 
@@ -247,6 +265,15 @@ public class AppointmentService {
     @PreAuthorize("hasRole('DOCTOR') or hasRole('MANAGER')")
     public AppointmentResponse changeAppointmentForManagerOrDoctor(Long appointmentId, ChangeAppointmentByDoctorOrManagerRequest request) {
         Appointment appointment = isAvailableForChange(appointmentId, request.getAppointmentDate(), request.getShift());
+
+        if (appointment.getTreatmentStep().getStatus().equalsIgnoreCase("COMPLETED")
+                || appointment.getTreatmentStep().getStatus().equalsIgnoreCase("CANCELLED")) {
+            throw new AppException(ErrorCode.APPOINTMENT_NOT_CHANGE);
+        }
+
+        if (request.getAppointmentDate().isBefore(LocalDate.now().plusDays(1))) {
+            throw new AppException(ErrorCode.INVALID_START_DATE);
+        }
 
         appointment.setAppointmentDate(request.getAppointmentDate());
         appointment.setShift(request.getShift().toUpperCase());
@@ -278,6 +305,14 @@ public class AppointmentService {
 
     public List<AppointmentResponse> getAppointmentByStepId(Long stepId) {
         List<Appointment> appointments = appointmentRepository.findByTreatmentStep_Id(stepId);
+        return appointments
+                .stream()
+                .map(appointmentMapper::toAppointmentResponse)
+                .toList();
+    }
+
+    public List<AppointmentResponse> getAppointmentByDoctorId(String doctorId) {
+        List<Appointment> appointments = appointmentRepository.findAllByDoctor_Id(doctorId);
         return appointments
                 .stream()
                 .map(appointmentMapper::toAppointmentResponse)

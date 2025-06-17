@@ -65,8 +65,8 @@ public class Blog {
     private LocalDate publishedAt;
 
     @Lob
-    @Column(name = "rejection_reason")
-    private String rejectionReason;
+    @Column(name = "note")
+    private String note;
 
     @Size(max = 500)
     @Column(name = "cover_image_url", length = 500)

@@ -19,4 +19,8 @@ public class FeedbackResponse {
     String comment;
     LocalDate submitDate;
     boolean isApproved;
+    String status;
+    String note;
+    String approvedBy;
+    String recordId;
 }

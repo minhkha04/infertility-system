@@ -1,6 +1,7 @@
 package com.emmkay.infertility_system_api.service;
 
 import com.emmkay.infertility_system_api.dto.request.FeedbackCreateRequest;
+import com.emmkay.infertility_system_api.dto.request.FeedbackUpdateRequest;
 import com.emmkay.infertility_system_api.dto.request.FeedbackUpdateStatusRequest;
 import com.emmkay.infertility_system_api.dto.response.FeedbackResponse;
 import com.emmkay.infertility_system_api.entity.*;
@@ -14,6 +15,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -27,6 +29,20 @@ public class FeedbackService {
     TreatmentRecordRepository treatmentRecordRepository;
     FeedbackMapper feedbackMapper;
     DoctorRepository doctorRepository;
+
+
+    public FeedbackResponse updateFeedback(Long feedbackId, FeedbackUpdateRequest request) {
+        Feedback feedback = feedbackRepository.findById(feedbackId)
+                .orElseThrow(() -> new AppException(ErrorCode.FEEDBACK_NOT_EXISTED));
+
+        feedbackMapper.updateFeedback(feedback, request);
+        feedback.setStatus("PENDING");
+        feedback.setNote("");
+        feedback.setSubmitDate(null);
+        feedback.setApprovedBy(null);
+        feedback.setIsApproved(false);
+        return feedbackMapper.toResponse(feedbackRepository.save(feedback));
+    }
 
     @PreAuthorize( "hasRole('MANAGER')")
     public List<FeedbackResponse> getAll() {
@@ -58,6 +74,9 @@ public class FeedbackService {
 
         feedback.setIsApproved(request.isApproved());
         feedback.setApprovedBy(manager);
+        feedback.setSubmitDate(LocalDate.now());
+        feedback.setStatus(request.getStatus());
+        feedback.setNote(request.getNote());
         return feedbackMapper.toResponse(feedbackRepository.save(feedback));
     }
 
@@ -66,6 +85,14 @@ public class FeedbackService {
         if(!isAvailableFeedBack(request.getRecordId())) {
             throw new AppException(ErrorCode.UNAUTHORIZED_ACTION);
         }
+
+        if (feedbackRepository.existsByCustomerIdAndRecordId(request.getCustomerId(), request.getRecordId())) {
+            throw new AppException(ErrorCode.FEEDBACK_IS_EXISTED);
+        }
+
+        TreatmentRecord treatmentRecord = treatmentRecordRepository.findById(request.getRecordId())
+                .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
+
         User customer = userRepository.findById(request.getCustomerId())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         Doctor doctor = null;
@@ -82,6 +109,8 @@ public class FeedbackService {
         feedback.setCustomer(customer);
         feedback.setDoctor(doctor);
         feedback.setIsApproved(false);
+        feedback.setStatus("PENDING");
+        feedback.setRecord(treatmentRecord);
         return feedbackMapper.toResponse(feedbackRepository.save(feedback));
 
     }
@@ -89,6 +118,6 @@ public class FeedbackService {
     public boolean isAvailableFeedBack(Long recordId) {
         TreatmentRecord treatmentRecord = treatmentRecordRepository.findById(recordId)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
-        return treatmentRecord.getStatus().equalsIgnoreCase("COMPLETE");
+        return treatmentRecord.getStatus().equalsIgnoreCase("COMPLETED");
     }
 }

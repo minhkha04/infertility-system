@@ -63,4 +63,6 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     void updateStatusByTreatmentStep(String status, TreatmentStep treatmentStep);
 
     List<Appointment> findByTreatmentStep_Id(Long treatmentStepId);
+
+    List<Appointment> findAllByDoctor_Id(String doctorId);
 }

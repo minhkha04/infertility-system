@@ -11,12 +11,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class FeedbackCreateRequest {
-    @NotBlank(message = "{validation.required}")
-    String customerId;
-    String doctorId;
-    @NotNull(message = "{validation.required}")
-    Long serviceId;
+public class FeedbackUpdateRequest {
     @NotNull(message = "{validation.required}")
     int rating;
     @NotBlank(message = "{validation.required}")

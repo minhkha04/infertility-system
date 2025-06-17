@@ -44,7 +44,7 @@ public class BlogService {
 
         blogMapper.updateBlog(blog, request);
         blog.setStatus("PENDING_REVIEW");
-        blog.setRejectionReason(null);
+        blog.setNote(null);
         return blogMapper.toBlogResponse(blogRepository.save(blog));
 
     }
@@ -64,15 +64,15 @@ public class BlogService {
             case "APPROVED":
                 blog.setStatus("APPROVED");
                 blog.setPublishedAt(LocalDate.now());
-                blog.setRejectionReason(null);
                 break;
             case "REJECTED":
                 blog.setStatus("REJECTED");
-                blog.setRejectionReason(request.getComment());
+
                 break;
             default:
                 throw new AppException(ErrorCode.INVALID_STATUS);
         }
+        blog.setNote(request.getComment());
         blog.setApprovedBy(manager);
         blogRepository.save(blog);
     }
@@ -115,7 +115,10 @@ public class BlogService {
         }
 
         blogMapper.updateBlog(blog, request);
-
+        blog.setStatus("DRAFT");
+        blog.setApprovedBy(null);
+        blog.setNote(null);
+        blog.setPublishedAt(null);
         return  blogMapper.toBlogResponse(blogRepository.save(blog));
     }
 
@@ -143,6 +146,9 @@ public class BlogService {
                 .orElseThrow(() -> new AppException(ErrorCode.BLOG_NOT_EXISTED));
         blog.setCoverImageUrl(url);
         blog.setStatus("PENDING_REVIEW");
+        blog.setApprovedBy(null);
+        blog.setNote(null);
+        blog.setPublishedAt(null);
         return  blogMapper.toBlogResponse(blogRepository.save(blog));
     }
 }
