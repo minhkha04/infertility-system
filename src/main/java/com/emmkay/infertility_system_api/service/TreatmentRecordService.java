@@ -100,12 +100,12 @@ public class TreatmentRecordService {
             LocalDate cd1Date
 
     ) {
-
-        if (treatmentRecordRepository.existsByCustomerIdAndStatusIn(
-                customerId, List.of("PENDING", "INPROGRESS")
-        )) {
-            throw new AppException(ErrorCode.TREATMENT_ALREADY_IN_PROGRESS);
-        }
+//      check has Record before
+//        if (treatmentRecordRepository.existsByCustomerIdAndStatusIn(
+//                customerId, List.of("PENDING", "INPROGRESS")
+//        )) {
+//            throw new AppException(ErrorCode.TREATMENT_ALREADY_IN_PROGRESS);
+//        }
 
         if (startDate.isBefore(LocalDate.now().plusDays(1))) {
             throw new AppException(ErrorCode.INVALID_START_DATE);
@@ -154,7 +154,9 @@ public class TreatmentRecordService {
         TreatmentRecord record = treatmentRecordRepository.findByIdAndCustomerId(recordId, customerId)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
 
-        if (record.getStatus().equals("COMPLETED") || record.getStatus().equals("CANCELLED")) {
+        if (record.getStatus().equals("COMPLETED")
+                || record.getStatus().equals("CANCELLED")
+                || record.getStatus().equals("INPROGRESS")) {
             throw new AppException(ErrorCode.CANNOT_CANCEL_TREATMENT);
         }
 
