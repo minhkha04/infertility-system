@@ -108,12 +108,10 @@ public class DoctorService {
                 .toList();
     }
 
-    public DoctorWorkScheduleResponse getDoctorScheduleNext14Days(String doctorId) {
+    public DoctorWorkScheduleResponse getDoctorSchedule(String doctorId) {
         LocalDate from = LocalDate.now();
-        LocalDate to = from.plusDays(13);
-
         List<WorkSchedule> schedules = workScheduleRepository
-                .findByDoctorIdAndWorkDateBetween(doctorId, from, to);
+                .findByDoctorIdAndWorkDateGreaterThanEqual(doctorId, from);
 
         Map<String, List<String>> grouped = new LinkedHashMap<>();
 
@@ -150,7 +148,6 @@ public class DoctorService {
         return DoctorWorkScheduleResponse.builder()
                 .doctorId(doctorId)
                 .from(from.toString())
-                .to(to.toString())
                 .schedules(grouped)
                 .build();
     }

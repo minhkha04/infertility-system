@@ -12,8 +12,7 @@ import java.util.Map;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class DoctorWorkScheduleResponse {
-    private String doctorId;
-    private String from;
-    private String to;
-    private Map<String, List<String>> schedules;
+    String doctorId;
+    String from;
+    Map<String, List<String>> schedules;
 }

@@ -57,9 +57,11 @@ public class DoctorController {
                 .build();
     }
 
-    @GetMapping("/dashboard/schedules/next-14-days/{id}")
-    public DoctorWorkScheduleResponse getDoctorSchedulesNext14Days(@PathVariable("id") String doctorId) {
-        return doctorService.getDoctorScheduleNext14Days(doctorId);
+    @GetMapping("/schedules/{doctorId}")
+    public ApiResponse<DoctorWorkScheduleResponse> getDoctorSchedules(@PathVariable String doctorId) {
+        return ApiResponse.<DoctorWorkScheduleResponse>builder()
+                .result(doctorService.getDoctorSchedule(doctorId))
+                .build();
     }
 
     @GetMapping("/rating")
