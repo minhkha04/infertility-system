@@ -7,7 +7,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @EnableScheduling
 @SpringBootApplication
-@EnableFeignClients(basePackages = "com.emmkay.infertility_system_api.client")
+@EnableFeignClients(basePackages = "com.emmkay.infertility_system_api.modules.payment.client")
 public class InfertilitySystemApiApplication {
 
 	public static void main(String[] args) {

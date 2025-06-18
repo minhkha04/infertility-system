@@ -1,0 +1,27 @@
+package com.emmkay.infertility_system_api.modules.appointment.dto.response;
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+
+import java.time.LocalDate;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class AppointmentResponse {
+    Long id;
+    LocalDate appointmentDate;
+    String shift;
+    String status;
+    String notes;
+    String purpose;
+    String customerName;
+    String customerEmail;
+    LocalDate createdAt;
+    String serviceName;
+    String doctorName;
+    LocalDate requestedDate;
+    String requestedShift;
+}

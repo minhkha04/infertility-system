@@ -1,0 +1,16 @@
+package com.emmkay.infertility_system_api.modules.treatment.dto.response;
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class TreatmentTypeResponse {
+    Integer id;
+    String name;
+    String description;
+    Boolean isRemove;
+}

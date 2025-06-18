@@ -1,0 +1,15 @@
+package com.emmkay.infertility_system_api.modules.manager.dto.response;
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class ManagerDashboardChartResponse {
+    String month;
+    String totalRevenue;
+    String totalTreatmentServiceInMonth;
+}
