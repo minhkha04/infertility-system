@@ -44,6 +44,10 @@ public class TreatmentRecordService {
     AppointmentService appointmentService;
     DoctorService doctorService;
 
+    public boolean isPaid(Long recordId) {
+        return treatmentRecordRepository.findIsPaidById(recordId);
+    }
+
     @PreAuthorize("hasRole('MANAGER') or hasRole('DOCTOR')")
     public TreatmentRecordResponse updateTreatmentRecord(Long recordId, String status) {
         TreatmentRecord treatmentRecord = treatmentRecordRepository.findById(recordId)

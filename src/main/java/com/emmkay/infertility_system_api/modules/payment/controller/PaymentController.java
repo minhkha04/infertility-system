@@ -5,6 +5,7 @@ import com.emmkay.infertility_system_api.modules.shared.dto.response.ApiResponse
 import com.emmkay.infertility_system_api.modules.treatment.dto.response.TreatmentRecordResponse;
 import com.emmkay.infertility_system_api.modules.shared.helper.QrCodeHelper;
 import com.emmkay.infertility_system_api.modules.payment.service.PaymentService;
+import com.emmkay.infertility_system_api.modules.treatment.service.TreatmentRecordService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -20,6 +21,7 @@ public class PaymentController {
 
     PaymentService paymentService;
     QrCodeHelper qrCodeHelper;
+    TreatmentRecordService treatmentRecordService;
 
     @GetMapping("/vnpay/{recordId}")
     public ApiResponse<String> url(HttpServletRequest request, @PathVariable Long recordId) throws UnsupportedEncodingException {
@@ -50,4 +52,10 @@ public class PaymentController {
                 .build();
     }
 
+    @GetMapping("/result/{recordId}")
+    public ApiResponse<Boolean> result(@PathVariable Long recordId) {
+        return ApiResponse.<Boolean>builder()
+                .result(treatmentRecordService.isPaid(recordId))
+                .build();
+    }
 }
