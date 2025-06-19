@@ -41,7 +41,7 @@ public class AppointmentController {
     }
 
     @Operation(summary = "for customer to change appointment")
-    @PutMapping("/request-change/{appointmentId})")
+    @PutMapping("/request-change/{appointmentId}")
     public ApiResponse<AppointmentResponse> rescheduleAppointment(
             @PathVariable Long appointmentId,
             @RequestBody @Valid
@@ -84,7 +84,7 @@ public class AppointmentController {
                 .build();
     }
 
-    @PutMapping("change-appointment-by-doctor-or-manager/{appointmentId}")
+    @PutMapping("/change-appointment-by-doctor-or-manager/{appointmentId}")
     public ApiResponse<AppointmentResponse> changeByDoctorOrManger(@PathVariable Long appointmentId, @RequestBody @Valid ChangeAppointmentByDoctorOrManagerRequest request) {
         return ApiResponse.<AppointmentResponse>builder()
                 .result(appointmentService.changeAppointmentForManagerOrDoctor(appointmentId, request))
@@ -115,14 +115,14 @@ public class AppointmentController {
                 .build();
     }
 
-    @GetMapping("get-by-step-id/{stepId}")
+    @GetMapping("/get-by-step-id/{stepId}")
     public ApiResponse<List<AppointmentResponse>> getAppointmentByStepId(@PathVariable Long stepId) {
         return ApiResponse.<List<AppointmentResponse>>builder()
                 .result(appointmentService.getAppointmentByStepId(stepId))
                 .build();
     }
 
-    @GetMapping("get-all-for-doctor/{doctorId}")
+    @GetMapping("/get-all-for-doctor/{doctorId}")
     public ApiResponse<List<AppointmentResponse>> getAppointmentByStepId(@PathVariable String doctorId) {
         return ApiResponse.<List<AppointmentResponse>>builder()
                 .result(appointmentService.getAppointmentByDoctorId(doctorId))
