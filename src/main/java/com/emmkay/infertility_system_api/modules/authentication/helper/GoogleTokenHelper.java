@@ -1,4 +1,4 @@
-package com.emmkay.infertility_system_api.modules.shared.helper;
+package com.emmkay.infertility_system_api.modules.authentication.helper;
 
 import com.emmkay.infertility_system_api.modules.shared.exception.AppException;
 import com.emmkay.infertility_system_api.modules.shared.exception.ErrorCode;

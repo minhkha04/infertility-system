@@ -44,9 +44,9 @@ public class TreatmentRecordService {
     AppointmentService appointmentService;
     DoctorService doctorService;
 
-    public boolean isPaid(Long recordId) {
-        return treatmentRecordRepository.findIsPaidById(recordId);
-    }
+//    public boolean isPaid(Long recordId) {
+//        return treatmentRecordRepository.findIsPaidById(recordId);
+//    }
 
     @PreAuthorize("hasRole('MANAGER') or hasRole('DOCTOR')")
     public TreatmentRecordResponse updateTreatmentRecord(Long recordId, String status) {
@@ -146,7 +146,6 @@ public class TreatmentRecordService {
                 .status("PENDING")
                 .createdDate(LocalDate.now())
                 .cd1Date(cd1Date)
-                .isPaid(false)
                 .build();
         TreatmentRecord saveTreatmentRecord = treatmentRecordRepository.save(treatmentRecord);
 
@@ -177,10 +176,6 @@ public class TreatmentRecordService {
             throw new AppException(ErrorCode.CANNOT_CANCEL_TREATMENT);
         }
 
-        if (record.getIsPaid()) {
-            throw new AppException(ErrorCode.TREATMENT_RECORD_IS_PAID);
-        }
-
         record.setStatus("CANCELLED");
         treatmentRecordRepository.save(record);
         treatmentStepService.cancelStepsByRecordId(recordId);
@@ -197,10 +192,4 @@ public class TreatmentRecordService {
         return treatmentRecordMapper.toTreatmentRecordResponse(treatmentRecordRepository.save(record));
     }
 
-    public TreatmentRecordResponse updatePaid(Long recordId) {
-        TreatmentRecord treatmentRecord = treatmentRecordRepository.findById(recordId)
-                .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
-        treatmentRecord.setIsPaid(true);
-        return treatmentRecordMapper.toTreatmentRecordResponse(treatmentRecordRepository.save(treatmentRecord));
-    }
 }

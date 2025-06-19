@@ -1,6 +1,5 @@
 package com.emmkay.infertility_system_api.modules.payment.service;
 
-import com.emmkay.infertility_system_api.modules.treatment.dto.response.TreatmentRecordResponse;
 import com.emmkay.infertility_system_api.modules.payment.strategy.PaymentStrategy;
 import com.emmkay.infertility_system_api.modules.payment.strategy.PaymentStrategyFactory;
 import lombok.AccessLevel;
@@ -18,13 +17,20 @@ import java.io.UnsupportedEncodingException;
 public class PaymentService {
     PaymentStrategyFactory paymentStrategyFactory;
 
-    public String createPaymentUrl(String paymentMethod, Object request, Long recordId) throws UnsupportedEncodingException {
+    public String createPayment(String paymentMethod, Object request, Long recordId) throws UnsupportedEncodingException {
         PaymentStrategy strategy = paymentStrategyFactory.getStrategy(paymentMethod);
-        return strategy.createPaymentUrl(request, recordId);
+        return strategy.createPayment(request, recordId);
     }
 
-    public TreatmentRecordResponse processReturnUrl(String method, Object object) {
+    public boolean processReturnUrl(String method, Object object) {
         PaymentStrategy strategy = paymentStrategyFactory.getStrategy(method);
-        return strategy.processReturnUrl(object);
+        return strategy.handleIpn(object);
     }
+
+    public String reloadPayment(String paymentMethod, Object request, Long recordId) {
+        PaymentStrategy strategy = paymentStrategyFactory.getStrategy(paymentMethod);
+        return strategy.reloadPayment(request, recordId);
+    }
+
+
 }

@@ -8,17 +8,13 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class MomoCreateRequest {
+public class MomoConfirmRequest {
     String partnerCode;
-    String requestType;
-    String ipnUrl;
-    String orderId;
-    long amount;
-    String orderInfo;
     String requestId;
-    String redirectUrl;
+    String orderId;
+    String requestType;
+    long amount;
     String lang;
-    String extraData;
+    String description;
     String signature;
-    Boolean autoCapture;
 }

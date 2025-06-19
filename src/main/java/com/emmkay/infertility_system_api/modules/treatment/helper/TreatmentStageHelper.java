@@ -1,4 +1,4 @@
-package com.emmkay.infertility_system_api.modules.shared.helper;
+package com.emmkay.infertility_system_api.modules.treatment.helper;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
