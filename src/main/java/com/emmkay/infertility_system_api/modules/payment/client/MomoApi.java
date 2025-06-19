@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "momo-api", url = "${momo.endPoint}")
+@FeignClient(name = "momoApi", url = "${momo.endPoint}")
 @Component
 public interface MomoApi {
 

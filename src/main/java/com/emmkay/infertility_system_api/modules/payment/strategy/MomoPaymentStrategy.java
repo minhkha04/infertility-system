@@ -1,5 +1,6 @@
 package com.emmkay.infertility_system_api.modules.payment.strategy;
 
+import com.emmkay.infertility_system_api.modules.payment.builder.MomoRequestBuilder;
 import com.emmkay.infertility_system_api.modules.payment.client.MomoApi;
 import com.emmkay.infertility_system_api.modules.payment.configuration.MomoConfig;
 import com.emmkay.infertility_system_api.modules.payment.dto.request.MomoConfirmRequest;
@@ -10,12 +11,13 @@ import com.emmkay.infertility_system_api.modules.payment.dto.response.MomoCreate
 import com.emmkay.infertility_system_api.modules.payment.entity.PaymentTransaction;
 import com.emmkay.infertility_system_api.modules.payment.helper.QrCodeHelper;
 import com.emmkay.infertility_system_api.modules.payment.repository.PaymentTransactionRepository;
+import com.emmkay.infertility_system_api.modules.payment.service.PaymentEligibilityService;
 import com.emmkay.infertility_system_api.modules.payment.service.PaymentTransactionService;
+import com.emmkay.infertility_system_api.modules.payment.util.MomoSignatureUtil;
 import com.emmkay.infertility_system_api.modules.treatment.entity.TreatmentRecord;
 import com.emmkay.infertility_system_api.modules.shared.exception.AppException;
 import com.emmkay.infertility_system_api.modules.shared.exception.ErrorCode;
-import com.emmkay.infertility_system_api.modules.payment.helper.PaymentHelper;
-import com.emmkay.infertility_system_api.modules.treatment.service.TreatmentRecordService;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -30,79 +32,110 @@ import java.util.UUID;
 @Slf4j
 public class MomoPaymentStrategy implements PaymentStrategy {
 
-    PaymentHelper paymentHelper;
     MomoConfig momoConfig;
     MomoApi momoApi;
     PaymentTransactionRepository paymentTransactionRepository;
-    QrCodeHelper qrCodeHelper;
     PaymentTransactionService paymentTransactionService;
+    MomoRequestBuilder momoRequestBuilder;
+    MomoSignatureUtil momoSignatureUtil;
+    PaymentEligibilityService paymentEligibilityService;
+
+    private void processPayment(PaymentTransaction paymentTransaction, String requestType) {
+        MomoConfirmRequest momoConfirmRequest = momoRequestBuilder.buildMomoConfirmRequest(paymentTransaction, requestType);
+        MomoConfirmResponse response = momoApi.confirmMomoPayment(momoConfirmRequest);
+
+        switch (requestType.toLowerCase()) {
+            case "capture":
+                log.info("Xác nhận thanh toán thành công với MoMo");
+                if (response.getResultCode() == 0) {
+                    log.info("Momo xác nhận capture: {}", response.getMessage());
+                    paymentTransactionService.updateStatus(paymentTransaction, "SUCCESS");
+                } else {
+                    log.error("Momo từ chối capture: {}", response.getMessage());
+                    paymentTransactionService.updateStatus(paymentTransaction, "FAILED");
+                }
+                break;
+            case "cancel":
+                log.info("Thực hiện huỷ thanh toán với MoMo");
+                if (response.getResultCode() == 0) {
+                    log.info("MoMo xác nhận huỷ");
+                } else {
+                    log.error("MoMo từ chối huỷ: {}", response.getMessage());
+                }
+                paymentTransactionService.updateStatus(paymentTransaction, "FAILED");
+                break;
+            default:
+                throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+
+    }
+
+    @Retry(name = "momoApi", fallbackMethod = "fallbackCreateMomoQr")
+    public MomoCreateResponse createMomoQrSafe(MomoCreateRequest request) {
+        return momoApi.createMomoQr(request);
+    }
+
+    public MomoCreateResponse fallbackCreateMomoQr(MomoCreateRequest request, Throwable t) {
+        log.error("Gọi MoMo thất bại sau khi retry: {}", t.getMessage());
+        throw new AppException(ErrorCode.MOMO_TIMEOUT); // lỗi tùy chỉnh của bạn
+    }
 
     @Override
     public String createPayment(Object request, Long recordId) {
-        TreatmentRecord treatmentRecord = paymentTransactionService.isAvailable(recordId, false);
+        TreatmentRecord treatmentRecord = paymentEligibilityService.isAvailable(recordId, false);
         PaymentTransaction paymentTransaction = paymentTransactionService.createTransaction(treatmentRecord, "MOMO", 5);
-        MomoCreateRequest momoCreateRequest = paymentHelper.buildMomoRequest(paymentTransaction, UUID.randomUUID().toString());
-        MomoCreateResponse momoCreateResponse = momoApi.createMomoQr(momoCreateRequest);
+        MomoCreateRequest momoCreateRequest = momoRequestBuilder.buildMomoRequest(paymentTransaction, UUID.randomUUID().toString());
+        MomoCreateResponse momoCreateResponse = createMomoQrSafe(momoCreateRequest);
         String url = momoCreateResponse.getQrCodeUrl();
-        return qrCodeHelper.generateQrBase64(url);
+        return QrCodeHelper.generateQrBase64(url);
     }
 
     @Override
     public boolean handleIpn(Object object) {
         try {
-            // 1. Build rawData để verify chữ ký
+            // 1. Ép kiểu IPN
             MomoIpnRequest request = (MomoIpnRequest) object;
-            String rawData = String.format(
-                    "accessKey=%s&amount=%s&extraData=%s&message=%s&orderId=%s&orderInfo=%s&orderType=%s&partnerCode=%s&payType=%s&requestId=%s&responseTime=%s&resultCode=%s&transId=%s",
-                    momoConfig.getAccessKey(),
-                    request.getAmount(),
-                    request.getExtraData(),
-                    request.getMessage(),
-                    request.getOrderId(),
-                    request.getOrderInfo(),
-                    request.getOrderType(),
-                    request.getPartnerCode(),
-                    request.getPayType(),
-                    request.getRequestId(),
-                    request.getResponseTime(),
-                    request.getResultCode(),
-                    request.getTransId()
-            );
-            // 2. So sánh chữ ký
-            String expectedSignature = paymentHelper.hmacSHA256(rawData, momoConfig.getSecretKey());
+
+            // 2. Verify chữ ký
+            String rawData = momoRequestBuilder.buildRawData(request);
+            String expectedSignature = momoSignatureUtil.hmacSHA256(rawData, momoConfig.getSecretKey());
+
             if (!expectedSignature.equals(request.getSignature())) {
+                log.warn("Signature không khớp. Reject IPN.");
                 throw new AppException(ErrorCode.VERIFY_PAYMENT_FAIL);
             }
-            // 3. Xử lý logic thanh toán
+
+            // 3. Lấy giao dịch tương ứng
             String transactionCode = request.getOrderId();
-            PaymentTransaction paymentTransaction = paymentTransactionRepository.findByTransactionCode(transactionCode)
+            PaymentTransaction paymentTransaction = paymentTransactionRepository
+                    .findByTransactionCode(transactionCode)
                     .orElseThrow(() -> new AppException(ErrorCode.PAYMENT_TRANSACTION_NOT_FOUND));
 
-            if (paymentTransaction.getStatus().equalsIgnoreCase("FAILED")) {
-                log.warn("Payment failed: {}", paymentTransaction.getTransactionCode());
-                processPayment(paymentTransaction, "cancel");
-                return false;
+            // 4. Xử lý theo trạng thái
+            String currentStatus = paymentTransaction.getStatus().toUpperCase();
+
+            switch (currentStatus) {
+                case "FAILED":
+                    log.warn("IPN báo thất bại, huỷ giao dịch {}", transactionCode);
+                    processPayment(paymentTransaction, "cancel");
+                    return false;
+
+                case "PENDING":
+                    log.info("IPN xác nhận giao dịch thành công {}", transactionCode);
+                    processPayment(paymentTransaction, "capture");
+                    return true;
+
+                case "SUCCESS":
+                    log.info("IPN đã nhận trước đó. Bỏ qua.");
+                    return true;
+
+                default:
+                    log.warn("IPN trong trạng thái không hợp lệ: {}", currentStatus);
+                    return false;
             }
 
-            if (paymentTransaction.getStatus().equalsIgnoreCase("PENDING")) {
-                log.info("Payment success");
-                paymentTransaction.setStatus("SUCCESS");
-                processPayment(paymentTransaction, "capture");
-            }
-            paymentTransactionRepository.save(paymentTransaction);
-            return true;
-//            if (request.getResultCode() == 0) {
-//                log.info("Payment successful: {}", request);
-//                paymentTransaction.setStatus("SUCCESS");
-//                paymentTransactionRepository.save(paymentTransaction);
-//                return true;
-//            } else {
-//                log.info(request.getMessage());
-//                paymentTransaction.setStatus("FAILED");
-//                paymentTransactionRepository.save(paymentTransaction);
-//                return false;
-//            }
         } catch (Exception e) {
+            log.error("Xử lý IPN thất bại: {}", e.getMessage());
             return false;
         }
     }
@@ -114,43 +147,12 @@ public class MomoPaymentStrategy implements PaymentStrategy {
 
     @Override
     public String reloadPayment(Object request, Long recordId) {
-        TreatmentRecord treatmentRecord = paymentTransactionService.isAvailable(recordId, true);
+        TreatmentRecord treatmentRecord = paymentEligibilityService.isAvailable(recordId, true);
         PaymentTransaction paymentTransaction = paymentTransactionService.reloadTransaction(treatmentRecord, "MOMO", 5);
-        MomoCreateRequest momoCreateRequest = paymentHelper.buildMomoRequest(paymentTransaction, UUID.randomUUID().toString());
-        MomoCreateResponse momoCreateResponse = momoApi.createMomoQr(momoCreateRequest);
+        MomoCreateRequest momoCreateRequest = momoRequestBuilder.buildMomoRequest(paymentTransaction, UUID.randomUUID().toString());
+        MomoCreateResponse momoCreateResponse = createMomoQrSafe(momoCreateRequest);
         String url = momoCreateResponse.getQrCodeUrl();
-        return qrCodeHelper.generateQrBase64(url);
+        return QrCodeHelper.generateQrBase64(url);
     }
 
-
-    public void processPayment(PaymentTransaction paymentTransaction, String requestType) {
-        MomoConfirmRequest momoConfirmRequest = paymentHelper.buildMomoConfirmRequest(paymentTransaction, requestType);
-        MomoConfirmResponse response = momoApi.confirmMomoPayment(momoConfirmRequest);
-        switch (requestType.toLowerCase()) {
-            case "capture":
-                log.info("Payment successful");
-                if (response.getResultCode() == 0) {
-                    log.info("Successful: {}", response.getMessage());
-                    paymentTransaction.setStatus("SUCCESS");
-                    paymentTransactionRepository.save(paymentTransaction);
-                } else {
-                    log.info("Failed: {}", response.getMessage());
-                    paymentTransaction.setStatus("FAILED");
-                    paymentTransactionRepository.save(paymentTransaction);
-                }
-                break;
-            case "cancel":
-                if ("0".equals(response.getResultCode())) {
-                    log.info("Successfully cancelled");
-                } else {
-                    log.error("Failed to cancel transaction");
-                    log.info("Failed: {}", response.getMessage());
-                }
-                paymentTransaction.setStatus("FAILED");
-                paymentTransactionRepository.save(paymentTransaction);
-            default:
-                throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
-        }
-
-    }
 }

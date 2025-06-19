@@ -72,6 +72,7 @@ public enum ErrorCode {
     FEEDBACK_IS_EXISTED(1059, "Bạn đã feedback dịch vụ này rồi", HttpStatus.BAD_REQUEST),
     STATUS_IS_INVALID(1060, "Trạng thái truyền vào sai", HttpStatus.BAD_REQUEST),
     PAYMENT_TRANSACTION_NOT_FOUND(1061, "Không tìm thấy hóa đơn", HttpStatus.BAD_REQUEST),
+    MOMO_TIMEOUT(1062, "Lỗi thanh toán", HttpStatus.INTERNAL_SERVER_ERROR),
     ;
 
     int code;

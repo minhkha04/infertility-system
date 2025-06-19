@@ -1,12 +1,11 @@
 package com.emmkay.infertility_system_api.modules.payment.service;
 
 import com.emmkay.infertility_system_api.modules.payment.entity.PaymentTransaction;
-import com.emmkay.infertility_system_api.modules.payment.helper.PaymentHelper;
 import com.emmkay.infertility_system_api.modules.payment.repository.PaymentTransactionRepository;
+import com.emmkay.infertility_system_api.modules.payment.util.PaymentUtil;
 import com.emmkay.infertility_system_api.modules.shared.exception.AppException;
 import com.emmkay.infertility_system_api.modules.shared.exception.ErrorCode;
 import com.emmkay.infertility_system_api.modules.treatment.entity.TreatmentRecord;
-import com.emmkay.infertility_system_api.modules.treatment.repository.TreatmentRecordRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -14,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -24,35 +22,12 @@ import java.util.List;
 @Slf4j
 public class PaymentTransactionService {
 
-    TreatmentRecordRepository treatmentRecordRepository;
     PaymentTransactionRepository paymentTransactionRepository;
-    PaymentHelper paymentHelper;
-
-    public TreatmentRecord isAvailable(Long recordId, boolean isReload) {
-        TreatmentRecord treatmentRecord = treatmentRecordRepository.findById(recordId)
-                .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
-
-        if (treatmentRecord.getStatus().equalsIgnoreCase("CANCELLED")) {
-            throw new AppException(ErrorCode.CANNOT_PAY);
-        }
-
-        if (isReload) {
-            boolean hasSuccess = paymentTransactionRepository.existsByRecordAndStatus(treatmentRecord, "SUCCESS");
-            if (hasSuccess) {
-                throw new AppException(ErrorCode.CANNOT_PAY);
-            }
-        } else {
-            boolean hasActiveTransaction = paymentTransactionRepository.existsByRecordAndStatusIn(treatmentRecord, List.of("PENDING", "SUCCESS"));
-            if (hasActiveTransaction) {
-                throw new AppException(ErrorCode.CANNOT_PAY);
-            }
-        }
-        return treatmentRecord;
-    }
+    PaymentUtil paymentUtil;
 
     public PaymentTransaction createTransaction(TreatmentRecord treatmentRecord, String paymentMethod, long expirationMinutes) {
         PaymentTransaction paymentTransaction = PaymentTransaction.builder()
-                .transactionCode(paymentHelper.getOrderId(treatmentRecord.getId()))
+                .transactionCode(paymentUtil.getOrderId(treatmentRecord.getId()))
                 .record(treatmentRecord)
                 .status("PENDING")
                 .amount(treatmentRecord.getService().getPrice())
@@ -94,4 +69,12 @@ public class PaymentTransactionService {
         paymentTransactionRepository.save(paymentTransaction);
     }
 
+    public void updateStatus(PaymentTransaction paymentTransaction, String status) {
+        paymentTransaction.setStatus(status);
+        paymentTransactionRepository.save(paymentTransaction);
+    }
+
+    public boolean isPaid(Long recordId) {
+        return paymentTransactionRepository.existsByRecordIdAndStatus(recordId, "SUCCESS");
+    }
 }

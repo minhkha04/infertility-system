@@ -1,15 +1,13 @@
 package com.emmkay.infertility_system_api.modules.payment.strategy;
 
 import com.emmkay.infertility_system_api.modules.payment.configuration.VnPayConfig;
+import com.emmkay.infertility_system_api.modules.payment.service.PaymentEligibilityService;
 import com.emmkay.infertility_system_api.modules.payment.service.PaymentTransactionService;
-import com.emmkay.infertility_system_api.modules.treatment.dto.response.TreatmentRecordResponse;
+import com.emmkay.infertility_system_api.modules.payment.util.PaymentUtil;
+import com.emmkay.infertility_system_api.modules.payment.util.VnPaySignatureUtil;
 import com.emmkay.infertility_system_api.modules.treatment.entity.TreatmentRecord;
 import com.emmkay.infertility_system_api.modules.shared.exception.AppException;
 import com.emmkay.infertility_system_api.modules.shared.exception.ErrorCode;
-import com.emmkay.infertility_system_api.modules.payment.helper.PaymentHelper;
-import com.emmkay.infertility_system_api.modules.treatment.mapper.TreatmentRecordMapper;
-import com.emmkay.infertility_system_api.modules.treatment.repository.TreatmentRecordRepository;
-import com.emmkay.infertility_system_api.modules.treatment.service.TreatmentRecordService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -31,9 +29,9 @@ import java.util.*;
 public class VnPaymentStrategy implements PaymentStrategy {
 
     VnPayConfig vnPayConfig;
-    TreatmentRecordService treatmentRecordService;
-    PaymentHelper paymentHelper;
-    PaymentTransactionService paymentTransactionService;
+    VnPaySignatureUtil vnPaySignatureUtil;
+    PaymentUtil paymentUtil;
+    PaymentEligibilityService paymentEligibilityService;
 
     @Override
     public String createPayment(Object request, Long recordId) throws UnsupportedEncodingException {
@@ -44,15 +42,15 @@ public class VnPaymentStrategy implements PaymentStrategy {
             log.error("Error when create payment url: {}", e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
-        TreatmentRecord treatmentRecord = paymentTransactionService.isAvailable(recordId, false);
+        TreatmentRecord treatmentRecord = paymentEligibilityService.isAvailable(recordId, false);
 
         BigDecimal price = treatmentRecord.getService().getPrice().multiply(BigDecimal.valueOf(100));
         String amount = price.toBigInteger().toString();
         String vnp_Version = "2.1.0";
         String vnp_Command = "pay";
         String orderType = "other";
-        String vnp_TxnRef = paymentHelper.getOrderId(recordId);
-        String vnp_IpAddr = paymentHelper.getIpAddress(req);
+        String vnp_TxnRef = paymentUtil.getOrderId(recordId);
+        String vnp_IpAddr = paymentUtil.getIpAddress(req);
 
         Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
@@ -106,7 +104,7 @@ public class VnPaymentStrategy implements PaymentStrategy {
         }
         System.out.println("Hash data " + hashData);
         String queryUrl = query.toString();
-        String vnp_SecureHash = paymentHelper.hmacSHA512(vnPayConfig.getHashSecret(), hashData.toString());
+        String vnp_SecureHash = vnPaySignatureUtil.hmacSHA512(vnPayConfig.getHashSecret(), hashData.toString());
         queryUrl += "&vnp_SecureHash=" + vnp_SecureHash;
         String paymentUrl = vnPayConfig.getPaymentUrl() + "?" + queryUrl;
         return paymentUrl;
@@ -136,10 +134,10 @@ public class VnPaymentStrategy implements PaymentStrategy {
             {
                 fields.remove("vnp_SecureHash");
             }
-            String signValue = paymentHelper.hashAllFields(fields);
+            String signValue = vnPaySignatureUtil.hashAllFields(fields, vnPayConfig.getHashSecret());
 
             if (signValue.equalsIgnoreCase(vnp_SecureHash)) {
-                long recordId = paymentHelper.extractRecordId(request.getParameter("vnp_TxnRef"));
+                long recordId = paymentUtil.extractRecordId(request.getParameter("vnp_TxnRef"));
                 if (!"00".equals(request.getParameter("vnp_ResponseCode"))) {
                     log.warn("Payment failed with code {}", request.getParameter("vnp_ResponseCode") );
                     return false;

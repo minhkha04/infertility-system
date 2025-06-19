@@ -47,19 +47,6 @@ public class PaymentController {
         return ResponseEntity.ok(success ? "0" : "1");
     }
 
-//    @GetMapping("/result/{recordId}")
-//    public ApiResponse<Boolean> result(@PathVariable Long recordId) {
-//        return ApiResponse.<Boolean>builder()
-//                .result(treatmentRecordService.isPaid(recordId))
-//                .build();
-//    }
-
-    @DeleteMapping("/cancelled/{recordId}")
-    public  ApiResponse<Void> cancelled(@PathVariable Long recordId) {
-        paymentTransactionService.cancelled(recordId);
-        return ApiResponse.<Void>builder().build();
-    }
-
     @PostMapping("momo/reload/{recordId}")
     public ApiResponse<String> reloadMomo(@PathVariable Long recordId) {
         String result = paymentService.reloadPayment("MOMO", null, recordId);
@@ -67,4 +54,18 @@ public class PaymentController {
                 .result(result)
                 .build();
     }
+
+    @GetMapping("/result/{recordId}")
+    public ApiResponse<Boolean> result(@PathVariable Long recordId) {
+        return ApiResponse.<Boolean>builder()
+                .result(paymentTransactionService.isPaid(recordId))
+                .build();
+    }
+
+    @DeleteMapping("/cancelled/{recordId}")
+    public  ApiResponse<Void> cancelled(@PathVariable Long recordId) {
+        paymentTransactionService.cancelled(recordId);
+        return ApiResponse.<Void>builder().build();
+    }
+
 }

@@ -12,7 +12,6 @@ import java.util.Optional;
 
 @Repository
 public interface PaymentTransactionRepository extends JpaRepository<PaymentTransaction, Long> {
-    Optional<PaymentTransaction> findByRecord(TreatmentRecord record);
 
     boolean existsByRecordAndStatusIn(TreatmentRecord record, Collection<String> statuses);
 
@@ -25,4 +24,6 @@ public interface PaymentTransactionRepository extends JpaRepository<PaymentTrans
     boolean existsByRecordAndStatus(TreatmentRecord record, String status);
 
     Optional<PaymentTransaction> findTopByRecordIdOrderByCreatedAtDesc(Long recordId);
+
+    boolean existsByRecordIdAndStatus(Long recordId, String status);
 }
