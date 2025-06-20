@@ -1,6 +1,5 @@
 package com.emmkay.infertility_system_api.modules.payment.util;
 
-import com.emmkay.infertility_system_api.modules.payment.configuration.VnPayConfig;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -15,8 +14,6 @@ import java.util.*;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 public class VnPaySignatureUtil {
-
-    VnPayConfig vnPayConfig;
 
     public String hmacSHA512(String key, String data) {
         try {

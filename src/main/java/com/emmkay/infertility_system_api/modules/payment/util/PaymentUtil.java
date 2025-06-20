@@ -10,14 +10,6 @@ public class PaymentUtil {
         return "TR" + recordId + "-" + System.currentTimeMillis();
     }
 
-    public long extractRecordId(String orderId) {
-        String raw = orderId.replace("TR", "");
-        int idx = raw.indexOf('-');
-        String idPart = raw.substring(0, idx);
-        return Long.parseLong(idPart);
-    }
-
-
     public  String getIpAddress(HttpServletRequest request) {
         String ipAdress;
         try {
