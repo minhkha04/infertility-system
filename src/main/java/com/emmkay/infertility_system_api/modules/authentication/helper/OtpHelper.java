@@ -1,4 +1,4 @@
-package com.emmkay.infertility_system_api.modules.shared.helper;
+package com.emmkay.infertility_system_api.modules.authentication.helper;
 
 import com.emmkay.infertility_system_api.modules.authentication.entity.EmailOtp;
 import com.emmkay.infertility_system_api.modules.authentication.repository.EmailOtpRepository;

@@ -31,6 +31,6 @@ public interface TreatmentRecordRepository extends JpaRepository<TreatmentRecord
             """)
     ManagerDashboardStatisticsProjection getManagerDashboardStatistics();
 
-    @Query("SELECT tr.isPaid FROM TreatmentRecord tr WHERE tr.id = :recordId")
-    Boolean findIsPaidById(@Param("recordId") Long recordId);
+//    @Query("SELECT tr.isPaid FROM TreatmentRecord tr WHERE tr.id = :recordId")
+//    Boolean findIsPaidById(@Param("recordId") Long recordId);
 }

@@ -9,7 +9,7 @@ import com.emmkay.infertility_system_api.modules.treatment.entity.TreatmentStage
 import com.emmkay.infertility_system_api.modules.treatment.entity.TreatmentStep;
 import com.emmkay.infertility_system_api.modules.shared.exception.AppException;
 import com.emmkay.infertility_system_api.modules.shared.exception.ErrorCode;
-import com.emmkay.infertility_system_api.modules.shared.helper.TreatmentStageHelper;
+import com.emmkay.infertility_system_api.modules.treatment.helper.TreatmentStageHelper;
 import com.emmkay.infertility_system_api.modules.treatment.mapper.TreatmentStepMapper;
 import com.emmkay.infertility_system_api.modules.appointment.repository.AppointmentRepository;
 import com.emmkay.infertility_system_api.modules.reminder.repository.ReminderRepository;
