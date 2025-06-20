@@ -256,13 +256,13 @@ public class AppointmentService {
                 reminderService.createReminderForAppointment(appointment);
                 break;
             case "REJECTED":
-                appointment.setRequestedDate(null);
-                appointment.setRequestedShift(null);
                 appointment.setNotes(request.getNotes());
                 break;
             default:
                 throw new AppException(ErrorCode.STATUS_IS_INVALID);
         }
+        appointment.setRequestedDate(null);
+        appointment.setRequestedShift(null);
         appointment.setStatus(request.getStatus().toUpperCase());
         return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
     }
