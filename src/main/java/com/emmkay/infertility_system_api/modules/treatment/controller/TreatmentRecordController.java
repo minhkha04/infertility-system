@@ -57,7 +57,7 @@ public class TreatmentRecordController {
                 .build();
     }
 
-    @PutMapping("/update-cd1/{cd1}")
+    @PutMapping("/update-cd1/{recordId}/{cd1}")
     public ApiResponse<TreatmentRecordResponse> updateCd1(@PathVariable Long recordId, @PathVariable LocalDate cd1) {
         return ApiResponse.<TreatmentRecordResponse>builder()
                 .result(treatmentRecordService.updateCd1(recordId, cd1))

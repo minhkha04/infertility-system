@@ -127,12 +127,10 @@ public class TreatmentRecordService {
         Doctor doctor;
         User customer = userRepository.findById(customerId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-        if (doctorId != null) {
-            System.out.println("User chọn doctor: " + doctorId);
+        if (!doctorId.isEmpty()) {
             doctor = doctorRepository.findById(doctorId)
                     .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_NOT_EXISTED));
         } else {
-            System.out.println("User không chọn doctor");
             doctor = doctorService.findBestDoctor(startDate, shift)
                     .orElseThrow(() -> new AppException(ErrorCode.USERNAME_EXISTED));
         }
