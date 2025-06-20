@@ -4,7 +4,6 @@ import com.emmkay.infertility_system_api.modules.manager.projection.ManagerDashb
 import com.emmkay.infertility_system_api.modules.treatment.entity.TreatmentRecord;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
@@ -13,8 +12,6 @@ import java.util.Optional;
 
 @Repository
 public interface TreatmentRecordRepository extends JpaRepository<TreatmentRecord, Long> {
-
-    boolean existsByCustomerIdAndStatusIn(String customerId, Collection<String> statuses);
 
     Optional<TreatmentRecord> findByIdAndCustomerId(Long id, String customerId);
 
@@ -31,6 +28,5 @@ public interface TreatmentRecordRepository extends JpaRepository<TreatmentRecord
             """)
     ManagerDashboardStatisticsProjection getManagerDashboardStatistics();
 
-//    @Query("SELECT tr.isPaid FROM TreatmentRecord tr WHERE tr.id = :recordId")
-//    Boolean findIsPaidById(@Param("recordId") Long recordId);
+    Optional<TreatmentRecord> findByIdAndStatus(Long id, String status);
 }

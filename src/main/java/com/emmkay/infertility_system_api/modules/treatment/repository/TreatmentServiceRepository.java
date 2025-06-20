@@ -23,32 +23,36 @@ public interface TreatmentServiceRepository extends JpaRepository<TreatmentServi
     Optional<TreatmentService> getTreatmentServicesById(Long id);
 
     @Query(value = """
-            SELECT
+                SELECT
                     ts.id AS typeId,
-                    SUM(ts.price) AS  totalRevenue,
+                    SUM(ts.price) AS totalRevenue,
                     ts.name AS name,
-                    COUNT(tr.id) AS totalUses
-                FROM TreatmentRecord AS tr
-                INNER JOIN TreatmentService AS ts
-                ON tr.service.id = ts.id
-                WHERE tr.status IN ("COMPLETED", "INPROGRESS")
+                    COUNT(DISTINCT tr.id) AS totalUses
+                FROM TreatmentRecord tr
+                JOIN TreatmentService ts ON tr.service.id = ts.id
+                WHERE tr.status IN ('COMPLETED', 'INPROGRESS')
+                  AND EXISTS (
+                    SELECT 1 FROM PaymentTransaction pt
+                    WHERE pt.record.id = tr.id AND pt.status = 'SUCCESS'
+                  )
                 GROUP BY ts.id, ts.name
                 ORDER BY totalRevenue DESC
             """)
     List<ManagerDashboardServiceProjection> getManagerDashboardServices();
 
     @Query("""
-              SELECT 
-                FUNCTION('DATE_FORMAT', tr.startDate, '%Y-%m') AS month,
-                SUM(ts.price) AS totalRevenue,
-                COUNT(DISTINCT tr.id) AS totalTreatmentServiceInMonth
-              FROM TreatmentRecord tr
-              JOIN tr.service ts
-              WHERE tr.status != 'CANCELLED'
-                AND tr.startDate >= :fromDate
-                AND tr.startDate < :toDate
-              GROUP BY FUNCTION('DATE_FORMAT', tr.startDate, '%Y-%m')
-              ORDER BY month ASC
+                SELECT
+                    FUNCTION('DATE_FORMAT', tr.startDate, '%Y-%m') AS month,
+                    SUM(ts.price) AS totalRevenue,
+                    COUNT(DISTINCT tr.id) AS totalTreatmentServiceInMonth
+                FROM TreatmentRecord tr
+                JOIN tr.service ts
+                JOIN PaymentTransaction pt ON pt.record.id = tr.id AND pt.status = 'SUCCESS'
+                WHERE tr.status != 'CANCELLED'
+                  AND tr.startDate >= :fromDate
+                  AND tr.startDate < :toDate
+                GROUP BY FUNCTION('DATE_FORMAT', tr.startDate, '%Y-%m')
+                ORDER BY month ASC
             """)
     List<ManagerDashboardChartProject> getManagerDashboardChartProject(
             @Param("fromDate") LocalDate fromDate,

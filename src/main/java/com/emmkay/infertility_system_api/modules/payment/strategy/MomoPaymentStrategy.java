@@ -125,10 +125,6 @@ public class MomoPaymentStrategy implements PaymentStrategy {
                     processPayment(paymentTransaction, "capture");
                     return true;
 
-                case "SUCCESS":
-                    log.info("IPN đã nhận trước đó. Bỏ qua.");
-                    return true;
-
                 default:
                     log.warn("IPN trong trạng thái không hợp lệ: {}", currentStatus);
                     return false;

@@ -6,6 +6,7 @@ import com.emmkay.infertility_system_api.modules.payment.util.PaymentUtil;
 import com.emmkay.infertility_system_api.modules.shared.exception.AppException;
 import com.emmkay.infertility_system_api.modules.shared.exception.ErrorCode;
 import com.emmkay.infertility_system_api.modules.treatment.entity.TreatmentRecord;
+import com.emmkay.infertility_system_api.modules.treatment.repository.TreatmentRecordRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -24,6 +25,7 @@ public class PaymentTransactionService {
 
     PaymentTransactionRepository paymentTransactionRepository;
     PaymentUtil paymentUtil;
+    TreatmentRecordRepository treatmentRecordRepository;
 
     public PaymentTransaction createTransaction(TreatmentRecord treatmentRecord, String paymentMethod, long expirationMinutes) {
         PaymentTransaction paymentTransaction = PaymentTransaction.builder()
@@ -71,6 +73,12 @@ public class PaymentTransactionService {
 
     public void updateStatus(PaymentTransaction paymentTransaction, String status) {
         paymentTransaction.setStatus(status);
+        if (status.equalsIgnoreCase("SUCCESS")) {
+            TreatmentRecord treatmentRecord = treatmentRecordRepository.findByIdAndStatus(paymentTransaction.getRecord().getId(), "PENDING")
+                    .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
+                treatmentRecord.setStatus("INPROGRESS");
+                treatmentRecordRepository.save(treatmentRecord);
+        }
         paymentTransactionRepository.save(paymentTransaction);
     }
 
