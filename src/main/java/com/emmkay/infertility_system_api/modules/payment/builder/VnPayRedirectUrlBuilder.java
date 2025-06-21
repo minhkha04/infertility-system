@@ -15,6 +15,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -38,21 +39,18 @@ public class VnPayRedirectUrlBuilder {
             String vnp_IpAddr = paymentUtil.getIpAddress(req);
             String vnp_TmnCode = vnPayConfig.getTmnCode();
 
-            LocalDateTime expiredAt = paymentTransaction.getExpiredAt();
-            LocalDateTime now = LocalDateTime.now();
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+            ZoneId zoneId = ZoneId.of("Asia/Ho_Chi_Minh");
 
-            String vnp_ExpireDate = expiredAt
-                    .atZone(ZoneId.of("Asia/Ho_Chi_Minh"))
-                    .format(formatter);
-            String vnp_CreateDate = now
-                    .atZone(ZoneId.of("Asia/Ho_Chi_Minh"))
-                    .format(formatter);
+            ZonedDateTime now = ZonedDateTime.now(zoneId);
+            ZonedDateTime expired = paymentTransaction.getExpiredAt().atZone(zoneId);
 
+            String vnp_CreateDate = now.format(formatter);
+            String vnp_ExpireDate = expired.format(formatter);
 
             System.out.println("CreateDate: " + vnp_CreateDate);
             System.out.println("ExpireDate: " + vnp_ExpireDate);
-            System.out.println("Local time: " + new Date());
+            System.out.println("Local time: " + now);
 
             Map<String, String> vnp_Params = new HashMap<>();
             vnp_Params.put("vnp_Version", vnp_Version);

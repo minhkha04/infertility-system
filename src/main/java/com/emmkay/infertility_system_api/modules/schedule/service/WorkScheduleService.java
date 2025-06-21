@@ -48,7 +48,23 @@ public class WorkScheduleService {
     DoctorRepository doctorRepository;
     DoctorScheduleRepository doctorScheduleRepository;
 
+    private WorkScheduleMonthlyResponse getWorkScheduleBetweenAndByDoctorId(String doctorId, LocalDate firstDayOfMonth, LocalDate lastDayOfMonth) {
+        List<WorkSchedule> schedules = workScheduleRepository.findAllByDoctorIdAndWorkDateBetweenOrderByWorkDateAsc(doctorId, firstDayOfMonth, lastDayOfMonth);
 
+        Map<String, String> scheduleMap = schedules.stream()
+                .collect(Collectors.toMap(
+                        s -> s.getWorkDate().toString(), // key: "2025-06-05"
+                        WorkSchedule::getShift,          // value: "morning"
+                        (existing, replacement) -> replacement, // nếu trùng ngày thì lấy cái sau
+                        LinkedHashMap::new
+                ));
+
+        return WorkScheduleMonthlyResponse.builder()
+                .doctorId(doctorId)
+                .month(firstDayOfMonth.toString().substring(0, 7)) // "2025-06"
+                .schedules(scheduleMap)
+                .build();
+    }
 
     public List<WorkScheduleForManagerDashboardResponse> getWorkSchedulesForManagerDashboard() {
         return doctorScheduleRepository.getDoctorScheduleToday()
@@ -102,21 +118,18 @@ public class WorkScheduleService {
         LocalDate firstDayOfMonth = LocalDate.now().withDayOfMonth(1);
         LocalDate lastDayOfMonth = firstDayOfMonth.withDayOfMonth(firstDayOfMonth.lengthOfMonth());
 
-        List<WorkSchedule> schedules = workScheduleRepository.findAllByDoctorIdAndWorkDateBetweenOrderByWorkDateAsc(id, firstDayOfMonth, lastDayOfMonth);
+        return getWorkScheduleBetweenAndByDoctorId(id, firstDayOfMonth, lastDayOfMonth);
+    }
 
-        Map<String, String> scheduleMap = schedules.stream()
-                .collect(Collectors.toMap(
-                        s -> s.getWorkDate().toString(), // key: "2025-06-05"
-                        WorkSchedule::getShift,          // value: "morning"
-                        (existing, replacement) -> replacement, // nếu trùng ngày thì lấy cái sau
-                        LinkedHashMap::new
-                ));
+    @PreAuthorize("hasRole('MANAGER') or #id == authentication.name")
+    public WorkScheduleMonthlyResponse getWorkScheduleByMonthAndByDoctorId(String id, String yearMonth) {
+        YearMonth yearMonthObj = YearMonth.parse(yearMonth);
 
-        return WorkScheduleMonthlyResponse.builder()
-                .doctorId(id)
-                .month(firstDayOfMonth.toString().substring(0, 7)) // "2025-06"
-                .schedules(scheduleMap)
-                .build();
+        LocalDate firstDayOfMonth = yearMonthObj.atDay(1);
+        LocalDate lastDayOfMonth = yearMonthObj.atEndOfMonth();
+
+        return getWorkScheduleBetweenAndByDoctorId(id, firstDayOfMonth, lastDayOfMonth);
+
     }
 
     @Transactional

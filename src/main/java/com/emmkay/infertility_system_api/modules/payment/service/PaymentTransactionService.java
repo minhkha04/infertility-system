@@ -15,7 +15,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,14 +31,18 @@ public class PaymentTransactionService {
     TreatmentRecordRepository treatmentRecordRepository;
 
     public PaymentTransaction createTransaction(TreatmentRecord treatmentRecord, String paymentMethod, long expirationMinutes) {
+        ZoneId zoneId = ZoneId.of("Asia/Ho_Chi_Minh");
+        ZonedDateTime nowZoned = ZonedDateTime.now(zoneId);
+        ZonedDateTime expiredZoned = nowZoned.plusMinutes(expirationMinutes);
+
         PaymentTransaction paymentTransaction = PaymentTransaction.builder()
                 .transactionCode(paymentUtil.getOrderId(treatmentRecord.getId()))
                 .record(treatmentRecord)
                 .status("PENDING")
                 .amount(treatmentRecord.getService().getPrice())
                 .paymentMethod(paymentMethod)
-                .createdAt(LocalDateTime.now())
-                .expiredAt(LocalDateTime.now().plusMinutes(expirationMinutes))
+                .createdAt(nowZoned.toLocalDateTime())
+                .expiredAt(expiredZoned.toLocalDateTime())
                 .customer(treatmentRecord.getCustomer())
                 .build();
         return paymentTransactionRepository.save(paymentTransaction);
@@ -51,8 +58,10 @@ public class PaymentTransactionService {
 
     @Scheduled(fixedRate = 62000) // 62 giây
     public void expirePendingTransactions() {
+        ZoneId zoneId = ZoneId.of("Asia/Ho_Chi_Minh");
+        ZonedDateTime nowZoned = ZonedDateTime.now(zoneId);
         List<PaymentTransaction> expiredTransactions = paymentTransactionRepository
-                .findAllByStatusAndExpiredAtBefore("PENDING", LocalDateTime.now());
+                .findAllByStatusAndExpiredAtBefore("PENDING", nowZoned.toLocalDateTime());
 
         for (PaymentTransaction tx : expiredTransactions) {
             tx.setStatus("FAILED");
@@ -74,10 +83,13 @@ public class PaymentTransactionService {
     public void updateStatus(PaymentTransaction paymentTransaction, String status) {
         paymentTransaction.setStatus(status);
         if (status.equalsIgnoreCase("SUCCESS")) {
-            TreatmentRecord treatmentRecord = treatmentRecordRepository.findByIdAndStatus(paymentTransaction.getRecord().getId(), "PENDING")
-                    .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
-                treatmentRecord.setStatus("INPROGRESS");
-                treatmentRecordRepository.save(treatmentRecord);
+            Optional<TreatmentRecord> treatmentRecord = treatmentRecordRepository.findByIdAndStatus(paymentTransaction.getRecord().getId(), "PENDING");
+            if (treatmentRecord.isPresent()) {
+                TreatmentRecord record = treatmentRecord.get();
+                record.setStatus("INPROGRESS");
+                treatmentRecordRepository.save(record);
+            }
+
         }
         paymentTransactionRepository.save(paymentTransaction);
     }

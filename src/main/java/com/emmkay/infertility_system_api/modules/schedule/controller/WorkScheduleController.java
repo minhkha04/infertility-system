@@ -8,6 +8,7 @@ import com.emmkay.infertility_system_api.modules.shared.dto.response.ApiResponse
 import com.emmkay.infertility_system_api.modules.schedule.dto.response.WorkScheduleMonthlyResponse;
 import com.emmkay.infertility_system_api.modules.schedule.dto.response.WorkScheduleResponse;
 import com.emmkay.infertility_system_api.modules.schedule.service.WorkScheduleService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -63,6 +64,14 @@ public class WorkScheduleController {
         workScheduleService.deleteWorkScheduleByDateAndDoctor(date, doctorId);
         return ApiResponse.<String>builder()
                 .result("Xóa lịch làm cho bác sĩ thành công")
+                .build();
+    }
+
+    @GetMapping("/{yearMonth}/{doctorId}")
+    @Operation(summary = "yearMonth: yyyy-MM")
+    public ApiResponse<WorkScheduleMonthlyResponse> getWorkScheduleByMonthAndDoctor(@PathVariable String yearMonth, @PathVariable String doctorId) {
+        return ApiResponse.<WorkScheduleMonthlyResponse>builder()
+                .result(workScheduleService.getWorkScheduleByMonthAndByDoctorId(doctorId, yearMonth))
                 .build();
     }
 
