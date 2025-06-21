@@ -1,5 +1,6 @@
 package com.emmkay.infertility_system_api.modules.treatment.service;
 
+import com.emmkay.infertility_system_api.modules.appointment.entity.Appointment;
 import com.emmkay.infertility_system_api.modules.treatment.dto.request.TreatmentStepUpdateRequest;
 import com.emmkay.infertility_system_api.modules.treatment.dto.response.SuggestedTreatmentStepResponse;
 import com.emmkay.infertility_system_api.modules.treatment.dto.response.TreatmentStepResponse;
@@ -28,6 +29,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -118,6 +120,27 @@ public class TreatmentStepService {
         TreatmentStep treatmentStep = treatmentStepRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_STEP_NOT_FOUND));
         request.setStatus(request.getStatus().toUpperCase());
+        if (treatmentStep.getStatus().equals("COMPLETED")) {
+
+            List<String> statuses = List.of("CONFIRMED", "PENDING_CHANGE", "REJECTED", "PLANNED");
+            boolean hasUnprocessedAppointments  = appointmentRepository.existsByStatusInAndTreatmentStep(statuses, treatmentStep);
+            if (hasUnprocessedAppointments ) {
+                throw new AppException(ErrorCode.TREATMENT_CAN_NOT_DONE);
+            }
+
+            TreatmentStage stage = treatmentStep.getStage();
+            int currentOder = stage.getOrderIndex();
+            if (currentOder > 1) {
+                Optional<TreatmentStep> prevStepOpt = treatmentStepRepository.findByRecord_IdAndStageOrderIndex(treatmentStep.getRecord().getId(), currentOder - 1);
+
+                if (prevStepOpt.isPresent()) {
+                    String prevStepStatus = prevStepOpt.get().getStatus();
+                    if (!prevStepStatus.equals("COMPLETED") && !prevStepStatus.equals("CANCELLED")) {
+                        throw new AppException(ErrorCode.TREATMENT_CAN_NOT_DONE);
+                    }
+                }
+            }
+        }
         treatmentStepMapper.updateTreatmentStep(treatmentStep, request);
         return treatmentStepMapper.toTreatmentStepResponse(treatmentStepRepository.save(treatmentStep));
     }

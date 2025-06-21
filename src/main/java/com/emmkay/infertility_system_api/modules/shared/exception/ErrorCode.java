@@ -73,6 +73,7 @@ public enum ErrorCode {
     STATUS_IS_INVALID(1060, "Trạng thái truyền vào sai", HttpStatus.BAD_REQUEST),
     PAYMENT_TRANSACTION_NOT_FOUND(1061, "Không tìm thấy hóa đơn", HttpStatus.BAD_REQUEST),
     MOMO_TIMEOUT(1062, "Lỗi thanh toán", HttpStatus.INTERNAL_SERVER_ERROR),
+    TREATMENT_CAN_NOT_DONE(1063, "Các lịch hẹn bước này chưa được hoàn thành", HttpStatus.BAD_REQUEST),
     ;
 
     int code;

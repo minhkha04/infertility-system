@@ -65,4 +65,6 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     List<Appointment> findByTreatmentStep_Id(Long treatmentStepId);
 
     List<Appointment> findAllByDoctor_Id(String doctorId);
+
+    boolean existsByStatusInAndTreatmentStep(Collection<String> statuses, TreatmentStep treatmentStep);
 }

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface TreatmentStepRepository extends JpaRepository<TreatmentStep, Long> {
@@ -19,4 +20,6 @@ public interface TreatmentStepRepository extends JpaRepository<TreatmentStep, Lo
     List<TreatmentStep> findByRecordIdOrderByIdAsc(Long recordId);
 
     List<TreatmentStep> findByRecord_Id(Long recordId);
+
+    Optional<TreatmentStep> findByRecord_IdAndStageOrderIndex(Long recordId, Integer stageOrderIndex);
 }
