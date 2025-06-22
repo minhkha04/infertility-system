@@ -12,16 +12,18 @@ import java.time.LocalDate;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class AppointmentResponse {
     Long id;
+    String purpose;
     LocalDate appointmentDate;
     String shift;
     String status;
     String notes;
-    String purpose;
+    String requestedShift;
+    LocalDate requestedDate;
+    LocalDate createdAt;
+
     String customerName;
     String customerEmail;
-    LocalDate createdAt;
-    String serviceName;
+
     String doctorName;
-    LocalDate requestedDate;
-    String requestedShift;
+    String doctorEmail;
 }

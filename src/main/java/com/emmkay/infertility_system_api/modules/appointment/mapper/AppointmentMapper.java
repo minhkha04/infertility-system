@@ -16,7 +16,7 @@ public interface AppointmentMapper {
     @Mapping(target = "customerName", source = "customer.fullName")
     @Mapping(target = "customerEmail", source = "customer.email")
     @Mapping(target = "doctorName", source = "doctor.users.fullName")
-    @Mapping(target = "serviceName", source = "treatmentStep.record.service.name")
+    @Mapping(target = "doctorEmail", source = "doctor.users.email")
     AppointmentResponse toAppointmentResponse(Appointment appointment);
 
 

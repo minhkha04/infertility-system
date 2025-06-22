@@ -20,6 +20,9 @@ import com.emmkay.infertility_system_api.modules.user.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
@@ -50,6 +53,12 @@ public class FeedbackService {
         feedback.setApprovedBy(null);
         feedback.setIsApproved(false);
         return feedbackMapper.toResponse(feedbackRepository.save(feedback));
+    }
+
+    @PreAuthorize( "hasRole('MANAGER')")
+    public Page<FeedbackResponse> getAll(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return feedbackRepository.findAll(pageable).map(feedbackMapper::toResponse);
     }
 
     @PreAuthorize( "hasRole('MANAGER')")

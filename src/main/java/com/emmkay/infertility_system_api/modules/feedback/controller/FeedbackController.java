@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,6 +23,14 @@ import java.util.List;
 public class FeedbackController {
 
     FeedbackService feedbackService;
+
+    @Operation(summary = "for manager")
+    @GetMapping("")
+    public ApiResponse<Page<FeedbackResponse>> getAllFeedback(@RequestParam Integer page, @RequestParam Integer size) {
+        return ApiResponse.<Page<FeedbackResponse>>builder()
+                .result(feedbackService.getAll(page, size))
+                .build();
+    }
 
     @Operation(summary = "for manager")
     @GetMapping("/get-all")

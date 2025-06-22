@@ -4,6 +4,7 @@ import com.emmkay.infertility_system_api.modules.admin.dto.request.AdminUserCrea
 import com.emmkay.infertility_system_api.modules.admin.dto.request.AdminUserUpdatePasswordRequest;
 import com.emmkay.infertility_system_api.modules.admin.dto.request.AdminUserUpdateRequest;
 import com.emmkay.infertility_system_api.modules.admin.dto.response.AdminUserResponse;
+import com.emmkay.infertility_system_api.modules.admin.projection.AdminUserBasicProjection;
 import com.emmkay.infertility_system_api.modules.user.dto.response.UserResponse;
 import com.emmkay.infertility_system_api.modules.doctor.entity.Doctor;
 import com.emmkay.infertility_system_api.modules.user.entity.Role;
@@ -17,56 +18,28 @@ import com.emmkay.infertility_system_api.modules.user.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class AdminService {
+public class AdminUserService {
+
     UserRepository userRepository;
     UserMapper userMapper;
     RoleRepository roleRepository;
     PasswordEncoder passwordEncoder;
     DoctorRepository doctorRepository;
 
-    public List<AdminUserResponse> getAllUsersIsRemovedFalse() {
-        return userRepository.findAllByIsRemovedFalse()
-                .stream()
-                .map(userMapper::toAdminUserResponse)
-                .toList();
-    }
-
-    public List<AdminUserResponse> getAllUsersIsRemovedFalseAndRoleName(String roleName) {
-        Role role = roleRepository.findById(roleName.toUpperCase())
-                .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_EXISTED)
-                );
-        return userRepository.findAllByIsRemovedFalseAndRoleName(role)
-                .stream()
-                .map(userMapper::toAdminUserResponse)
-                .toList();
-    }
-
-    public List<AdminUserResponse> getAllUsersIsRemovedTrue() {
-        return userRepository.findAllByIsRemovedTrue()
-                .stream()
-                .map(userMapper::toAdminUserResponse)
-                .toList();
-    }
-
-    public List<AdminUserResponse> getAllUsersIsRemovedTrueAndRoleName(String roleName) {
-        Role role = roleRepository.findById(roleName.toUpperCase())
-                .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_EXISTED)
-                );
-        return userRepository.findAllByIsRemovedTrueAndRoleName(role)
-                .stream()
-                .map(userMapper::toAdminUserResponse)
-                .toList();
+    public Page<AdminUserBasicProjection> getUsers(boolean isRemoved, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return userRepository.findByIsRemoved(isRemoved, pageable);
     }
 
     public AdminUserResponse createUser(AdminUserCreateRequest request) {
@@ -119,12 +92,6 @@ public class AdminService {
 
     public AdminUserResponse getUserById(String userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-        return userMapper.toAdminUserResponse(user);
-    }
-
-    public AdminUserResponse getUserByEmail(String email) {
-        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         return userMapper.toAdminUserResponse(user);
     }

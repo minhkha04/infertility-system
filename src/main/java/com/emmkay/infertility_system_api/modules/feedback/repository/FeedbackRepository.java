@@ -12,7 +12,6 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
 
     List<Feedback> findByCustomerId(String customerId);
 
-
     List<Feedback> findByDoctorIdAndIsApproved(String doctorId, Boolean isApproved);
 
     boolean existsByCustomerIdAndRecordId(String customerId, Long recordId);

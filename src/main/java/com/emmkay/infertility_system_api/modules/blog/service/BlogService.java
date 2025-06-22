@@ -5,6 +5,9 @@ import com.emmkay.infertility_system_api.modules.blog.dto.request.BlogCreateRequ
 import com.emmkay.infertility_system_api.modules.blog.dto.request.BlogUpdateRequest;
 import com.emmkay.infertility_system_api.modules.blog.dto.response.BlogResponse;
 import com.emmkay.infertility_system_api.modules.blog.entity.Blog;
+import com.emmkay.infertility_system_api.modules.blog.projection.BlogBasicProjection;
+import com.emmkay.infertility_system_api.modules.shared.dto.response.ApiResponse;
+import com.emmkay.infertility_system_api.modules.shared.dto.response.PageResponse;
 import com.emmkay.infertility_system_api.modules.user.entity.User;
 import com.emmkay.infertility_system_api.modules.shared.exception.AppException;
 import com.emmkay.infertility_system_api.modules.shared.exception.ErrorCode;
@@ -15,6 +18,10 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
@@ -31,10 +38,15 @@ public class BlogService {
     BlogMapper blogMapper;
     UserRepository userRepository;
 
+
+    public Page<BlogBasicProjection> searchBlogs(String userId, String status, String keyword, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        return blogRepository.searchBlogs(userId, status, keyword, pageable);
+    }
+
+
     @PreAuthorize("#userId == authentication.name")
     public BlogResponse submitForApproval(BlogUpdateRequest request, Long blogId, String userId) {
-
-
         Blog blog = blogRepository.findById(blogId).orElseThrow(()
                 -> new AppException(ErrorCode.BLOG_NOT_EXISTED));
 
@@ -102,6 +114,12 @@ public class BlogService {
                 .toList();
     }
 
+    @PreAuthorize("hasRole('MANAGER')")
+    public Page<BlogResponse> getAllBlogs(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        return blogRepository.findAll(pageable).map(blogMapper::toBlogResponse);
+    }
+
     @PreAuthorize("#userId == authentication.name")
     public BlogResponse updateBlog(Long blogId, BlogUpdateRequest request, String userId) {
         User currentUser = userRepository.findById(userId)
@@ -119,9 +137,8 @@ public class BlogService {
         blog.setApprovedBy(null);
         blog.setNote(null);
         blog.setPublishedAt(null);
-        return  blogMapper.toBlogResponse(blogRepository.save(blog));
+        return blogMapper.toBlogResponse(blogRepository.save(blog));
     }
-
 
     public List<BlogResponse> getBlogByAuthorId(String userId) {
         List<Blog> blogs = blogRepository.findAllByAuthorId(userId);
@@ -149,6 +166,6 @@ public class BlogService {
         blog.setApprovedBy(null);
         blog.setNote(null);
         blog.setPublishedAt(null);
-        return  blogMapper.toBlogResponse(blogRepository.save(blog));
+        return blogMapper.toBlogResponse(blogRepository.save(blog));
     }
 }

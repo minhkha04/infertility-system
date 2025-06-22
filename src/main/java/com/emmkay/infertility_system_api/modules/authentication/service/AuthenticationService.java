@@ -3,6 +3,7 @@ package com.emmkay.infertility_system_api.modules.authentication.service;
 import com.emmkay.infertility_system_api.modules.authentication.dto.request.*;
 import com.emmkay.infertility_system_api.modules.authentication.dto.response.AuthenticationResponse;
 import com.emmkay.infertility_system_api.modules.authentication.dto.response.IntrospectResponse;
+import com.emmkay.infertility_system_api.modules.authentication.utils.UsernameUtils;
 import com.emmkay.infertility_system_api.modules.user.dto.request.UserCreateRequest;
 import com.emmkay.infertility_system_api.modules.user.dto.response.UserResponse;
 import com.emmkay.infertility_system_api.modules.authentication.entity.EmailOtp;
@@ -66,15 +67,6 @@ public class AuthenticationService {
         }
     }
 
-    String generateUsername(String name) {
-        String normalized = Normalizer.normalize(name, Normalizer.Form.NFD)
-                .replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
-                .replaceAll("đ", "d")
-                .replaceAll("Đ", "D");
-        String cleanName = normalized.toLowerCase().replaceAll("\\s+", "_");
-        String timestamp = String.valueOf(new Date().getTime());
-        return cleanName + "_" + timestamp;
-    }
 
     public AuthenticationResponse login(AuthenticationRequest request) {
         // find user by username
@@ -103,7 +95,7 @@ public class AuthenticationService {
             Role role = roleRepository.findById("CUSTOMER")
                     .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_EXISTED));
             user = User.builder()
-                    .username(generateUsername(payload.get("given_name").toString()))
+                    .username(UsernameUtils.generateUsername(payload.get("given_name").toString()))
                     .fullName(name)
                     .email(email)
                     .isRemoved(false)

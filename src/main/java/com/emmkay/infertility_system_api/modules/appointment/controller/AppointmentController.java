@@ -1,48 +1,57 @@
 package com.emmkay.infertility_system_api.modules.appointment.controller;
 
+import com.emmkay.infertility_system_api.modules.appointment.projection.AppointmentBasicProjection;
 import com.emmkay.infertility_system_api.modules.shared.dto.response.ApiResponse;
 import com.emmkay.infertility_system_api.modules.appointment.dto.request.*;
-import com.emmkay.infertility_system_api.modules.appointment.dto.response.AppointmentInNext7DayResponse;
 import com.emmkay.infertility_system_api.modules.appointment.dto.response.AppointmentResponse;
 import com.emmkay.infertility_system_api.modules.appointment.service.AppointmentService;
+import com.emmkay.infertility_system_api.modules.shared.dto.response.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.List;
 
-@Slf4j
 @RestController
-@RequestMapping("/appointments")
+@RequestMapping("/v1/appointments")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AppointmentController {
 
     AppointmentService appointmentService;
 
-    @GetMapping("/customer/{customerId}")
-    public ApiResponse<List<AppointmentResponse>> getAppointmentsByCustomerId(@PathVariable String customerId) {
-        return ApiResponse.<List<AppointmentResponse>>builder()
-                .result(appointmentService.getAppointmentsForCustomer(customerId))
+    @GetMapping()
+    public ApiResponse<PageResponse<AppointmentBasicProjection>> searchAppointments(
+            @RequestParam(required = false) Long stepId,
+            @RequestParam(required = false) String customerId,
+            @RequestParam(required = false) String doctorId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Page<AppointmentBasicProjection> result = appointmentService.searchAppointments(stepId, customerId, doctorId, date, status, page, size);
+        return ApiResponse.<PageResponse<AppointmentBasicProjection>>builder()
+                .result(PageResponse.from(result))
                 .build();
     }
 
-
-    @GetMapping("/doctor/{doctorId}/{date}")
-    public ApiResponse<List<AppointmentResponse>> getAppointmentsByDoctor(@PathVariable String doctorId, @PathVariable LocalDate date) {
-        return ApiResponse.<List<AppointmentResponse>>builder()
-                .result(appointmentService.getAppointmentsForDoctorByDate(doctorId, date))
+    @GetMapping("/{appointmentId}")
+    public ApiResponse<AppointmentResponse> getAppointmentDetailById(@PathVariable Long appointmentId) {
+        return ApiResponse.<AppointmentResponse>builder()
+                .result(appointmentService.getAppointmentDetail(appointmentId))
                 .build();
     }
+
 
     @Operation(summary = "for customer to change appointment")
-    @PutMapping("/request-change/{appointmentId}")
-    public ApiResponse<AppointmentResponse> rescheduleAppointment(
+    @PutMapping("/{appointmentId}/customer-change")
+    public ApiResponse<AppointmentResponse> customerChangeAppointment(
             @PathVariable Long appointmentId,
             @RequestBody @Valid
             ChangeAppointmentByCustomerRequest request) {
@@ -60,8 +69,8 @@ public class AppointmentController {
     }
 
     @Operation(summary = "for doctor or manager to confirm appointment")
-    @PutMapping("/confirm-appointment/{appointmentId}")
-    public ApiResponse<AppointmentResponse> updateAppointmentStatus(
+    @PutMapping("/{appointmentId}/confirm-appointment")
+    public ApiResponse<AppointmentResponse> confirmChangeAppointment(
             @PathVariable Long appointmentId,
             @RequestBody @Valid ConfirmChangeAppointmentRequest request) {
         return ApiResponse.<AppointmentResponse>builder()
@@ -69,38 +78,16 @@ public class AppointmentController {
                 .build();
     }
 
-    @GetMapping("/get-all")
-    public ApiResponse<List<AppointmentResponse>> getAllAppointments() {
-        return ApiResponse.<List<AppointmentResponse>>builder()
-                .result(appointmentService.getAllAppointments())
-                .build();
-    }
-
-    @Operation(summary = "for doctor to get appointments with status pending change")
-    @GetMapping("/with-status-pending-change/{doctorId}")
-    public ApiResponse<List<AppointmentResponse>> getAppointmentsWithStatusPendingChange(@PathVariable String doctorId) {
-        return ApiResponse.<List<AppointmentResponse>>builder()
-                .result(appointmentService.getAppointmentWithStatusPendingChangeByDoctorId(doctorId))
-                .build();
-    }
-
-    @PutMapping("/change-appointment-by-doctor-or-manager/{appointmentId}")
-    public ApiResponse<AppointmentResponse> changeByDoctorOrManger(@PathVariable Long appointmentId, @RequestBody @Valid ChangeAppointmentByDoctorOrManagerRequest request) {
+    @Operation(summary = "change by doctor or manager")
+    @PutMapping("/{appointmentId}/doctor-or-manager-change")
+    public ApiResponse<AppointmentResponse> managerOrDoctorChangeAppointment(@PathVariable Long appointmentId, @RequestBody @Valid ChangeAppointmentByDoctorOrManagerRequest request) {
         return ApiResponse.<AppointmentResponse>builder()
                 .result(appointmentService.changeAppointmentForManagerOrDoctor(appointmentId, request))
                 .build();
     }
 
-    @Operation(summary = "for doctor to get appointments in next 7 days")
-    @GetMapping("/appointment-in-next-7-day/{doctorId}")
-    public ApiResponse<List<AppointmentInNext7DayResponse>> getAppointmentInNext7Day(@PathVariable String doctorId) {
-        return ApiResponse.<List<AppointmentInNext7DayResponse>>builder()
-                .result(appointmentService.getAppointInNext7Day(doctorId))
-                .build();
-    }
-
-    @PutMapping("/update-status/{appointmentId}/{status}")
-    public ApiResponse<AppointmentResponse> updateAppointmentStatus(@PathVariable Long appointmentId, @PathVariable String status) {
+    @PutMapping("/{appointmentId}/status")
+    public ApiResponse<AppointmentResponse> updateAppointmentStatus(@PathVariable Long appointmentId, @RequestParam String status) {
         return ApiResponse.<AppointmentResponse>builder()
                 .result(appointmentService.updateStatus(appointmentId, status))
                 .build();
@@ -114,19 +101,4 @@ public class AppointmentController {
                 .result(appointmentService.cancelAppointment(request))
                 .build();
     }
-
-    @GetMapping("/get-by-step-id/{stepId}")
-    public ApiResponse<List<AppointmentResponse>> getAppointmentByStepId(@PathVariable Long stepId) {
-        return ApiResponse.<List<AppointmentResponse>>builder()
-                .result(appointmentService.getAppointmentByStepId(stepId))
-                .build();
-    }
-
-    @GetMapping("/get-all-for-doctor/{doctorId}")
-    public ApiResponse<List<AppointmentResponse>> getAppointmentByStepId(@PathVariable String doctorId) {
-        return ApiResponse.<List<AppointmentResponse>>builder()
-                .result(appointmentService.getAppointmentByDoctorId(doctorId))
-                .build();
-    }
-
 }

@@ -54,14 +54,6 @@ public class ManagerController {
                 .build();
     }
 
-    @Operation(summary = "for manager to get all appointments today")
-    @GetMapping("/dashboard/get-all-appointments-today")
-    public ApiResponse<List<AppointmentResponse>> getAllAppointmentToday() {
-        return ApiResponse.<List<AppointmentResponse>>builder()
-                .result(appointmentService.getAllAppointmentTodayForManager())
-                .build();
-    }
-
     @Operation(summary = "for manager to statistic")
     @GetMapping("/dashboard/statistic")
     public ApiResponse<ManagerDashboardStatisticsResponse> getStatisticForManagerDashboard() {

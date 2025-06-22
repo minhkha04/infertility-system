@@ -33,7 +33,7 @@ public class OpenApiConfig {
                                 .bearerFormat("JWT")
                         )
                 )
-                .servers(List.of(new Server().url("/infertility-system-api").description("Default server url")));
+                .servers(List.of(new Server().url("/infertility-system/api").description("Default server url")));
 
     }
 }
