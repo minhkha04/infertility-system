@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/v1/auth")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthenticationController {
@@ -31,7 +31,7 @@ public class AuthenticationController {
                 .build();
     }
 
-    @PostMapping("/register")
+    @PostMapping("/sign-up")
     public ApiResponse<UserResponse> register(@RequestBody @Valid UserCreateRequest request) {
         return ApiResponse.<UserResponse>builder()
                 .result(authenticationService.register(request))
@@ -45,14 +45,14 @@ public class AuthenticationController {
                 .build();
     }
 
-    @PostMapping("/login-google")
+    @PostMapping("/login/google")
     public ApiResponse<AuthenticationResponse> loginGoogle(@RequestBody @Valid GoogleLoginRequest request) {
         return ApiResponse.<AuthenticationResponse>builder()
                 .result(authenticationService.loginGoogle(request))
                 .build();
     }
 
-    @PostMapping("/verify-otp")
+    @PostMapping("/opt/verify")
     public ApiResponse<String> verifyOtp(@RequestBody @Valid VerifyOtpRequest request) {
         authenticationService.verifyOtp(request);
         return ApiResponse.<String>builder()
@@ -60,7 +60,7 @@ public class AuthenticationController {
                 .build();
     }
 
-    @PostMapping("/resend-otp")
+    @PostMapping("/otp/resend")
     public ApiResponse<String> resendOtp(@RequestBody @Valid ResendOtpRequest request) {
         authenticationService.resendOtp(request.getEmail());
         return ApiResponse.<String>builder()
@@ -68,7 +68,7 @@ public class AuthenticationController {
                 .build();
     }
 
-    @PostMapping("/forgot-password")
+    @PostMapping("/password/forgot")
     public ApiResponse<String> forgotPassword(@RequestBody @Valid ForgotPasswordRequest request) {
         authenticationService.forgotPassword(request);
         return ApiResponse.<String>builder()
@@ -76,7 +76,7 @@ public class AuthenticationController {
                 .build();
     }
 
-    @PostMapping("/reset-password")
+    @PostMapping("/password/reset")
     public ApiResponse<String> resetPassword(@RequestBody @Valid ResetPasswordRequest request) {
         authenticationService.resetPassword(request);
         return ApiResponse.<String>builder()
@@ -84,7 +84,7 @@ public class AuthenticationController {
                 .build();
     }
 
-    @PostMapping("/change-password")
+    @PostMapping("/password/change")
     public ApiResponse<String> changePassword(@RequestBody @Valid ChangePasswordOtpRequest request) {
         authenticationService.changePassword(request);
         return ApiResponse.<String>builder()

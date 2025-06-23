@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface BlogRepository extends JpaRepository<Blog, Long> {
@@ -29,4 +30,6 @@ public interface BlogRepository extends JpaRepository<Blog, Long> {
                     AND (:status IS NULL OR b.status = :status)
             """)
     Page<BlogBasicProjection> searchBlogs(String userId, String status, String keyword, Pageable pageable);
+
+    Optional<Blog> findByIdAndStatus(Long id, String status);
 }

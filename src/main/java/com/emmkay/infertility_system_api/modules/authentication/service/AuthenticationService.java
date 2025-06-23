@@ -47,7 +47,7 @@ public class AuthenticationService {
     JwtHelper jwtHelper;
     GoogleTokenHelper googleTokenHelper;
 
-    void validateUserIsActiveAndVerified(User user) {
+    private void validateUserIsActiveAndVerified(User user) {
         if (user.getIsRemoved()) {
             throw new AppException(ErrorCode.USER_NOT_ACTIVE);
         }
@@ -56,7 +56,7 @@ public class AuthenticationService {
         }
     }
 
-    void validateOtp(String email, String otp) {
+    private void validateOtp(String email, String otp) {
         EmailOtp emailOtp = emailOtpRepository.findById(email)
                 .orElseThrow(() -> new AppException(ErrorCode.OTP_NOT_FOUND));
         if (!emailOtp.getOtp().equals(otp)) {
@@ -135,9 +135,15 @@ public class AuthenticationService {
     }
 
     public IntrospectResponse introspect(IntrospectRequest request) {
-        jwtHelper.verifyToken(request.getToken());
+        boolean isValid = true;
+        try {
+            jwtHelper.verifyToken(request.getToken());
+        } catch (AppException ex) {
+            isValid = false;
+        }
+
         return IntrospectResponse.builder()
-                .valid(true)
+                .valid(isValid)
                 .build();
     }
 

@@ -8,6 +8,7 @@ import com.emmkay.infertility_system_api.modules.appointment.entity.Appointment;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -44,8 +45,6 @@ public class Doctor {
     @Column(name = "experience_years")
     private Integer experienceYears;
 
-
-
     @OneToMany(mappedBy = "doctor")
     private Set<Feedback> feedbacks = new LinkedHashSet<>();
 
@@ -61,5 +60,9 @@ public class Doctor {
     @Size(max = 255)
     @Column(name = "specialty")
     private String specialty;
+
+    @ColumnDefault("0")
+    @Column(name = "is_public")
+    private Boolean isPublic;
 
 }

@@ -30,8 +30,8 @@ public class AdminUserController {
     @GetMapping("")
     public ApiResponse<PageResponse<AdminUserBasicProjection>> getUsers(
             @RequestParam boolean isRemoved,
-            @RequestParam int page,
-            @RequestParam int size
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
     ) {
         Page<AdminUserBasicProjection> result = adminService.getUsers(isRemoved, page, size);
         return ApiResponse.<PageResponse<AdminUserBasicProjection>>builder()

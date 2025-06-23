@@ -12,9 +12,9 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @EqualsAndHashCode(callSuper = false)
 public class DoctorResponse extends UserResponse {
-
     String qualifications;
     Integer graduationYear;
     Integer experienceYears;
     String specialty;
+    Boolean isPublic;
 }

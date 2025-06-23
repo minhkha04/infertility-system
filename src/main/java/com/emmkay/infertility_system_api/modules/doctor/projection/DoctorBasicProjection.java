@@ -1,7 +1,7 @@
 package com.emmkay.infertility_system_api.modules.doctor.projection;
 
 
-public interface DoctorRatingProjection {
+public interface DoctorBasicProjection {
     String getId();
     String getFullName();
     String getAvatarUrl();

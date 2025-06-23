@@ -9,20 +9,15 @@ import com.emmkay.infertility_system_api.modules.shared.dto.response.ApiResponse
 import com.emmkay.infertility_system_api.modules.blog.dto.response.BlogResponse;
 import com.emmkay.infertility_system_api.modules.blog.service.BlogService;
 import com.emmkay.infertility_system_api.modules.shared.dto.response.PageResponse;
-import com.emmkay.infertility_system_api.modules.shared.security.CurrentUserUtils;
 import com.emmkay.infertility_system_api.modules.shared.storage.CloudinaryService;
-import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
-@Slf4j
 @RestController
 @RequestMapping("/v1/blogs")
 @RequiredArgsConstructor
@@ -34,15 +29,12 @@ public class BlogController {
 
     @GetMapping("")
     public ApiResponse<PageResponse<BlogBasicProjection>> searchBlogs(
-            @RequestParam(required = false) String userId,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String keyword,
-            @RequestParam Integer page,
-            @RequestParam Integer size
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "10") Integer size
     ) {
-        String currentUserId = CurrentUserUtils.getCurrentUserId();
-        log.info("currentUserId: {}", currentUserId);
-        Page<BlogBasicProjection> result = blogService.searchBlogs(userId, status, keyword, page, size);
+        Page<BlogBasicProjection> result = blogService.searchBlogs(status, keyword, page, size);
         return ApiResponse.<PageResponse<BlogBasicProjection>>builder()
                 .result(PageResponse.from(result))
                 .build();
@@ -55,55 +47,46 @@ public class BlogController {
                 .build();
     }
 
-    @PostMapping("/{userId}")
-    public ApiResponse<BlogResponse> createBlog(@RequestBody @Valid BlogCreateRequest request, @PathVariable String userId) {
+    @PostMapping("")
+    public ApiResponse<BlogResponse> createBlog(@RequestBody @Valid BlogCreateRequest request) {
         return ApiResponse.<BlogResponse>builder()
-                .result(blogService.createBlog(request, userId))
+                .result(blogService.createBlog(request))
                 .build();
     }
 
-    @PutMapping("/{blogId}/{userId}")
-    public ApiResponse<BlogResponse> update(@RequestBody @Valid BlogUpdateRequest request, @PathVariable String userId, @PathVariable Long blogId) {
+    @PutMapping("/{blogId}")
+    public ApiResponse<BlogResponse> update(@RequestBody @Valid BlogUpdateRequest request, @PathVariable Long blogId) {
         return ApiResponse.<BlogResponse>builder()
-                .result(blogService.updateBlog(blogId, request, userId))
+                .result(blogService.updateBlog(blogId, request))
                 .build();
     }
 
-    @Operation(summary = "approve blog")
-    @PostMapping("/{blogId}/{managerId}")
-    public ApiResponse<BlogResponse> approveBlog(@PathVariable Long blogId, @PathVariable String managerId, @RequestBody @Valid BlogApprovalRequest request) {
+    @PostMapping("/{blogId}/approveBlog")
+    public ApiResponse<BlogResponse> approveBlog(@PathVariable Long blogId, @RequestBody @Valid BlogApprovalRequest request) {
         return ApiResponse.<BlogResponse>builder()
-                .result(blogService.approveBlog(blogId, managerId, request))
+                .result(blogService.approveBlog(blogId, request))
                 .build();
     }
 
-    @PostMapping("submit/{blogId}/{userId}")
-    public ApiResponse<BlogResponse> submitForApproval(@RequestBody @Valid BlogUpdateRequest request, @PathVariable Long blogId, @PathVariable String userId) {
+    @PostMapping("/{blogId}/submit")
+    public ApiResponse<BlogResponse> submitForApproval(@RequestBody @Valid BlogUpdateRequest request, @PathVariable Long blogId) {
         return ApiResponse.<BlogResponse>builder()
-                .result(blogService.submitForApproval(request, blogId, userId))
+                .result(blogService.submitForApproval(request, blogId))
                 .build();
     }
 
-    @GetMapping("/author/{authorId}")
-    public ApiResponse<List<BlogResponse>> getBlogsByAuthor(@PathVariable String authorId) {
-        return ApiResponse.<List<BlogResponse>>builder()
-                .result(blogService.getBlogByAuthorId(authorId))
-                .build();
-    }
-
-    @GetMapping("/status/{status}")
-    public ApiResponse<List<BlogResponse>> getBlogsByStatus(@PathVariable String status) {
-        return ApiResponse.<List<BlogResponse>>builder()
-                .result(blogService.getBlogByStatus(status))
-                .build();
-    }
-
-    @Operation(summary = "upload image, userId is blogId")
-    @PutMapping("/update/img")
-    public ApiResponse<BlogResponse> updateImg(@ModelAttribute @Valid UploadImageRequest request) {
-        String imageUrl = cloudinaryService.uploadImage(request.getFile(), "blog_img", request.getUserId());
+    @PutMapping("/{blogId}/image")
+    public ApiResponse<BlogResponse> updateImg(@ModelAttribute @Valid UploadImageRequest request, @PathVariable Long blogId) {
+        String imageUrl = cloudinaryService.uploadImage(request.getFile(), "blog_img", Long.toString(blogId));
         return ApiResponse.<BlogResponse>builder()
-                .result(blogService.updateImg(request.getUserId(), imageUrl))
+                .result(blogService.updateImg(blogId, imageUrl))
+                .build();
+    }
+
+    @PostMapping("/{blogId}/hide")
+    public ApiResponse<BlogResponse> hideBlog(@PathVariable Long blogId) {
+        return ApiResponse.<BlogResponse>builder()
+                .result(blogService.hideBlog(blogId))
                 .build();
     }
 }

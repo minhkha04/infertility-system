@@ -27,7 +27,9 @@ import javax.crypto.spec.SecretKeySpec;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    private static final String[] PUBLIC_URLS = {"/auth/login", "/auth/register", "/auth/introspect", "/auth/login-google", "/auth/verify-otp", "/auth/resend-otp" , "/auth/forgot-password", "/auth/reset-password", "/swagger-ui/**", "v3/api-docs/**", "/v3/api-docs.yaml", "/treatment-type", "/treatment-stages", "/treatment-stages/find-by-type/{id}", "/doctors", "/doctors/{id}", "/auth/change-password", "/treatment-service/{id}", "/auth/refresh-token", "doctors/available", "doctors/schedules/next-14-days/{id}", "treatment-service", "/blogs", "blogs/{id}", "blogs/status/{status}", "doctors/rating", "feedback/for-doctor/{isApproval}/{doctorId}", "/treatment-step/getSuggest/{recordId}", "/payment/momo/ipn", "/payment/vnpay/ipn"};
+    private static final String[] PUBLIC_URLS = {"/v1/auth/**", "/swagger-ui/**", "/v3/api-docs/**", "/v3/api-docs.yaml", "/v1/public/**",
+
+            "/v1/treatment-type", "/v1/treatment-stages/**", "/v1/doctors/**", "/v1/doctors/{id}", "/v1/treatment-service/{id}", "/v1/doctors/available", "/v1/treatment-service", "/v1/doctors/rating", "/v1/feedback/for-doctor/{isApproval}/{doctorId}", "/v1/treatment-step/getSuggest/{recordId}", "/v1/payment/momo/ipn", "/v1/payment/vnpay/ipn"};
 
 
     @Value("${jwt.signerKey}")

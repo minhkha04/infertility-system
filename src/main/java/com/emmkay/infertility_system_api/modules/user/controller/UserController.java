@@ -34,11 +34,11 @@ public class UserController {
                 .build();
     }
 
-    @PutMapping("/upload-avatar")
-    public ApiResponse<UserResponse> uploadAvatar(@ModelAttribute @Valid UploadImageRequest request) {
-        String imageUrl = cloudinaryService.uploadImage(request.getFile(), "avt", request.getUserId());
+    @PutMapping("/upload-avatar/{userId}")
+    public ApiResponse<UserResponse> uploadAvatar(@ModelAttribute @Valid UploadImageRequest request, @PathVariable  String userId) {
+        String imageUrl = cloudinaryService.uploadImage(request.getFile(), "avt", userId);
         return ApiResponse.<UserResponse>builder()
-                .result(userService.uploadAvatar(request.getUserId(), imageUrl))
+                .result(userService.uploadAvatar(userId, imageUrl))
                 .build();
     }
 

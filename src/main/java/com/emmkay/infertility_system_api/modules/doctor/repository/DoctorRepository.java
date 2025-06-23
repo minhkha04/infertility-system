@@ -1,8 +1,10 @@
 package com.emmkay.infertility_system_api.modules.doctor.repository;
 
-import com.emmkay.infertility_system_api.modules.doctor.projection.DoctorDashboardProjection;
-import com.emmkay.infertility_system_api.modules.doctor.projection.DoctorRatingProjection;
+import com.emmkay.infertility_system_api.modules.doctor.projection.DoctorStatisticsProjection;
+import com.emmkay.infertility_system_api.modules.doctor.projection.DoctorBasicProjection;
 import com.emmkay.infertility_system_api.modules.doctor.entity.Doctor;
+import com.emmkay.infertility_system_api.modules.doctor.projection.DoctorSelectProjection;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -31,7 +33,7 @@ public interface DoctorRepository extends JpaRepository<Doctor, String> {
             FROM DoctorDashboardStatsView d
             WHERE d.doctorId = :doctorId
             """)
-    Optional<DoctorDashboardProjection> getDoctorDashboardStats(@Param("doctorId") String doctorId);
+    Optional<DoctorStatisticsProjection> getDoctorDashboardStats(@Param("doctorId") String doctorId);
 
     @Query(value = """
                 SELECT  u.fullName AS fullName,
@@ -47,9 +49,10 @@ public interface DoctorRepository extends JpaRepository<Doctor, String> {
                 LEFT JOIN Feedback f\s
                 ON d.id = f.doctor.id
                    AND f.isApproved = TRUE
+                WHERE d.isPublic = TRUE
                 GROUP BY u.id, u.avatarUrl, d.qualifications, d.specialty, u.fullName, d.experienceYears
             """)
-    List<DoctorRatingProjection> findAllRatings();
+    Page<DoctorBasicProjection> getPublicDoctors(Pageable pageable);
 
     @Query("""
                 SELECT d
@@ -59,8 +62,10 @@ public interface DoctorRepository extends JpaRepository<Doctor, String> {
                     AND a.appointmentDate = :inputDate
                     AND a.shift = :shift
                     AND a.status NOT IN ('CANCELLED')
-                WHERE ws.workDate = :inputDate
-                  AND (ws.shift = :shift OR ws.shift = 'FULL_DAY')
+                WHERE
+                    ws.workDate = :inputDate
+                    AND (ws.shift = :shift OR ws.shift = 'FULL_DAY')
+                    AND (d.isPublic = true)
                 GROUP BY d
                 HAVING COUNT(a.id) < 10
                 ORDER BY COUNT(a.id)
@@ -68,4 +73,16 @@ public interface DoctorRepository extends JpaRepository<Doctor, String> {
     List<Doctor> findAvailableDoctorByDateAndShift(@Param("inputDate") LocalDate inputDate,
                                                    @Param("shift") String shift,
                                                    Pageable pageable);
+    @Query(value = """
+                SELECT
+                    d.id AS id,
+                    d.users.fullName AS fullName
+                FROM Doctor d
+                WHERE
+                    (:isRemoved IS NULL OR d.users.isRemoved = :isRemoved)
+                    AND (:isPublic IS NULL OR d.isPublic = :isPublic)
+            """)
+    List<DoctorSelectProjection> searchDoctors(boolean isRemoved, boolean isPublic);
+
+    Optional<Doctor> findByIdAndIsPublic(String id, Boolean isPublic);
 }

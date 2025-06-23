@@ -2,10 +2,9 @@ package com.emmkay.infertility_system_api.modules.doctor.controller;
 
 
 import com.emmkay.infertility_system_api.modules.doctor.dto.request.DoctorUpdateRequest;
-import com.emmkay.infertility_system_api.modules.doctor.dto.response.DoctorDashboardResponse;
-import com.emmkay.infertility_system_api.modules.doctor.dto.response.DoctorRatingResponse;
 import com.emmkay.infertility_system_api.modules.doctor.dto.response.DoctorResponse;
 import com.emmkay.infertility_system_api.modules.doctor.dto.response.DoctorWorkScheduleResponse;
+import com.emmkay.infertility_system_api.modules.doctor.projection.DoctorSelectProjection;
 import com.emmkay.infertility_system_api.modules.doctor.service.DoctorService;
 import com.emmkay.infertility_system_api.modules.shared.dto.response.ApiResponse;
 import jakarta.validation.Valid;
@@ -19,28 +18,12 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/doctors")
+@RequestMapping("/v1/doctors")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class DoctorController {
 
     DoctorService  doctorService;
-
-    @GetMapping()
-    public ApiResponse<List<DoctorResponse>> getAllDoctors() {
-        List<DoctorResponse> doctors = doctorService.getAllDoctors();
-        return ApiResponse.<List<DoctorResponse>>builder()
-                .result(doctors)
-                .build();
-    }
-
-    @GetMapping("/{id}")
-    public ApiResponse<DoctorResponse> getDoctorById(@PathVariable String id) {
-        DoctorResponse doctor = doctorService.getDoctorById(id);
-        return ApiResponse.<DoctorResponse>builder()
-                .result(doctor)
-                .build();
-    }
 
     @PutMapping("/{doctorId}")
     public ApiResponse<DoctorResponse> updateDoctor(@RequestBody @Valid DoctorUpdateRequest request, @PathVariable String doctorId) {
@@ -50,14 +33,20 @@ public class DoctorController {
                 .build();
     }
 
+    @GetMapping("/select/options/schedule")
+    public ApiResponse<List<DoctorSelectProjection>> getDoctorsToCreateSchedule() {
+        return ApiResponse.<List<DoctorSelectProjection>>builder()
+                .result(doctorService.getDoctorsToCreateSchedule())
+                .build();
+    }
+
     @GetMapping("/available")
-    public ApiResponse<List<DoctorResponse>> getAvailableDoctors(
+    public ApiResponse<List<DoctorSelectProjection>> getAvailableDoctors(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam String shift
     ) {
-        List<DoctorResponse> availableDoctors = doctorService.getAvailableDoctors(date, shift);
-        return ApiResponse.<List<DoctorResponse>>builder()
-                .result(availableDoctors)
+        return ApiResponse.<List<DoctorSelectProjection>>builder()
+                .result(doctorService.getAvailableDoctors(date, shift))
                 .build();
     }
 
@@ -67,20 +56,4 @@ public class DoctorController {
                 .result(doctorService.getDoctorSchedule(doctorId))
                 .build();
     }
-
-    @GetMapping("/rating")
-    public ApiResponse<List<DoctorRatingResponse>> getDoctorRating() {
-        return ApiResponse.<List<DoctorRatingResponse>>builder()
-                .result(doctorService.getAllDoctorRating())
-                .build();
-    }
-
-    @GetMapping("/dashboard/statics/{doctorId}")
-    public ApiResponse<DoctorDashboardResponse> getDoctorDashBoardResponse(@PathVariable String doctorId) {
-        return ApiResponse.<DoctorDashboardResponse>builder()
-                .result(doctorService.getDoctorDashBoard(doctorId))
-                .build();
-    }
-
-
 }

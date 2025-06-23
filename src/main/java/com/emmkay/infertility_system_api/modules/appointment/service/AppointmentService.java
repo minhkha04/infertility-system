@@ -50,7 +50,7 @@ public class AppointmentService {
     ReminderRepository reminderRepository;
     TreatmentRecordRepository treatmentRecordRepository;
 
-    void validateAppointmentAvailableForChange(Appointment appointment, LocalDate dateChange, String shiftChange) {
+    private void validateAppointmentAvailableForChange(Appointment appointment, LocalDate dateChange, String shiftChange) {
         // Chỉ cho đổi trong 14 ngày tới
         LocalDate today = LocalDate.now();
         if (dateChange.isBefore(today) || dateChange.isAfter(today.plusDays(14))) {
@@ -70,7 +70,7 @@ public class AppointmentService {
         }
     }
 
-    void validateCanChangeAppointment(Appointment appointment) {
+    private void validateCanChangeAppointment(Appointment appointment) {
         String scope = CurrentUserUtils.getCurrentScope();
         String currentUserId = CurrentUserUtils.getCurrentUserId();
         if (scope == null || scope.isBlank() || currentUserId == null || currentUserId.isBlank()) {
@@ -162,6 +162,11 @@ public class AppointmentService {
     }
 
     public boolean isDoctorAvailable(String doctorId, LocalDate date, String shift) {
+        Doctor doctor = doctorRepository.findById(doctorId)
+                .orElse(null);
+        if (doctor.getUsers().getIsRemoved() || !doctor.getIsPublic()) {
+            return false;
+        }
         Optional<WorkSchedule> workScheduleOpt = workScheduleRepository
                 .findByDoctorIdAndWorkDate(doctorId, date);
 
@@ -185,6 +190,10 @@ public class AppointmentService {
     @PreAuthorize("hasRole('DOCTOR') or hasRole('MANAGER')")
     @Transactional
     public AppointmentResponse createAppointment(AppointmentCreateRequest req) {
+        boolean isAvailable = isDoctorAvailable(req.getDoctorId(), req.getAppointmentDate(), req.getShift());
+        if (!isAvailable) {
+            throw new AppException(ErrorCode.DOCTOR_NOT_AVAILABLE);
+        }
         TreatmentStep step = treatmentStepRepository.findById(req.getTreatmentStepId())
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_TYPE_NOT_EXISTED));
 
@@ -214,10 +223,6 @@ public class AppointmentService {
         User customer = userRepository.findById(req.getCustomerId())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-        boolean isAvailable = isDoctorAvailable(req.getDoctorId(), req.getAppointmentDate(), req.getShift());
-        if (!isAvailable) {
-            throw new AppException(ErrorCode.DOCTOR_NOT_AVAILABLE);
-        }
         Appointment appointment = appointmentMapper.toAppointment(req);
         appointment.setDoctor(doctor);
         appointment.setTreatmentStep(step);

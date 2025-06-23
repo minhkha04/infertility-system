@@ -1,12 +1,13 @@
 package com.emmkay.infertility_system_api.modules.doctor.service;
 
-import com.emmkay.infertility_system_api.modules.doctor.projection.DoctorDashboardProjection;
+import com.emmkay.infertility_system_api.modules.doctor.projection.DoctorBasicProjection;
+import com.emmkay.infertility_system_api.modules.doctor.projection.DoctorStatisticsProjection;
 import com.emmkay.infertility_system_api.modules.doctor.dto.request.DoctorUpdateRequest;
-import com.emmkay.infertility_system_api.modules.doctor.dto.response.DoctorDashboardResponse;
-import com.emmkay.infertility_system_api.modules.doctor.dto.response.DoctorRatingResponse;
 import com.emmkay.infertility_system_api.modules.doctor.dto.response.DoctorResponse;
 import com.emmkay.infertility_system_api.modules.doctor.dto.response.DoctorWorkScheduleResponse;
 import com.emmkay.infertility_system_api.modules.doctor.entity.Doctor;
+import com.emmkay.infertility_system_api.modules.doctor.projection.DoctorSelectProjection;
+import com.emmkay.infertility_system_api.modules.shared.security.CurrentUserUtils;
 import com.emmkay.infertility_system_api.modules.user.entity.User;
 import com.emmkay.infertility_system_api.modules.schedule.entity.WorkSchedule;
 import com.emmkay.infertility_system_api.modules.shared.exception.AppException;
@@ -21,17 +22,19 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@Slf4j
 public class DoctorService {
 
     UserMapper userMapper;
@@ -41,35 +44,25 @@ public class DoctorService {
     WorkScheduleRepository workScheduleRepository;
     AppointmentService appointmentService;
 
-    public List<DoctorRatingResponse> getAllDoctorRating() {
-        return doctorRepository.findAllRatings()
-                .stream()
-                .map(x -> DoctorRatingResponse.builder()
-                        .id(x.getId())
-                        .fullName(x.getFullName())
-                        .avatarUrl(x.getAvatarUrl())
-                        .qualifications(x.getQualifications())
-                        .experienceYears(x.getExperienceYears() == null ? 0 : x.getExperienceYears())
-                        .specialty(x.getSpecialty())
-                        .rate(x.getRate() == null ? 0 : x.getRate())
-                        .build())
-                .toList();
-    }
-
-    public List<DoctorResponse> getAllDoctors() {
-        List<Doctor> doctors = doctorRepository.findAll();
-        return doctors.stream().map(doctorMapper::toDoctorResponse).toList();
+    public Page<DoctorBasicProjection> getPublicDoctors(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return doctorRepository.getPublicDoctors(pageable);
     }
 
     public DoctorResponse getDoctorById(String id) {
-        Doctor doctor = doctorRepository.findById(id)
+        Doctor doctor = doctorRepository.findByIdAndIsPublic(id, true)
                 .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_NOT_EXISTED));
         return doctorMapper.toDoctorResponse(doctor);
     }
 
     @PreAuthorize("#id == authentication.name")
     public DoctorResponse updateDoctor(String id, DoctorUpdateRequest request) {
-        Doctor doctor = doctorRepository.findById(id)
+        String currentUserId = CurrentUserUtils.getCurrentUserId();
+        if (currentUserId == null || currentUserId.isBlank()) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+
+        Doctor doctor = doctorRepository.findById(currentUserId)
                 .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_NOT_EXISTED));
 
         User user = userRepository.findById(doctor.getId())
@@ -82,11 +75,17 @@ public class DoctorService {
         doctorMapper.updateDoctor(doctor, request);
 
         userRepository.save(user);
+        doctor.setIsPublic(true);
         Doctor updatedDoctor = doctorRepository.save(doctor);
         return doctorMapper.toDoctorResponse(updatedDoctor);
     }
 
-    public List<DoctorResponse> getAvailableDoctors(LocalDate date, String shift) {
+    @PreAuthorize("hasRole('MANAGER')")
+    public List<DoctorSelectProjection> getDoctorsToCreateSchedule() {
+        return doctorRepository.searchDoctors(false, true);
+    }
+
+    public List<DoctorSelectProjection> getAvailableDoctors(LocalDate date, String shift) {
         LocalDate today = LocalDate.now();
         if (date.isBefore(today) || date.isAfter(today.plusDays(14))) {
             throw new AppException(ErrorCode.DATE_OUT_OF_RANGE);
@@ -97,13 +96,9 @@ public class DoctorService {
             case "FULL_DAY" -> List.of("FULL_DAY");
             default -> throw new AppException(ErrorCode.INVALID_SHIFT_VALUE);
         };
-
-        List<WorkSchedule> schedules = workScheduleRepository.findByWorkDateAndShiftIn(date, shiftsToMatch);
-        return schedules.stream()
-                .map(WorkSchedule::getDoctor)
-                .distinct()
+        List<DoctorSelectProjection> doctors = workScheduleRepository.getDoctorsForRegister(date, shiftsToMatch);
+        return doctors.stream()
                 .filter(doctor -> appointmentService.isDoctorAvailable(doctor.getId(), date, shift))
-                .map(doctorMapper::toDoctorResponse)
                 .toList();
     }
 
@@ -152,16 +147,13 @@ public class DoctorService {
     }
 
     @PreAuthorize("hasRole('DOCTOR')")
-    public DoctorDashboardResponse getDoctorDashBoard(String doctorId) {
-
-        DoctorDashboardProjection x = doctorRepository.getDoctorDashboardStats(doctorId)
+    public DoctorStatisticsProjection getStatistics() {
+        String currentUserId = CurrentUserUtils.getCurrentUserId();
+        if (currentUserId == null || currentUserId.isBlank()) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+        return doctorRepository.getDoctorDashboardStats(currentUserId)
                 .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_NOT_EXISTED));
-        return DoctorDashboardResponse.builder()
-                .avgRating(x.getAvgRating() == null ? 0 : x.getAvgRating())
-                .patients(x.getPatients() == null ? 0 : x.getPatients())
-                .workShiftsThisMonth(x.getWorkShiftsThisMonth() == null ? 0 : x.getWorkShiftsThisMonth())
-                .build();
-
     }
 
     public Optional<Doctor> findBestDoctor(LocalDate date, String shift) {

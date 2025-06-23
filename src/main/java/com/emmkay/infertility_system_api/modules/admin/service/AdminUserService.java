@@ -64,6 +64,7 @@ public class AdminUserService {
         if (user.getRoleName().getName().equals("DOCTOR")) {
             Doctor doctor = Doctor.builder()
                     .users(user)
+                    .isPublic(false)
                     .build();
             doctorRepository.save(doctor);
         }

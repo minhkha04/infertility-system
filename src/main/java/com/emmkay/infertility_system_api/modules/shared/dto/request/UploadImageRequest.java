@@ -16,6 +16,4 @@ public class UploadImageRequest {
     @NotNull(message = "{validation.required}")
     MultipartFile file;
 
-    @NotNull(message = "{validation.required}")
-    String userId;
 }

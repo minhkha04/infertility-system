@@ -1,5 +1,6 @@
 package com.emmkay.infertility_system_api.modules.schedule.repository;
 
+import com.emmkay.infertility_system_api.modules.doctor.projection.DoctorSelectProjection;
 import com.emmkay.infertility_system_api.modules.manager.projection.ManagerDashboardWorkScheduleStatisticsProjection;
 import com.emmkay.infertility_system_api.modules.schedule.entity.WorkSchedule;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -44,4 +45,17 @@ public interface WorkScheduleRepository extends JpaRepository<WorkSchedule, Long
     ManagerDashboardWorkScheduleStatisticsProjection findWorkScheduleTodayForManagerDashBoard();
 
     List<WorkSchedule> findByDoctorIdAndWorkDateGreaterThanEqual(String doctorId, LocalDate workDateIsGreaterThan);
+
+    @Query("""
+                    SELECT
+                        d.id AS id,
+                        d.users.fullName AS fullName
+                    FROM WorkSchedule ws
+                    JOIN ws.doctor d
+                    WHERE d.isPublic = TRUE
+                        AND (ws.workDate = :date)
+                        AND (ws.shift IN :shifts)
+                        AND (d.users.isRemoved = FALSE)
+            """)
+    List<DoctorSelectProjection> getDoctorsForRegister(LocalDate date, List<String> shifts);
 }
