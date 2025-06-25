@@ -28,7 +28,7 @@ public class ReminderService {
     ReminderRepository reminderRepository;
     EmailService emailService;
 
-     private String generateShift(String shift) {
+    private String generateShift(String shift) {
         return switch (shift.toUpperCase()) {
             case "MORNING" -> "sáng";
             case "AFTERNOON" -> "chiều";
@@ -65,14 +65,38 @@ public class ReminderService {
             log.info("Sending reminder to customer: {}", reminder.getCustomer().getFullName());
             String subject = "Thông báo lịch hẹn";
             String body = """
-                    Xin chào %s,
+                    <html>
+                    <body style="font-family: Arial, sans-serif; line-height: 1.6;">
                     
-                    Đây là lời nhắc nhở thân thiện về lịch hẹn sắp tới của bạn.
+                        <p>Kính gửi %s,</p>
                     
-                    ➤ Chi tiết:
-                    %s
+                        <p>Chúng tôi xin gửi lời nhắc lịch hẹn sắp tới của Quý khách tại  
+                        <strong style="color:#FC6A40;">Trung tâm điều trị hiếm muộn New Life</strong>.</p>
                     
-                    Vui lòng đến đúng giờ.
+                        <p><strong>Thông tin chi tiết:</strong><br/>
+                        %s</p>
+                    
+                        <p><strong>Khung giờ làm việc:</strong><br/>
+                        - Sáng: 08:00 – 12:00<br/>
+                        - Chiều: 13:00 – 17:00</p>
+                    
+                        <p>Quý khách vui lòng đến đúng giờ để quá trình thăm khám diễn ra thuận lợi.</p>
+                    
+                        <table width="100%%" style="margin-top: 20px;">
+                            <tr>
+                                <td style="vertical-align: top;">
+                                    <p>Trân trọng,<br/>
+                                    Đội ngũ chăm sóc khách hàng<br/>
+                                    <span style="color:#FC6A40; font-weight:bold;">Trung tâm điều trị hiếm muộn New Life</span><br/>
+                                    Email: <a href="mailto:infertilitytreatmentmonitoring@gmail.com">infertilitytreatmentmonitoring@gmail.com</a></p>
+                                </td>
+                                <td style="text-align: right;">
+                                    <img src="https://res.cloudinary.com/di6hi1r0g/image/upload/v1748665959/icon_pch2gc.png" alt="New Life Logo" style="width: 100px; height: auto;"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </body>
+                    </html>
                     """.formatted(reminder.getCustomer().getFullName(), reminder.getMessage());
             try {
                 emailService.sendEmail(reminder.getCustomer().getEmail(), subject, body);

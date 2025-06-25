@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -20,7 +19,7 @@ public class TreatmentType {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
-    private Integer id;
+    private Long id;
 
     @Size(max = 100)
     @NotNull
@@ -36,9 +35,4 @@ public class TreatmentType {
 
     @OneToMany(mappedBy = "type")
     private Set<TreatmentStage> treatmentStages = new LinkedHashSet<>();
-
-    @ColumnDefault("0")
-    @Column(name = "is_remove")
-    private Boolean isRemove;
-
 }

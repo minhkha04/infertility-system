@@ -27,6 +27,6 @@ public class TreatmentServiceCreateRequest {
     int duration;
 
     @NotNull(message = "{validation.required}")
-    int treatmentTypeId;
+    Long treatmentTypeId;
 
 }

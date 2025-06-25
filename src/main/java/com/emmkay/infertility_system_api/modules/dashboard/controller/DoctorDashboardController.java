@@ -20,7 +20,7 @@ import java.time.YearMonth;
 import java.util.List;
 
 @RestController
-@RequestMapping("/v1/dashboard/doctor")
+@RequestMapping("/api/v1/dashboard/doctor")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @PreAuthorize("hasRole('DOCTOR')")

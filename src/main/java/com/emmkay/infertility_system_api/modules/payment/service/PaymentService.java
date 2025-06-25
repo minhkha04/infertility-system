@@ -2,24 +2,33 @@ package com.emmkay.infertility_system_api.modules.payment.service;
 
 import com.emmkay.infertility_system_api.modules.payment.strategy.PaymentStrategy;
 import com.emmkay.infertility_system_api.modules.payment.strategy.PaymentStrategyFactory;
+import com.emmkay.infertility_system_api.modules.shared.exception.AppException;
+import com.emmkay.infertility_system_api.modules.shared.exception.ErrorCode;
+import com.emmkay.infertility_system_api.modules.shared.security.CurrentUserUtils;
+import com.emmkay.infertility_system_api.modules.treatment.entity.TreatmentRecord;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.io.UnsupportedEncodingException;
-
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
 public class PaymentService {
-    PaymentStrategyFactory paymentStrategyFactory;
 
-    public String createPayment(String paymentMethod, Object request, Long recordId) throws UnsupportedEncodingException {
+    PaymentStrategyFactory paymentStrategyFactory;
+    PaymentEligibilityService paymentEligibilityService;
+
+    public String createPayment(String paymentMethod, Object request, Long recordId) {
+        String currentUserId = CurrentUserUtils.getCurrentUserId();
+        TreatmentRecord treatmentRecord = paymentEligibilityService.isAvailable(recordId, false);
+        if (currentUserId == null || currentUserId.isBlank() || !treatmentRecord.getCustomer().getId().equalsIgnoreCase(currentUserId)) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
         PaymentStrategy strategy = paymentStrategyFactory.getStrategy(paymentMethod);
-        return strategy.createPayment(request, recordId);
+        return strategy.createPayment(request, treatmentRecord);
     }
 
     public boolean processReturnUrl(String method, Object object) {
@@ -29,7 +38,8 @@ public class PaymentService {
 
     public String reloadPayment(String paymentMethod, Object request, Long recordId) {
         PaymentStrategy strategy = paymentStrategyFactory.getStrategy(paymentMethod);
-        return strategy.reloadPayment(request, recordId);
+        TreatmentRecord treatmentRecord = paymentEligibilityService.isAvailable(recordId, true);
+        return strategy.reloadPayment(request, treatmentRecord);
     }
 
 

@@ -38,7 +38,6 @@ public class MomoPaymentStrategy implements PaymentStrategy {
     PaymentTransactionService paymentTransactionService;
     MomoRequestBuilder momoRequestBuilder;
     MomoSignatureUtil momoSignatureUtil;
-    PaymentEligibilityService paymentEligibilityService;
 
     private void processPayment(PaymentTransaction paymentTransaction, String requestType) {
         MomoConfirmRequest momoConfirmRequest = momoRequestBuilder.buildMomoConfirmRequest(paymentTransaction, requestType);
@@ -81,8 +80,7 @@ public class MomoPaymentStrategy implements PaymentStrategy {
     }
 
     @Override
-    public String createPayment(Object request, Long recordId) {
-        TreatmentRecord treatmentRecord = paymentEligibilityService.isAvailable(recordId, false);
+    public String createPayment(Object request, TreatmentRecord treatmentRecord) {
         PaymentTransaction paymentTransaction = paymentTransactionService.createTransaction(treatmentRecord, "MOMO", 5);
         MomoCreateRequest momoCreateRequest = momoRequestBuilder.buildMomoRequest(paymentTransaction, UUID.randomUUID().toString());
         MomoCreateResponse momoCreateResponse = createMomoQrSafe(momoCreateRequest);
@@ -142,8 +140,7 @@ public class MomoPaymentStrategy implements PaymentStrategy {
     }
 
     @Override
-    public String reloadPayment(Object request, Long recordId) {
-        TreatmentRecord treatmentRecord = paymentEligibilityService.isAvailable(recordId, true);
+    public String reloadPayment(Object request, TreatmentRecord treatmentRecord) {
         PaymentTransaction paymentTransaction = paymentTransactionService.reloadTransaction(treatmentRecord, "MOMO", 5);
         MomoCreateRequest momoCreateRequest = momoRequestBuilder.buildMomoRequest(paymentTransaction, UUID.randomUUID().toString());
         MomoCreateResponse momoCreateResponse = createMomoQrSafe(momoCreateRequest);

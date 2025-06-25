@@ -12,7 +12,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class TreatmentServiceRegisterRequest {
+public class RegisterServiceRequest {
     @NotBlank(message = "{validation.required}")
     String customerId;
 

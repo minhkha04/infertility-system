@@ -8,7 +8,6 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface ReminderRepository extends JpaRepository<Reminder, Long> {
@@ -17,8 +16,6 @@ public interface ReminderRepository extends JpaRepository<Reminder, Long> {
     List<Reminder> findByReminderDateAndIsSentFalseWithCustomer(LocalDate reminderDate);
 
     void deleteByAppointment(Appointment appointment);
-
-    Optional<Reminder> getRemindersByAppointment(Appointment appointment);
 
     void deleteByAppointment_Id(Long appointmentId);
 }

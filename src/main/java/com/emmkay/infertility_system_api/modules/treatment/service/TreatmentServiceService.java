@@ -1,11 +1,12 @@
 package com.emmkay.infertility_system_api.modules.treatment.service;
 
+import com.emmkay.infertility_system_api.modules.shared.security.CurrentUserUtils;
 import com.emmkay.infertility_system_api.modules.treatment.dto.request.TreatmentServiceCreateRequest;
-import com.emmkay.infertility_system_api.modules.treatment.dto.request.TreatmentServiceRegisterRequest;
 import com.emmkay.infertility_system_api.modules.treatment.dto.request.TreatmentServiceUpdateRequest;
 import com.emmkay.infertility_system_api.modules.treatment.dto.response.TreatmentServiceResponse;
 import com.emmkay.infertility_system_api.modules.treatment.entity.TreatmentService;
 import com.emmkay.infertility_system_api.modules.treatment.entity.TreatmentType;
+import com.emmkay.infertility_system_api.modules.treatment.projection.TreatmentServiceBasicProjection;
 import com.emmkay.infertility_system_api.modules.user.entity.User;
 import com.emmkay.infertility_system_api.modules.shared.exception.AppException;
 import com.emmkay.infertility_system_api.modules.shared.exception.ErrorCode;
@@ -16,16 +17,11 @@ import com.emmkay.infertility_system_api.modules.user.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
-@Slf4j
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class TreatmentServiceService {
@@ -34,18 +30,23 @@ public class TreatmentServiceService {
     TreatmentServiceMapper treatmentServiceMapper;
     UserRepository userRepository;
     TreatmentTypeRepository treatmentTypeRepository;
-    TreatmentRecordService treatmentRecordService;
 
-    @PreAuthorize("hasRole('MANAGER')")
+    public Page<TreatmentServiceBasicProjection> searchTreatmentServices(String name, Boolean isRemoved, int page, int size) {
+        Pageable pageable = Pageable.ofSize(size).withPage(page);
+        return treatmentServiceRepository.searchTreatmentServices(name, isRemoved, pageable);
+    }
+
     public TreatmentServiceResponse createTreatmentService(TreatmentServiceCreateRequest request) {
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String userid = authentication.getName();
+        String currentUserId = CurrentUserUtils.getCurrentUserId();
+        if (currentUserId == null || currentUserId.isBlank()) {
+           throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
         if (treatmentServiceRepository.existsByName(request.getName())) {
             throw new AppException(ErrorCode.TREATMENT_SERVICE_IS_EXISTED);
         }
 
-        User user = userRepository.findById(userid).orElseThrow(() ->
+        User user = userRepository.findById(currentUserId).orElseThrow(() ->
                 new AppException(ErrorCode.USER_NOT_EXISTED));
         TreatmentType type = treatmentTypeRepository.findById(request.getTreatmentTypeId()).orElseThrow(() ->
                 new AppException(ErrorCode.TREATMENT_TYPE_NOT_EXISTED));
@@ -60,21 +61,12 @@ public class TreatmentServiceService {
                         .save(treatmentService));
     }
 
-    @PreAuthorize("hasRole('MANAGER')")
-    public List<TreatmentServiceResponse> findAll() {
-        return treatmentServiceRepository.findAll()
-                .stream()
-                .map(treatmentServiceMapper::toTreatmentServiceResponse)
-                .toList();
-    }
-
     public TreatmentServiceResponse findById(Long id) {
         TreatmentService treatmentService = treatmentServiceRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_SERVICE_NOT_EXISTED));
         return treatmentServiceMapper.toTreatmentServiceResponse(treatmentService);
     }
 
-    @PreAuthorize("hasRole('MANAGER')")
     public TreatmentServiceResponse updateTreatmentService(Long id, TreatmentServiceUpdateRequest request) {
         TreatmentService treatmentService = treatmentServiceRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_SERVICE_NOT_EXISTED));
@@ -82,23 +74,11 @@ public class TreatmentServiceService {
         if (treatmentServiceRepository.existsByNameAndIdNot(request.getName(), id)) {
             throw new AppException(ErrorCode.TREATMENT_SERVICE_IS_EXISTED);
         }
-
-        TreatmentType type = treatmentTypeRepository.findById(request.getTreatmentTypeId()).orElseThrow(() ->
-                new AppException(ErrorCode.TREATMENT_TYPE_NOT_EXISTED));
-        treatmentService.setType(type);
         treatmentServiceMapper.updateTreatmentService(treatmentService, request);
         return treatmentServiceMapper.toTreatmentServiceResponse(treatmentServiceRepository.save(treatmentService));
 
     }
 
-    public List<TreatmentServiceResponse> findAllNotRemoved() {
-        return treatmentServiceRepository.findAllByIsRemoveFalse()
-                .stream()
-                .map(treatmentServiceMapper::toTreatmentServiceResponse)
-                .toList();
-    }
-
-    @PreAuthorize("hasRole('MANAGER')")
     public TreatmentServiceResponse removeTreatmentService(Long id) {
         TreatmentService treatmentService = treatmentServiceRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_SERVICE_NOT_EXISTED));
@@ -106,7 +86,6 @@ public class TreatmentServiceService {
         return treatmentServiceMapper.toTreatmentServiceResponse(treatmentServiceRepository.save(treatmentService));
     }
 
-    @PreAuthorize("hasRole('MANAGER')")
     public TreatmentServiceResponse restoreTreatmentService(Long id) {
         TreatmentService treatmentService = treatmentServiceRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_SERVICE_NOT_EXISTED));
@@ -114,17 +93,10 @@ public class TreatmentServiceService {
         return treatmentServiceMapper.toTreatmentServiceResponse(treatmentServiceRepository.save(treatmentService));
     }
 
-    @PreAuthorize("hasRole('CUSTOMER')")
-    public void registerTreatmentService(TreatmentServiceRegisterRequest request) {
-        TreatmentService treatmentService = treatmentServiceRepository.findById(request.getTreatmentServiceId())
+    public TreatmentServiceResponse uploadImage(Long id, String imageUrl) {
+        TreatmentService treatmentService = treatmentServiceRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_SERVICE_NOT_EXISTED));
-        treatmentRecordService.creatTreatmentRecord(treatmentService, request.getCustomerId(), request.getDoctorId(), request.getStartDate(), request.getShift().toUpperCase(), request.getCd1Date()
-        );
+        treatmentService.setCoverImageUrl(imageUrl);
+        return treatmentServiceMapper.toTreatmentServiceResponse(treatmentServiceRepository.save(treatmentService));
     }
-
-    @PreAuthorize("hasRole('MANAGER') or hasRole('DOCTOR') or hasRole('CUSTOMER')")
-    public void cancelTreatmentService(Long recordId, String customerId) {
-        treatmentRecordService.cancelTreatmentRecord(recordId, customerId);
-    }
-
 }

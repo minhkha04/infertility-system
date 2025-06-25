@@ -1,9 +1,13 @@
 package com.emmkay.infertility_system_api.modules.treatment.dto.request;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -19,4 +23,8 @@ public class TreatmentTypeCreateRequest {
     @NotBlank(message = "{validation.required}")
     @Size(max = 100, message = "{validation.size}")
     String description;
+
+    @NotEmpty
+    @Valid
+    List<TreatmentStageCreateRequest> treatmentStages;
 }

@@ -50,7 +50,7 @@ public class TreatmentStepService {
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
         TreatmentService treatmentService = treatmentServiceRepository.getTreatmentServicesById(treatmentRecord.getService().getId())
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_SERVICE_NOT_EXISTED));
-        int typeId = treatmentService.getType().getId();
+        Long typeId = treatmentService.getType().getId();
         List<TreatmentStage> treatmentStages = treatmentStageRepository.findByTypeIdOrderByOrderIndexAsc(typeId);
         LocalDate cd1 = treatmentRecord.getCd1Date();
         return treatmentStages.stream()
@@ -98,7 +98,7 @@ public class TreatmentStepService {
 
     @Transactional
     public void cancelStepsByRecordId(Long recordId) {
-        List<String> cancellableStatuses = List.of("PLANNED", "CONFIRMED");
+        List<String> cancellableStatuses = List.of("PLANNED", "CONFIRMED", "COMPLETED");
         treatmentStepRepository.updateStatusByRecordIdAndStatusIn(
                 recordId,  cancellableStatuses, "CANCELLED"
         );

@@ -27,9 +27,7 @@ import javax.crypto.spec.SecretKeySpec;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    private static final String[] PUBLIC_URLS = {"/v1/auth/**", "/swagger-ui/**", "/v3/api-docs/**", "/v3/api-docs.yaml", "/v1/public/**",
-
-            "/v1/treatment-type", "/v1/treatment-stages/**", "/v1/doctors/**", "/v1/doctors/{id}", "/v1/treatment-service/{id}", "/v1/doctors/available", "/v1/treatment-service", "/v1/doctors/rating", "/v1/feedback/for-doctor/{isApproval}/{doctorId}", "/v1/treatment-step/getSuggest/{recordId}", "/v1/payment/momo/ipn", "/v1/payment/vnpay/ipn"};
+    private static final String[] PUBLIC_URLS = {"/api/v1/auth/**", "/swagger-ui/**", "/v3/api-docs/**", "/v3/api-docs.yaml", "/api/v1/public/**"};
 
 
     @Value("${jwt.signerKey}")

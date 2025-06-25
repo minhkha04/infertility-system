@@ -35,7 +35,7 @@ public class VnPaymentStrategy implements PaymentStrategy {
     PaymentTransactionRepository paymentTransactionRepository;
 
     @Override
-    public String createPayment(Object request, Long recordId) {
+    public String createPayment(Object request, TreatmentRecord treatmentRecord) {
         HttpServletRequest req;
         try {
             req = (HttpServletRequest) request;
@@ -43,8 +43,6 @@ public class VnPaymentStrategy implements PaymentStrategy {
             log.error("Error when create payment url: {}", e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
-        TreatmentRecord treatmentRecord = paymentEligibilityService.isAvailable(recordId, false);
-
         PaymentTransaction paymentTransaction = paymentTransactionService.createTransaction(treatmentRecord, "VNPAY", 5);
 
         return vnPayRedirectUrlBuilder.buildRedirectUrl(paymentTransaction, req);
@@ -103,7 +101,7 @@ public class VnPaymentStrategy implements PaymentStrategy {
     }
 
     @Override
-    public String reloadPayment(Object request, Long recordId) {
+    public String reloadPayment(Object request, TreatmentRecord treatmentRecord) {
         return "";
     }
 }

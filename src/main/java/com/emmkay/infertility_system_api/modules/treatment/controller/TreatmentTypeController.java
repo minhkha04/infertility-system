@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/treatment-type")
+@RequestMapping("/api/v1/treatment-types")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class TreatmentTypeController {
@@ -29,30 +29,16 @@ public class TreatmentTypeController {
     }
 
     @PostMapping("")
-    public ApiResponse<TreatmentTypeResponse> createTreatmentType(@RequestBody  @Valid TreatmentTypeCreateRequest request) {
+    public ApiResponse<TreatmentTypeResponse> createTreatmentType(@RequestBody @Valid TreatmentTypeCreateRequest request) {
         return ApiResponse.<TreatmentTypeResponse>builder()
                 .result(treatmentTypeService.createTreatmentType(request))
                 .build();
     }
 
     @PutMapping("{id}")
-    public ApiResponse<TreatmentTypeResponse> updateTreatmentType(@PathVariable Integer id, @RequestBody @Valid TreatmentTypeUpdateRequest request) {
+    public ApiResponse<TreatmentTypeResponse> updateTreatmentType(@PathVariable Long id, @RequestBody @Valid TreatmentTypeUpdateRequest request) {
         return ApiResponse.<TreatmentTypeResponse>builder()
                 .result(treatmentTypeService.updateTreatmentType(id, request))
-                .build();
-    }
-
-    @DeleteMapping("{id}")
-    public ApiResponse<TreatmentTypeResponse> deleteTreatmentType(@PathVariable Integer id) {
-        return ApiResponse.<TreatmentTypeResponse>builder()
-                .result(treatmentTypeService.deleteTreatmentType(id))
-                .build();
-    }
-
-    @GetMapping("find-by-name/{name}")
-    public ApiResponse<List<TreatmentTypeResponse>> findByName(@PathVariable String name) {
-        return ApiResponse.<List<TreatmentTypeResponse>>builder()
-                .result(treatmentTypeService.findByName(name))
                 .build();
     }
 

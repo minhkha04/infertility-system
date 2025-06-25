@@ -7,8 +7,8 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface TreatmentStageRepository extends JpaRepository<TreatmentStage, Integer> {
-    List<TreatmentStage> findByTypeIdOrderByOrderIndexAsc(Integer typeId);
+public interface TreatmentStageRepository extends JpaRepository<TreatmentStage, Long> {
+    List<TreatmentStage> findByTypeIdOrderByOrderIndexAsc(Long typeId);
 
     boolean existsByName(String name);
 }

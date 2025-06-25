@@ -19,21 +19,23 @@ public class OpenApiConfig {
     public OpenAPI openAPI() {
         return new OpenAPI()
                 .info(new Info().title("Infertility System API")
-                .version("1.0")
-                .description("API documentation for the Infertility System application.")
-                .license(new License().name("API license")
-                        .url("https://example.com/license"))
+                        .version("1.0")
+                        .description("API documentation for the Infertility System application.")
+                        .license(new License().name("API license")
+                                .url("https://example.com/license"))
                 )
                 .addSecurityItem(new SecurityRequirement().addList(SECURITY_SCHEME_NAME))
                 .components(new io.swagger.v3.oas.models.Components()
                         .addSecuritySchemes(SECURITY_SCHEME_NAME,
-                            new io.swagger.v3.oas.models.security.SecurityScheme()
-                                .type(SecurityScheme.Type.HTTP)
-                                .scheme("bearer")
-                                .bearerFormat("JWT")
+                                new io.swagger.v3.oas.models.security.SecurityScheme()
+                                        .type(SecurityScheme.Type.HTTP)
+                                        .scheme("bearer")
+                                        .bearerFormat("JWT")
                         )
                 )
-                .servers(List.of(new Server().url("/infertility-system/api").description("Default server url")));
+                .servers(List.of(new Server().url("/infertility-system").description("Default server url"),
+                        new Server().url("/infertility-system/test").description("Local server url")
+                ));
 
     }
 }

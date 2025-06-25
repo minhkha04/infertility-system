@@ -1,5 +1,6 @@
 package com.emmkay.infertility_system_api.modules.treatment.entity;
 
+import com.emmkay.infertility_system_api.modules.payment.entity.PaymentTransaction;
 import com.emmkay.infertility_system_api.modules.user.entity.User;
 import com.emmkay.infertility_system_api.modules.feedback.entity.Feedback;
 import jakarta.persistence.*;
@@ -61,5 +62,12 @@ public class TreatmentService {
     @ColumnDefault("0")
     @Column(name = "is_remove")
     private Boolean isRemove;
+
+    @OneToMany(mappedBy = "service")
+    private Set<PaymentTransaction> paymentTransactions = new LinkedHashSet<>();
+
+    @Size(max = 255)
+    @Column(name = "cover_image_url")
+    private String coverImageUrl;
 
 }

@@ -13,7 +13,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserController {
@@ -27,14 +27,14 @@ public class UserController {
         return userService.getMyInfo();
     }
 
-    @PutMapping("/update/{userId}")
+    @PutMapping("/{userId}")
     public ApiResponse<UserResponse> updateUser(@PathVariable  String userId, @RequestBody @Valid UserUpdateRequest request) {
         return ApiResponse.<UserResponse>builder()
                 .result(userService.updateUser(userId, request))
                 .build();
     }
 
-    @PutMapping("/upload-avatar/{userId}")
+    @PutMapping("/{userId}/upload-avatar")
     public ApiResponse<UserResponse> uploadAvatar(@ModelAttribute @Valid UploadImageRequest request, @PathVariable  String userId) {
         String imageUrl = cloudinaryService.uploadImage(request.getFile(), "avt", userId);
         return ApiResponse.<UserResponse>builder()

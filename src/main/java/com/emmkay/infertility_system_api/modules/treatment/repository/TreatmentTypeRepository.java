@@ -8,8 +8,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface TreatmentTypeRepository extends JpaRepository<TreatmentType, Integer> {
+public interface TreatmentTypeRepository extends JpaRepository<TreatmentType, Long> {
     boolean existsByName(String name);
-
-    List<TreatmentType> findByNameContainingIgnoreCase(String name);
 }

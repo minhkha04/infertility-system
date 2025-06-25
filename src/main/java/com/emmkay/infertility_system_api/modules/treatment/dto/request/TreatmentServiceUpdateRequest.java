@@ -16,6 +16,7 @@ public class TreatmentServiceUpdateRequest {
     @NotBlank(message = "{validation.required}")
     String name;
 
+    @NotBlank(message = "{validation.required}")
     String description;
 
     @NotNull(message = "{validation.required}")
@@ -25,8 +26,5 @@ public class TreatmentServiceUpdateRequest {
     @NotNull(message = "{validation.required}")
     @Min(value = 1, message = "{validation.min}")
     int duration;
-
-    @NotNull(message = "{validation.required}")
-    int treatmentTypeId;
 
 }

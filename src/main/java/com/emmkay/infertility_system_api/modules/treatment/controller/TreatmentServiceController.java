@@ -1,26 +1,33 @@
 package com.emmkay.infertility_system_api.modules.treatment.controller;
 
+import com.emmkay.infertility_system_api.modules.shared.dto.request.UploadImageRequest;
+import com.emmkay.infertility_system_api.modules.shared.dto.response.PageResponse;
+import com.emmkay.infertility_system_api.modules.shared.storage.CloudinaryService;
 import com.emmkay.infertility_system_api.modules.treatment.dto.request.TreatmentServiceCreateRequest;
-import com.emmkay.infertility_system_api.modules.treatment.dto.request.TreatmentServiceRegisterRequest;
 import com.emmkay.infertility_system_api.modules.treatment.dto.request.TreatmentServiceUpdateRequest;
 import com.emmkay.infertility_system_api.modules.shared.dto.response.ApiResponse;
 import com.emmkay.infertility_system_api.modules.treatment.dto.response.TreatmentServiceResponse;
+import com.emmkay.infertility_system_api.modules.treatment.projection.TreatmentServiceBasicProjection;
 import com.emmkay.infertility_system_api.modules.treatment.service.TreatmentServiceService;
+import com.emmkay.infertility_system_api.modules.user.dto.response.UserResponse;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
-@RequestMapping("/treatment-service")
+@RequestMapping("/api/v1/treatment-services")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@PreAuthorize("hasRole('MANAGER')")
 public class TreatmentServiceController {
 
     TreatmentServiceService treatmentServiceService;
+    CloudinaryService cloudinaryService;
+
 
     @PostMapping("")
     public ApiResponse<TreatmentServiceResponse> createTreatmentService(@RequestBody @Valid TreatmentServiceCreateRequest request) {
@@ -30,11 +37,18 @@ public class TreatmentServiceController {
     }
 
     @GetMapping("")
-    public ApiResponse<List<TreatmentServiceResponse>> findAll() {
-        return ApiResponse.<List<TreatmentServiceResponse>>builder()
-                .result(treatmentServiceService.findAll())
+    ApiResponse<PageResponse<TreatmentServiceBasicProjection>> searchTreatmentService(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Boolean isRemoved,
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "10") Integer size
+    ) {
+        Page<TreatmentServiceBasicProjection> result = treatmentServiceService.searchTreatmentServices(name, isRemoved, page, size);
+        return ApiResponse.<PageResponse<TreatmentServiceBasicProjection>>builder()
+                .result(PageResponse.from(result))
                 .build();
     }
+
 
     @GetMapping("/{id}")
     public ApiResponse<TreatmentServiceResponse> findById(@PathVariable Long id) {
@@ -52,13 +66,6 @@ public class TreatmentServiceController {
                 .build();
     }
 
-    @GetMapping("/not-removed")
-    public ApiResponse<List<TreatmentServiceResponse>> findAllNotRemoved() {
-        return ApiResponse.<List<TreatmentServiceResponse>>builder()
-                .result(treatmentServiceService.findAllNotRemoved())
-                .build();
-    }
-
     @DeleteMapping("/{id}")
     public ApiResponse<TreatmentServiceResponse> removeTreatmentService(@PathVariable Long id) {
         return ApiResponse.<TreatmentServiceResponse>builder()
@@ -66,27 +73,18 @@ public class TreatmentServiceController {
                 .build();
     }
 
-    @PutMapping("/restore/{id}")
+    @PutMapping("/{id}/restore")
     public ApiResponse<TreatmentServiceResponse> restoreTreatmentService(@PathVariable Long id) {
         return ApiResponse.<TreatmentServiceResponse>builder()
                 .result(treatmentServiceService.restoreTreatmentService(id))
                 .build();
     }
 
-    @PostMapping("/register")
-    public ApiResponse<String> registerTreatmentService(
-            @RequestBody @Valid TreatmentServiceRegisterRequest request) {
-        treatmentServiceService.registerTreatmentService(request);
-        return ApiResponse.<String>builder()
-                .result("Đăng ký dịch vụ thành công")
-                .build();
-    }
-
-    @DeleteMapping("/cancel/{recordId}/{customerId}")
-    public ApiResponse<String> cancelTreatmentRecord(@PathVariable Long recordId, @PathVariable String customerId) {
-        treatmentServiceService.cancelTreatmentService(recordId, customerId);
-        return ApiResponse.<String>builder()
-                .result("Hủy dịch vụ thành công")
+    @PostMapping("/{id}/upload-image")
+    public ApiResponse<TreatmentServiceResponse> uploadImage(@ModelAttribute @Valid UploadImageRequest request, @PathVariable  Long id) {
+        String imageUrl = cloudinaryService.uploadImage(request.getFile(), "service_img", String.valueOf(id));
+        return ApiResponse.<TreatmentServiceResponse>builder()
+                .result(treatmentServiceService.uploadImage(id, imageUrl))
                 .build();
     }
 }

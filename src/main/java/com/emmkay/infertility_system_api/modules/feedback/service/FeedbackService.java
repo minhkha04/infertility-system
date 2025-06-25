@@ -106,7 +106,7 @@ public class FeedbackService {
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
 
         if (treatmentRecord.getStatus().equals("COMPLETED")) {
-            throw new AppException(ErrorCode.UNAUTHORIZED_ACTION);
+            throw new AppException(ErrorCode.UNAUTHORIZED);
         }
 
         User customer = userRepository.findById(request.getCustomerId())
