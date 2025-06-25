@@ -28,7 +28,7 @@ public class ReminderService {
     ReminderRepository reminderRepository;
     EmailService emailService;
 
-     String generateShift(String shift) {
+     private String generateShift(String shift) {
         return switch (shift.toUpperCase()) {
             case "MORNING" -> "sáng";
             case "AFTERNOON" -> "chiều";
@@ -36,20 +36,20 @@ public class ReminderService {
         };
     }
 
-    String buildMess(Doctor doctor, String shift, LocalDate date, String purpose) {
+    private String buildMess(Doctor doctor, String shift, LocalDate date, String step) {
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, 'ngày' d 'tháng' M, yyyy", new Locale("vi", "VN"));
         String formattedDate = date.format(formatter);
 
         return "Nhắc nhở: Bạn có lịch hẹn với bác sĩ " + doctor.getUsers().getFullName()
-                + " vào " + formattedDate + " buổi " + generateShift(shift) + " cho việc " + purpose + ".";
+                + " vào " + formattedDate + " buổi " + generateShift(shift) + " cho việc " + step + ".";
     }
 
     public void createReminderForAppointment(Appointment appointment) {
         Reminder reminder = Reminder.builder()
                 .customer(appointment.getCustomer())
                 .reminderDate(appointment.getAppointmentDate())
-                .message(buildMess(appointment.getDoctor(), appointment.getShift(), appointment.getAppointmentDate(), appointment.getPurpose()))
+                .message(buildMess(appointment.getDoctor(), appointment.getShift(), appointment.getAppointmentDate(), appointment.getTreatmentStep().getStepType()))
                 .appointment(appointment)
                 .isSent(false)
                 .build();

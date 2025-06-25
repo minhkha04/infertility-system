@@ -60,7 +60,7 @@ public class AppointmentController {
                 .build();
     }
 
-    @PostMapping()
+    @PostMapping("")
     public ApiResponse<AppointmentResponse> createAppointment(
             @RequestBody @Valid AppointmentCreateRequest request) {
         return ApiResponse.<AppointmentResponse>builder()

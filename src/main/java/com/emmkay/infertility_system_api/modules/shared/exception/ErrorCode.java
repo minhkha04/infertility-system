@@ -66,7 +66,7 @@ public enum ErrorCode {
     TREATMENT_RECORD_IS_PAID(1053, "Bạn không thể hủy dịch vụ này vì đã thanh toán, vui lòng gửi mail cho bệnh viện nếu muốn hủy", HttpStatus.BAD_REQUEST),
     TREATMENT_RECORD_IS_COMPLETED_OR_CANCELLED(1054, "Bạn không thể đặt lịch hẹn vì hồ sơ này đã hoàn thành hoặc đã bị hủy", HttpStatus.BAD_REQUEST),
     PAYMENT_METHOD_NOT_SUPPORTED(1055, "Phương thức thanh toán không được hỗ trợ", HttpStatus.BAD_REQUEST),
-    GENERATE_QR_FAILED(1056, "Tạo qr thanh toán thất bại", HttpStatus.INTERNAL_SERVER_ERROR),
+    GENERATE_QR_FAILED(1056, "Tạo Qr thanh toán thất bại", HttpStatus.INTERNAL_SERVER_ERROR),
     CONVERT_TO_BASE64_FAILED(1057, "Convert to base 64 failed", HttpStatus.INTERNAL_SERVER_ERROR),
     APPOINTMENT_NOT_CHANGE(1058, "Bước điều trị đã hoàn thành hoặc bị hủy", HttpStatus.BAD_REQUEST),
     FEEDBACK_IS_EXISTED(1059, "Bạn đã feedback dịch vụ này rồi", HttpStatus.BAD_REQUEST),
@@ -74,6 +74,8 @@ public enum ErrorCode {
     PAYMENT_TRANSACTION_NOT_FOUND(1061, "Không tìm thấy hóa đơn", HttpStatus.BAD_REQUEST),
     MOMO_TIMEOUT(1062, "Lỗi thanh toán", HttpStatus.INTERNAL_SERVER_ERROR),
     TREATMENT_CAN_NOT_DONE(1063, "Các lịch hẹn bước này chưa được hoàn thành", HttpStatus.BAD_REQUEST),
+    BLOG_DO_NOT_HAS_IMAGE(1064, "Bài viết không có ảnh đại diện", HttpStatus.BAD_REQUEST),
+    TREATMENT_NOT_PAID(1065, "Hồ sơ điều trị chưa được thanh toán", HttpStatus.BAD_REQUEST),
     ;
 
     int code;

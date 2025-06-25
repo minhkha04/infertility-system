@@ -14,7 +14,7 @@ public class FeedbackResponse {
 
     Long id;
     String customerName;
-    String doctorId;
+    String doctorName;
     int rating;
     String comment;
     LocalDate submitDate;

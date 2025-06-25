@@ -55,10 +55,6 @@ public class Appointment {
     @JoinColumn(name = "treatment_step_id")
     private TreatmentStep treatmentStep;
 
-    @Size(max = 255)
-    @Column(name = "purpose")
-    private String purpose;
-
     @Size(max = 50)
     @Column(name = "status", length = 50)
     private String status;

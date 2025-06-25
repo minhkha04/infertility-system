@@ -6,7 +6,6 @@ public interface AppointmentBasicProjection {
     Long getId();
     String getCustomerName();
     String getDoctorName();
-    String getPurpose();
     LocalDate getAppointmentDate();
     String getShift();
     String getStatus();

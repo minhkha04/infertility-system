@@ -9,8 +9,6 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class FeedbackUpdateStatusRequest {
-    boolean isApproved;
-    String approveBy;
     String note;
     String status;
 }

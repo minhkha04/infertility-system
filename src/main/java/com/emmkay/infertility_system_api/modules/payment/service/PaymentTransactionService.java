@@ -28,7 +28,6 @@ public class PaymentTransactionService {
 
     PaymentTransactionRepository paymentTransactionRepository;
     PaymentUtil paymentUtil;
-    TreatmentRecordRepository treatmentRecordRepository;
 
     public PaymentTransaction createTransaction(TreatmentRecord treatmentRecord, String paymentMethod, long expirationMinutes) {
         ZoneId zoneId = ZoneId.of("Asia/Ho_Chi_Minh");
@@ -44,6 +43,7 @@ public class PaymentTransactionService {
                 .createdAt(nowZoned.toLocalDateTime())
                 .expiredAt(expiredZoned.toLocalDateTime())
                 .customer(treatmentRecord.getCustomer())
+                .service(treatmentRecord.getService())
                 .build();
         return paymentTransactionRepository.save(paymentTransaction);
     }
@@ -82,15 +82,6 @@ public class PaymentTransactionService {
 
     public void updateStatus(PaymentTransaction paymentTransaction, String status) {
         paymentTransaction.setStatus(status);
-        if (status.equalsIgnoreCase("SUCCESS")) {
-            Optional<TreatmentRecord> treatmentRecord = treatmentRecordRepository.findByIdAndStatus(paymentTransaction.getRecord().getId(), "PENDING");
-            if (treatmentRecord.isPresent()) {
-                TreatmentRecord record = treatmentRecord.get();
-                record.setStatus("INPROGRESS");
-                treatmentRecordRepository.save(record);
-            }
-
-        }
         paymentTransactionRepository.save(paymentTransaction);
     }
 

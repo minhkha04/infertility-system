@@ -1,6 +1,7 @@
 package com.emmkay.infertility_system_api.modules.payment.entity;
 
 import com.emmkay.infertility_system_api.modules.treatment.entity.TreatmentRecord;
+import com.emmkay.infertility_system_api.modules.treatment.entity.TreatmentService;
 import com.emmkay.infertility_system_api.modules.user.entity.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -58,4 +59,9 @@ public class PaymentTransaction {
 
     @Column(name = "expired_at")
     private LocalDateTime expiredAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
+    @JoinColumn(name = "service_id")
+    private TreatmentService service;
 }

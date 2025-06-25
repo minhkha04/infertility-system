@@ -1,6 +1,5 @@
 package com.emmkay.infertility_system_api.modules.payment.service;
 
-import com.emmkay.infertility_system_api.modules.payment.repository.PaymentTransactionRepository;
 import com.emmkay.infertility_system_api.modules.payment.strategy.PaymentStrategy;
 import com.emmkay.infertility_system_api.modules.payment.strategy.PaymentStrategyFactory;
 import lombok.AccessLevel;
@@ -17,7 +16,6 @@ import java.io.UnsupportedEncodingException;
 @Slf4j
 public class PaymentService {
     PaymentStrategyFactory paymentStrategyFactory;
-    PaymentTransactionRepository paymentTransactionRepository;
 
     public String createPayment(String paymentMethod, Object request, Long recordId) throws UnsupportedEncodingException {
         PaymentStrategy strategy = paymentStrategyFactory.getStrategy(paymentMethod);

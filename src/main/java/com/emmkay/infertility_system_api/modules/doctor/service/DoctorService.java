@@ -1,7 +1,6 @@
 package com.emmkay.infertility_system_api.modules.doctor.service;
 
 import com.emmkay.infertility_system_api.modules.doctor.projection.DoctorBasicProjection;
-import com.emmkay.infertility_system_api.modules.doctor.projection.DoctorStatisticsProjection;
 import com.emmkay.infertility_system_api.modules.doctor.dto.request.DoctorUpdateRequest;
 import com.emmkay.infertility_system_api.modules.doctor.dto.response.DoctorResponse;
 import com.emmkay.infertility_system_api.modules.doctor.dto.response.DoctorWorkScheduleResponse;
@@ -144,16 +143,6 @@ public class DoctorService {
                 .from(from.toString())
                 .schedules(grouped)
                 .build();
-    }
-
-    @PreAuthorize("hasRole('DOCTOR')")
-    public DoctorStatisticsProjection getStatistics() {
-        String currentUserId = CurrentUserUtils.getCurrentUserId();
-        if (currentUserId == null || currentUserId.isBlank()) {
-            throw new AppException(ErrorCode.UNAUTHORIZED);
-        }
-        return doctorRepository.getDoctorDashboardStats(currentUserId)
-                .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_NOT_EXISTED));
     }
 
     public Optional<Doctor> findBestDoctor(LocalDate date, String shift) {

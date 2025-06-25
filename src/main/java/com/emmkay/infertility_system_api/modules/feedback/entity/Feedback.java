@@ -49,14 +49,6 @@ public class Feedback {
     @Column(name = "comment")
     private String comment;
 
-    @ColumnDefault("CURRENT_TIMESTAMP")
-    @Column(name = "submit_date")
-    private LocalDate submitDate;
-
-    @ColumnDefault("0")
-    @Column(name = "is_approved")
-    private Boolean isApproved;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "approved_by")
     private User approvedBy;
@@ -73,5 +65,12 @@ public class Feedback {
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "record_id")
     private TreatmentRecord record;
+
+    @Column(name = "approved_at")
+    private LocalDate approvedAt;
+
+    @NotNull
+    @Column(name = "created_at", nullable = false)
+    private LocalDate createdAt;
 
 }

@@ -3,7 +3,6 @@ package com.emmkay.infertility_system_api.modules.admin.controller;
 import com.emmkay.infertility_system_api.modules.admin.dto.request.AdminUserCreateRequest;
 import com.emmkay.infertility_system_api.modules.admin.dto.request.AdminUserUpdatePasswordRequest;
 import com.emmkay.infertility_system_api.modules.admin.dto.request.AdminUserUpdateRequest;
-import com.emmkay.infertility_system_api.modules.admin.dto.response.AdminUserResponse;
 import com.emmkay.infertility_system_api.modules.admin.projection.AdminUserBasicProjection;
 import com.emmkay.infertility_system_api.modules.shared.dto.response.ApiResponse;
 import com.emmkay.infertility_system_api.modules.shared.dto.response.PageResponse;
@@ -40,22 +39,22 @@ public class AdminUserController {
     }
 
     @GetMapping("/{userId}")
-    public ApiResponse<AdminUserResponse> getUserById(@PathVariable String userId) {
-        return ApiResponse.<AdminUserResponse>builder()
+    public ApiResponse<UserResponse> getUserById(@PathVariable String userId) {
+        return ApiResponse.<UserResponse>builder()
                 .result(adminService.getUserById(userId))
                 .build();
     }
 
     @PostMapping("")
-    public ApiResponse<AdminUserResponse> createUser(@RequestBody @Valid AdminUserCreateRequest request) {
-        return ApiResponse.<AdminUserResponse>builder()
+    public ApiResponse<UserResponse> createUser(@RequestBody @Valid AdminUserCreateRequest request) {
+        return ApiResponse.<UserResponse>builder()
                 .result(adminService.createUser(request))
                 .build();
     }
 
     @PutMapping("/{userId}")
-    public ApiResponse<AdminUserResponse> updateUser(@PathVariable String userId, @RequestBody @Valid AdminUserUpdateRequest request) {
-        return ApiResponse.<AdminUserResponse>builder()
+    public ApiResponse<UserResponse> updateUser(@PathVariable String userId, @RequestBody @Valid AdminUserUpdateRequest request) {
+        return ApiResponse.<UserResponse>builder()
                 .result(adminService.updateUser(userId, request))
                 .build();
     }

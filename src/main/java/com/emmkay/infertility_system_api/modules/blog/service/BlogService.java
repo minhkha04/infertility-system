@@ -41,8 +41,8 @@ public class BlogService {
         Blog blog = blogRepository.findById(blogId)
                 .orElseThrow(() -> new AppException(ErrorCode.BLOG_NOT_EXISTED));
         if (scope != null && !scope.isBlank() && scope.equalsIgnoreCase("MANAGER")) {
-                return blog;
-            }
+            return blog;
+        }
 
         if (currentUserId == null || currentUserId.isBlank() || !blog.getAuthor().getId().equals(currentUserId)) {
             throw new AppException(ErrorCode.UNAUTHORIZED);
@@ -82,6 +82,9 @@ public class BlogService {
                 && !blog.getStatus().equals("HIDDEN")) {
             throw new AppException(ErrorCode.BLOG_APPROVED_ERROR);
         }
+        if (blog.getCoverImageUrl() == null) {
+            throw new AppException(ErrorCode.BLOG_DO_NOT_HAS_IMAGE);
+        }
 
         blogMapper.updateBlog(blog, request);
         blog.setStatus("PENDING_REVIEW");
@@ -107,6 +110,10 @@ public class BlogService {
         }
         switch (request.getAction().toUpperCase()) {
             case "APPROVED":
+                if (blog.getStatus().equals("APPROVED")
+                        || blog.getCoverImageUrl() == null) {
+                    throw new AppException(ErrorCode.BLOG_ALREADY_APPROVED);
+                }
                 blog.setStatus("APPROVED");
                 blog.setPublishedAt(LocalDate.now());
                 break;
@@ -169,6 +176,6 @@ public class BlogService {
             throw new AppException(ErrorCode.CAN_NOT_BE_UPDATED_STATUS);
         }
         blog.setStatus("HIDDEN");
-        return blogMapper.toBlogResponse( blogRepository.save(blog));
+        return blogMapper.toBlogResponse(blogRepository.save(blog));
     }
 }

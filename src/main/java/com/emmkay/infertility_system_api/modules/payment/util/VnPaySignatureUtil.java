@@ -1,5 +1,7 @@
 package com.emmkay.infertility_system_api.modules.payment.util;
 
+import com.emmkay.infertility_system_api.modules.shared.exception.AppException;
+import com.emmkay.infertility_system_api.modules.shared.exception.ErrorCode;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -8,6 +10,8 @@ import org.springframework.stereotype.Component;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 @Component
@@ -19,7 +23,7 @@ public class VnPaySignatureUtil {
         try {
 
             if (key == null || data == null) {
-                throw new NullPointerException();
+                throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
             }
             final Mac hmac512 = Mac.getInstance("HmacSHA512");
             byte[] hmacKeyBytes = key.getBytes();
@@ -33,7 +37,7 @@ public class VnPaySignatureUtil {
             }
             return sb.toString();
 
-        } catch (Exception ex) {
+        } catch (NoSuchAlgorithmException | InvalidKeyException exception) {
             return "";
         }
     }

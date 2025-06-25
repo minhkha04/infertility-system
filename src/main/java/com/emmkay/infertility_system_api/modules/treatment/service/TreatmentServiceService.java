@@ -3,8 +3,6 @@ package com.emmkay.infertility_system_api.modules.treatment.service;
 import com.emmkay.infertility_system_api.modules.treatment.dto.request.TreatmentServiceCreateRequest;
 import com.emmkay.infertility_system_api.modules.treatment.dto.request.TreatmentServiceRegisterRequest;
 import com.emmkay.infertility_system_api.modules.treatment.dto.request.TreatmentServiceUpdateRequest;
-import com.emmkay.infertility_system_api.modules.manager.dto.response.ManagerDashboardChartResponse;
-import com.emmkay.infertility_system_api.modules.manager.dto.response.ManagerDashboardServiceResponse;
 import com.emmkay.infertility_system_api.modules.treatment.dto.response.TreatmentServiceResponse;
 import com.emmkay.infertility_system_api.modules.treatment.entity.TreatmentService;
 import com.emmkay.infertility_system_api.modules.treatment.entity.TreatmentType;
@@ -24,7 +22,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -38,36 +35,6 @@ public class TreatmentServiceService {
     UserRepository userRepository;
     TreatmentTypeRepository treatmentTypeRepository;
     TreatmentRecordService treatmentRecordService;
-
-
-
-    @PreAuthorize("hasRole('MANAGER')")
-    public List<ManagerDashboardServiceResponse> getManagerDashboardService() {
-        return treatmentServiceRepository.getManagerDashboardServices()
-                .stream()
-                .map(x -> ManagerDashboardServiceResponse.builder()
-                        .totalRevenue(x.getTotalRevenue() == null ? 0 : x.getTotalRevenue())
-                        .totalUses(x.getTotalUses() == null ? 0 : x.getTotalUses())
-                        .name(x.getName())
-                        .typeId(x.getTypeId())
-                        .build())
-                .toList();
-    }
-
-    @PreAuthorize("hasRole('MANAGER')")
-    public List<ManagerDashboardChartResponse> getManagerDashboardChart() {
-        LocalDate now = LocalDate.now();
-        LocalDate fromDate = now.minusMonths(5).withDayOfMonth(1);
-        LocalDate toDate = now.plusMonths(1).withDayOfMonth(1);
-        return treatmentServiceRepository.getManagerDashboardChartProject(fromDate, toDate)
-                .stream()
-                .map(x -> ManagerDashboardChartResponse.builder()
-                        .totalTreatmentServiceInMonth(x.getTotalTreatmentServiceInMonth())
-                        .totalRevenue(x.getTotalRevenue())
-                        .month(x.getMonth())
-                        .build())
-                .toList();
-    }
 
     @PreAuthorize("hasRole('MANAGER')")
     public TreatmentServiceResponse createTreatmentService(TreatmentServiceCreateRequest request) {

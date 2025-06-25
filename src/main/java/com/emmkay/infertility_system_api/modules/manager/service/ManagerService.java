@@ -6,7 +6,6 @@ import com.emmkay.infertility_system_api.modules.user.entity.User;
 import com.emmkay.infertility_system_api.modules.shared.exception.AppException;
 import com.emmkay.infertility_system_api.modules.shared.exception.ErrorCode;
 import com.emmkay.infertility_system_api.modules.manager.mapper.ManagerMapper;
-import com.emmkay.infertility_system_api.modules.appointment.service.AppointmentService;
 import com.emmkay.infertility_system_api.modules.user.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -22,13 +21,12 @@ import org.springframework.stereotype.Service;
 public class ManagerService {
     UserRepository userRepository;
     ManagerMapper managerMapper;
-    AppointmentService appointmentService;
 
     @PreAuthorize("#userId == authentication.name")
     public ManagerResponse updateManagerProfile(String userId, ManagerUpdateRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-        if (userRepository.existsByEmail(request.getEmail())) {
+        if (userRepository.existsByEmailAndIdNot(request.getEmail(), userId)) {
             throw new AppException(ErrorCode.EMAIL_EXISTED);
         }
         managerMapper.updateManager(user, request);

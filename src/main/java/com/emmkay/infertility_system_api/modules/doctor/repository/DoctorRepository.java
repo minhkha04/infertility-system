@@ -1,6 +1,5 @@
 package com.emmkay.infertility_system_api.modules.doctor.repository;
 
-import com.emmkay.infertility_system_api.modules.doctor.projection.DoctorStatisticsProjection;
 import com.emmkay.infertility_system_api.modules.doctor.projection.DoctorBasicProjection;
 import com.emmkay.infertility_system_api.modules.doctor.entity.Doctor;
 import com.emmkay.infertility_system_api.modules.doctor.projection.DoctorSelectProjection;
@@ -26,16 +25,6 @@ public interface DoctorRepository extends JpaRepository<Doctor, String> {
     Optional<Doctor> findById(String id);
 
     @Query(value = """
-            
-            SELECT d.avgRating AS avgRating,
-                   d.patients AS patients,
-                   d.workShiftsThisMonth AS workShiftsThisMonth
-            FROM DoctorDashboardStatsView d
-            WHERE d.doctorId = :doctorId
-            """)
-    Optional<DoctorStatisticsProjection> getDoctorDashboardStats(@Param("doctorId") String doctorId);
-
-    @Query(value = """
                 SELECT  u.fullName AS fullName,
                         u.id AS id,
                         u.avatarUrl AS avatarUrl,
@@ -48,7 +37,7 @@ public interface DoctorRepository extends JpaRepository<Doctor, String> {
                 ON d.id  = u.id
                 LEFT JOIN Feedback f\s
                 ON d.id = f.doctor.id
-                   AND f.isApproved = TRUE
+                   AND f.status = 'APPROVED'
                 WHERE d.isPublic = TRUE
                 GROUP BY u.id, u.avatarUrl, d.qualifications, d.specialty, u.fullName, d.experienceYears
             """)

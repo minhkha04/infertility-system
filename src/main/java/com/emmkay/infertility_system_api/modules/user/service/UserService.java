@@ -25,7 +25,6 @@ public class UserService {
     UserRepository userRepository;
     UserMapper userMapper;
 
-
     public ApiResponse<UserResponse> getMyInfo() {
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findById(userId)

@@ -47,7 +47,7 @@ public class PaymentController {
         return ResponseEntity.ok(success ? "0" : "1");
     }
 
-    @PostMapping("momo/reload/{recordId}")
+    @PostMapping("/momo/reload/{recordId}")
     public ApiResponse<String> reloadMomo(@PathVariable Long recordId) {
         String result = paymentService.reloadPayment("MOMO", null, recordId);
         return ApiResponse.<String>builder()

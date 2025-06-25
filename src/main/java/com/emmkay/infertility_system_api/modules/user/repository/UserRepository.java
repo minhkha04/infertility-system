@@ -1,7 +1,7 @@
 package com.emmkay.infertility_system_api.modules.user.repository;
 
 import com.emmkay.infertility_system_api.modules.admin.projection.AdminUserBasicProjection;
-import com.emmkay.infertility_system_api.modules.admin.projection.RoleCountProjection;
+import com.emmkay.infertility_system_api.modules.dashboard.projection.AdminCountRoleProjection;
 import com.emmkay.infertility_system_api.modules.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -34,7 +34,7 @@ public interface UserRepository extends JpaRepository<User, String> {
                 WHERE u.isRemoved = false
                 GROUP BY u.roleName.name
             """)
-    List<RoleCountProjection> countUserByRoleName();
+    List<AdminCountRoleProjection> countUserByRoleName();
 
     long countByIsRemoved(Boolean isRemoved);
 }

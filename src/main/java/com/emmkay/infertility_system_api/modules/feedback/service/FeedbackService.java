@@ -1,9 +1,11 @@
 package com.emmkay.infertility_system_api.modules.feedback.service;
 
+import com.emmkay.infertility_system_api.modules.feedback.projection.FeedBackBasicProjection;
 import com.emmkay.infertility_system_api.modules.feedback.dto.request.FeedbackCreateRequest;
 import com.emmkay.infertility_system_api.modules.feedback.dto.request.FeedbackUpdateRequest;
 import com.emmkay.infertility_system_api.modules.feedback.dto.request.FeedbackUpdateStatusRequest;
 import com.emmkay.infertility_system_api.modules.feedback.dto.response.FeedbackResponse;
+import com.emmkay.infertility_system_api.modules.feedback.projection.PublicFeedbackProjection;
 import com.emmkay.infertility_system_api.modules.shared.exception.AppException;
 import com.emmkay.infertility_system_api.modules.shared.exception.ErrorCode;
 import com.emmkay.infertility_system_api.modules.feedback.entity.Feedback;
@@ -11,6 +13,7 @@ import com.emmkay.infertility_system_api.modules.feedback.mapper.FeedbackMapper;
 import com.emmkay.infertility_system_api.modules.doctor.entity.Doctor;
 import com.emmkay.infertility_system_api.modules.doctor.repository.DoctorRepository;
 import com.emmkay.infertility_system_api.modules.feedback.repository.FeedbackRepository;
+import com.emmkay.infertility_system_api.modules.shared.security.CurrentUserUtils;
 import com.emmkay.infertility_system_api.modules.treatment.entity.TreatmentRecord;
 import com.emmkay.infertility_system_api.modules.treatment.entity.TreatmentService;
 import com.emmkay.infertility_system_api.modules.treatment.repository.TreatmentRecordRepository;
@@ -27,7 +30,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.List;
+
 
 @Service
 @RequiredArgsConstructor
@@ -42,66 +45,58 @@ public class FeedbackService {
     DoctorRepository doctorRepository;
 
 
+    public Page<FeedBackBasicProjection> searchFeedbacks(String customerId, String doctorId, String status, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        String currentUserId = CurrentUserUtils.getCurrentUserId();
+        String scope = CurrentUserUtils.getCurrentScope();
+        if (scope == null || scope.isBlank() || currentUserId == null || currentUserId.isBlank()) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+        return switch (scope) {
+            case "CUSTOMER" -> feedbackRepository.searchFeedBacks(customerId, null, status, pageable);
+            case "DOCTOR" -> feedbackRepository.searchFeedBacks(null, doctorId, status, pageable);
+            case "MANAGER" -> feedbackRepository.searchFeedBacks(customerId, doctorId, status, pageable);
+            default -> throw new AppException(ErrorCode.UNAUTHENTICATED);
+        };
+    }
+
     public FeedbackResponse updateFeedback(Long feedbackId, FeedbackUpdateRequest request) {
+        String currentUserId = CurrentUserUtils.getCurrentUserId();
+        if (currentUserId == null || currentUserId.isBlank()) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
         Feedback feedback = feedbackRepository.findById(feedbackId)
                 .orElseThrow(() -> new AppException(ErrorCode.FEEDBACK_NOT_EXISTED));
-
+        if (!feedback.getCustomer().getId().equalsIgnoreCase(CurrentUserUtils.getCurrentUserId())) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
         feedbackMapper.updateFeedback(feedback, request);
         feedback.setStatus("PENDING");
         feedback.setNote("");
-        feedback.setSubmitDate(null);
+        feedback.setApprovedAt(null);
         feedback.setApprovedBy(null);
-        feedback.setIsApproved(false);
         return feedbackMapper.toResponse(feedbackRepository.save(feedback));
     }
 
-    @PreAuthorize( "hasRole('MANAGER')")
-    public Page<FeedbackResponse> getAll(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        return feedbackRepository.findAll(pageable).map(feedbackMapper::toResponse);
-    }
-
-    @PreAuthorize( "hasRole('MANAGER')")
-    public List<FeedbackResponse> getAll() {
-        return feedbackRepository.findAll()
-                .stream()
-                .map(feedbackMapper::toResponse)
-                .toList();
-    }
-
-    public List<FeedbackResponse> getFeedbackByDoctorAndApproval(String doctorId, boolean approval) {
-        return feedbackRepository.findByDoctorIdAndIsApproved(doctorId, approval)
-                .stream()
-                .map(feedbackMapper::toResponse)
-                .toList();
-    }
-
-    public List<FeedbackResponse> getFeedbackByCustomer(String customerId) {
-       return feedbackRepository.findByCustomerId(customerId)
-               .stream()
-               .map(feedbackMapper::toResponse).toList();
-    }
-
-    @PreAuthorize( "hasRole('MANAGER')")
-    public FeedbackResponse updateApproval(Long id, FeedbackUpdateStatusRequest request) {
+    @PreAuthorize("hasRole('MANAGER')")
+    public FeedbackResponse updateStatus(Long id, FeedbackUpdateStatusRequest request) {
+        String currentUserId = CurrentUserUtils.getCurrentUserId();
+        if  (currentUserId == null || currentUserId.isBlank()) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
         Feedback feedback = feedbackRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.FEEDBACK_NOT_EXISTED));
-        User manager = userRepository.findById(request.getApproveBy())
-                        .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        User manager = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-        feedback.setIsApproved(request.isApproved());
         feedback.setApprovedBy(manager);
-        feedback.setSubmitDate(LocalDate.now());
-        feedback.setStatus(request.getStatus());
+        feedback.setApprovedAt(LocalDate.now());
+        feedback.setStatus(request.getStatus().toUpperCase());
         feedback.setNote(request.getNote());
         return feedbackMapper.toResponse(feedbackRepository.save(feedback));
     }
 
     public FeedbackResponse createFeedback(FeedbackCreateRequest request) {
-
-        if(!isAvailableFeedBack(request.getRecordId())) {
-            throw new AppException(ErrorCode.UNAUTHORIZED_ACTION);
-        }
 
         if (feedbackRepository.existsByCustomerIdAndRecordId(request.getCustomerId(), request.getRecordId())) {
             throw new AppException(ErrorCode.FEEDBACK_IS_EXISTED);
@@ -109,6 +104,10 @@ public class FeedbackService {
 
         TreatmentRecord treatmentRecord = treatmentRecordRepository.findById(request.getRecordId())
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
+
+        if (treatmentRecord.getStatus().equals("COMPLETED")) {
+            throw new AppException(ErrorCode.UNAUTHORIZED_ACTION);
+        }
 
         User customer = userRepository.findById(request.getCustomerId())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
@@ -125,16 +124,20 @@ public class FeedbackService {
         feedback.setService(treatmentService);
         feedback.setCustomer(customer);
         feedback.setDoctor(doctor);
-        feedback.setIsApproved(false);
         feedback.setStatus("PENDING");
         feedback.setRecord(treatmentRecord);
         return feedbackMapper.toResponse(feedbackRepository.save(feedback));
 
     }
 
-    public boolean isAvailableFeedBack(Long recordId) {
-        TreatmentRecord treatmentRecord = treatmentRecordRepository.findById(recordId)
-                .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
-        return treatmentRecord.getStatus().equalsIgnoreCase("COMPLETED");
+    public Page<PublicFeedbackProjection> getApprovedFeedbacks(String doctorId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return feedbackRepository.getFeedbackApproved( doctorId, pageable);
+    }
+
+    public FeedbackResponse getFeedbackById(Long id) {
+        Feedback feedback = feedbackRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.FEEDBACK_NOT_EXISTED));
+        return feedbackMapper.toResponse(feedback);
     }
 }

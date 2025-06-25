@@ -3,7 +3,6 @@ package com.emmkay.infertility_system_api.modules.admin.service;
 import com.emmkay.infertility_system_api.modules.admin.dto.request.AdminUserCreateRequest;
 import com.emmkay.infertility_system_api.modules.admin.dto.request.AdminUserUpdatePasswordRequest;
 import com.emmkay.infertility_system_api.modules.admin.dto.request.AdminUserUpdateRequest;
-import com.emmkay.infertility_system_api.modules.admin.dto.response.AdminUserResponse;
 import com.emmkay.infertility_system_api.modules.admin.projection.AdminUserBasicProjection;
 import com.emmkay.infertility_system_api.modules.user.dto.response.UserResponse;
 import com.emmkay.infertility_system_api.modules.doctor.entity.Doctor;
@@ -42,7 +41,7 @@ public class AdminUserService {
         return userRepository.findByIsRemoved(isRemoved, pageable);
     }
 
-    public AdminUserResponse createUser(AdminUserCreateRequest request) {
+    public UserResponse createUser(AdminUserCreateRequest request) {
         Optional<User> userOptional = userRepository.findByUsername(request.getUsername());
         if (userOptional.isPresent()) {
             User user = userOptional.get();
@@ -68,7 +67,7 @@ public class AdminUserService {
                     .build();
             doctorRepository.save(doctor);
         }
-        return userMapper.toAdminUserResponse(user);
+        return userMapper.toUserResponse(user);
     }
 
     public UserResponse removeUser(String userId) {
@@ -91,13 +90,13 @@ public class AdminUserService {
         return userMapper.toUserResponse(userRepository.save(user));
     }
 
-    public AdminUserResponse getUserById(String userId) {
+    public UserResponse getUserById(String userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-        return userMapper.toAdminUserResponse(user);
+        return userMapper.toUserResponse(user);
     }
 
-    public AdminUserResponse updateUser(String userId, AdminUserUpdateRequest request) {
+    public UserResponse updateUser(String userId, AdminUserUpdateRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         if (userRepository.existsByEmailAndIdNot(request.getEmail(), userId)) {
@@ -105,13 +104,13 @@ public class AdminUserService {
         }
 
         userMapper.adminUpdateUser(user, request);
-        return userMapper.toAdminUserResponse(userRepository.save(user));
+        return userMapper.toUserResponse(userRepository.save(user));
     }
 
     public UserResponse updateUserPassword(String userId, AdminUserUpdatePasswordRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        return userMapper.toAdminUserResponse(userRepository.save(user));
+        return userMapper.toUserResponse(userRepository.save(user));
     }
 }

@@ -1,6 +1,6 @@
-package com.emmkay.infertility_system_api.modules.admin.service;
+package com.emmkay.infertility_system_api.modules.dashboard.service;
 
-import com.emmkay.infertility_system_api.modules.admin.projection.RoleCountProjection;
+import com.emmkay.infertility_system_api.modules.dashboard.projection.AdminCountRoleProjection;
 import com.emmkay.infertility_system_api.modules.user.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -13,11 +13,10 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class AdminStatisticsService {
-
+public class AdminDashboardService {
     UserRepository userRepository;
 
-    public List<RoleCountProjection> getUserCountByRole() {
+    public List<AdminCountRoleProjection> getUserCountByRole() {
         return userRepository.countUserByRoleName();
     }
 

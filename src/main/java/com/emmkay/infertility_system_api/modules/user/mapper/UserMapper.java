@@ -4,7 +4,6 @@ import com.emmkay.infertility_system_api.modules.admin.dto.request.AdminUserCrea
 import com.emmkay.infertility_system_api.modules.admin.dto.request.AdminUserUpdateRequest;
 import com.emmkay.infertility_system_api.modules.user.dto.request.UserCreateRequest;
 import com.emmkay.infertility_system_api.modules.user.dto.request.UserUpdateRequest;
-import com.emmkay.infertility_system_api.modules.admin.dto.response.AdminUserResponse;
 import com.emmkay.infertility_system_api.modules.user.dto.response.UserResponse;
 import com.emmkay.infertility_system_api.modules.user.entity.User;
 import org.mapstruct.Mapper;
@@ -21,8 +20,6 @@ public interface UserMapper {
     User toUser(AdminUserCreateRequest request);
 
     UserResponse toUserResponse(User user);
-
-    AdminUserResponse toAdminUserResponse(User user);
 
     void updateUser(@MappingTarget User user, UserUpdateRequest request);
 

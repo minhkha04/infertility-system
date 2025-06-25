@@ -23,8 +23,6 @@ public class AppointmentCreateRequest {
     String doctorId;
     @NotNull(message = "{validation.required}")
     LocalDate appointmentDate;
-    @NotBlank(message = "{validation.required}")
-    String purpose;
     String notes;
 
 }

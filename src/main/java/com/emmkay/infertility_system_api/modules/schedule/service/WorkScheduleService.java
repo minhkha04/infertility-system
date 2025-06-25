@@ -1,19 +1,15 @@
 package com.emmkay.infertility_system_api.modules.schedule.service;
 
-import com.emmkay.infertility_system_api.modules.manager.projection.ManagerDashboardWorkScheduleStatisticsProjection;
 import com.emmkay.infertility_system_api.modules.schedule.dto.request.BulkWorkScheduleRequest;
 import com.emmkay.infertility_system_api.modules.schedule.dto.request.WorkScheduleCreateRequest;
 import com.emmkay.infertility_system_api.modules.schedule.dto.request.WorkScheduleUpdateRequest;
-import com.emmkay.infertility_system_api.modules.manager.dto.response.ManagerDashboardWorkScheduleStatisticsResponse;
-import com.emmkay.infertility_system_api.modules.schedule.dto.response.WorkScheduleForManagerDashboardResponse;
 import com.emmkay.infertility_system_api.modules.schedule.dto.response.WorkScheduleResponse;
-import com.emmkay.infertility_system_api.modules.schedule.dto.response.WorkScheduleMonthlyResponse;
 import com.emmkay.infertility_system_api.modules.doctor.entity.Doctor;
+import com.emmkay.infertility_system_api.modules.schedule.projection.WorkScheduleDateShiftProjection;
 import com.emmkay.infertility_system_api.modules.user.entity.User;
 import com.emmkay.infertility_system_api.modules.schedule.entity.WorkSchedule;
 import com.emmkay.infertility_system_api.modules.shared.exception.AppException;
 import com.emmkay.infertility_system_api.modules.shared.exception.ErrorCode;
-import com.emmkay.infertility_system_api.modules.doctor.repository.DoctorScheduleRepository;
 import com.emmkay.infertility_system_api.modules.schedule.mapper.WorkScheduleMapper;
 import com.emmkay.infertility_system_api.modules.doctor.repository.DoctorRepository;
 import com.emmkay.infertility_system_api.modules.user.repository.UserRepository;
@@ -30,11 +26,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 
 @Slf4j
 @Service
@@ -46,41 +38,6 @@ public class WorkScheduleService {
     WorkScheduleMapper workScheduleMapper;
     UserRepository userRepository;
     DoctorRepository doctorRepository;
-    DoctorScheduleRepository doctorScheduleRepository;
-
-    private WorkScheduleMonthlyResponse getWorkScheduleBetweenAndByDoctorId(String doctorId, LocalDate firstDayOfMonth, LocalDate lastDayOfMonth) {
-        List<WorkSchedule> schedules = workScheduleRepository.findAllByDoctorIdAndWorkDateBetweenOrderByWorkDateAsc(doctorId, firstDayOfMonth, lastDayOfMonth);
-
-        Map<String, String> scheduleMap = schedules.stream()
-                .collect(Collectors.toMap(
-                        s -> s.getWorkDate().toString(), // key: "2025-06-05"
-                        WorkSchedule::getShift,          // value: "morning"
-                        (existing, replacement) -> replacement, // nếu trùng ngày thì lấy cái sau
-                        LinkedHashMap::new
-                ));
-
-        return WorkScheduleMonthlyResponse.builder()
-                .doctorId(doctorId)
-                .month(firstDayOfMonth.toString().substring(0, 7)) // "2025-06"
-                .schedules(scheduleMap)
-                .build();
-    }
-
-    public List<WorkScheduleForManagerDashboardResponse> getWorkSchedulesForManagerDashboard() {
-        return doctorScheduleRepository.getDoctorScheduleToday()
-                .stream()
-                .map(x ->
-                        WorkScheduleForManagerDashboardResponse.builder()
-                                .doctorName(x.getDoctorName())
-                                .doctorId(x.getDoctorId())
-                                .shift(x.getShift())
-                                .phoneNumber(x.getPhoneNumber())
-                                .totalAppointments(x.getTotalAppointments() == null ? 0 : x.getTotalAppointments())
-                                .completedAppointments(x.getCompletedAppointments() == null ? 0 : x.getCompletedAppointments())
-                                .build()
-                ).toList();
-
-    }
 
     @PreAuthorize("hasRole('MANAGER')")
     public WorkScheduleResponse createWorkSchedule(WorkScheduleCreateRequest request) {
@@ -113,22 +70,15 @@ public class WorkScheduleService {
         return workScheduleMapper.toWorkScheduleResponse(workScheduleRepository.save(workSchedule));
     }
 
-    @PreAuthorize("hasRole('MANAGER') or #id == authentication.name")
-    public WorkScheduleMonthlyResponse getWorkScheduleThisMonthByDoctorId(String id) {
-        LocalDate firstDayOfMonth = LocalDate.now().withDayOfMonth(1);
-        LocalDate lastDayOfMonth = firstDayOfMonth.withDayOfMonth(firstDayOfMonth.lengthOfMonth());
-
-        return getWorkScheduleBetweenAndByDoctorId(id, firstDayOfMonth, lastDayOfMonth);
-    }
 
     @PreAuthorize("hasRole('MANAGER') or #id == authentication.name")
-    public WorkScheduleMonthlyResponse getWorkScheduleByMonthAndByDoctorId(String id, String yearMonth) {
+    public List<WorkScheduleDateShiftProjection> getWorkScheduleByMonthAndByDoctorId(String id, String yearMonth) {
         YearMonth yearMonthObj = YearMonth.parse(yearMonth);
 
         LocalDate firstDayOfMonth = yearMonthObj.atDay(1);
         LocalDate lastDayOfMonth = yearMonthObj.atEndOfMonth();
 
-        return getWorkScheduleBetweenAndByDoctorId(id, firstDayOfMonth, lastDayOfMonth);
+        return workScheduleRepository.findAllByDoctorIdAndWorkDateBetweenOrderByWorkDateAsc(id, firstDayOfMonth, lastDayOfMonth);
 
     }
 
@@ -181,15 +131,5 @@ public class WorkScheduleService {
         workScheduleRepository.delete(schedule);
     }
 
-
-    @PreAuthorize("hasRole('MANAGER')")
-    public ManagerDashboardWorkScheduleStatisticsResponse getManagerWorkScheduleTodayDashBoard() {
-        ManagerDashboardWorkScheduleStatisticsProjection tmp = workScheduleRepository.findWorkScheduleTodayForManagerDashBoard();
-        return ManagerDashboardWorkScheduleStatisticsResponse.builder()
-                .totalDoctorsToday(tmp.getTotalDoctorsToday())
-                .completedPatientsToday(tmp.getCompletedPatientsToday())
-                .totalPatientsToday(tmp.getTotalPatientsToday())
-                .build();
-    }
 
 }

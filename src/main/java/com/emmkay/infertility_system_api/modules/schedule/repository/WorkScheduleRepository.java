@@ -1,8 +1,8 @@
 package com.emmkay.infertility_system_api.modules.schedule.repository;
 
 import com.emmkay.infertility_system_api.modules.doctor.projection.DoctorSelectProjection;
-import com.emmkay.infertility_system_api.modules.manager.projection.ManagerDashboardWorkScheduleStatisticsProjection;
 import com.emmkay.infertility_system_api.modules.schedule.entity.WorkSchedule;
+import com.emmkay.infertility_system_api.modules.schedule.projection.WorkScheduleDateShiftProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -10,16 +10,14 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface WorkScheduleRepository extends JpaRepository<WorkSchedule, Long> {
 
-    List<WorkSchedule> findAllByDoctorIdAndWorkDateBetweenOrderByWorkDateAsc(String doctorId, LocalDate workDateAfter, LocalDate workDateBefore);
 
-    List<WorkSchedule> findByWorkDateAndShiftIn(LocalDate workDate, Collection<String> shifts);
+    List<WorkScheduleDateShiftProjection> findAllByDoctorIdAndWorkDateBetweenOrderByWorkDateAsc(String doctorId, LocalDate startDate, LocalDate endDate);
 
     boolean existsByDoctorIdAndWorkDateAndShift(String doctorId, LocalDate workDate, String shift);
 
@@ -35,14 +33,6 @@ public interface WorkScheduleRepository extends JpaRepository<WorkSchedule, Long
 
     Optional<WorkSchedule> findByWorkDateAndDoctorId(LocalDate workDate, String doctorId);
 
-    @Query("""
-            SELECT
-                        x.completedPatientsToday AS completedPatientsToday,
-                        x.totalDoctorsToday AS totalDoctorsToday,
-                        x.totalPatientsToday AS totalPatientsToday
-            FROM  ManagerDashboardWorkScheduleStatisticsView x
-            """)
-    ManagerDashboardWorkScheduleStatisticsProjection findWorkScheduleTodayForManagerDashBoard();
 
     List<WorkSchedule> findByDoctorIdAndWorkDateGreaterThanEqual(String doctorId, LocalDate workDateIsGreaterThan);
 

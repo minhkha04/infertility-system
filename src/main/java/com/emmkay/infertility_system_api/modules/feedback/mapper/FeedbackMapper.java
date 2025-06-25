@@ -15,8 +15,8 @@ public interface FeedbackMapper {
     Feedback toFeedback(FeedbackCreateRequest request);
 
     @Mapping(target = "customerName", source = "customer.fullName")
-    @Mapping(target = "doctorId", source = "doctor.id")
-    @Mapping(target = "approvedBy", source = "approvedBy.id")
+    @Mapping(target = "doctorName", source = "doctor.users.fullName")
+    @Mapping(target = "approvedBy", source = "approvedBy.fullName")
     @Mapping(target = "recordId", source = "record.id")
     FeedbackResponse toResponse(Feedback feedback);
 

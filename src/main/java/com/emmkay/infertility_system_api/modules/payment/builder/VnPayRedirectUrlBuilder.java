@@ -11,10 +11,10 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -53,6 +53,8 @@ public class VnPayRedirectUrlBuilder {
             System.out.println("CreateDate: " + vnp_CreateDate);
             System.out.println("ExpireDate: " + vnp_ExpireDate);
             System.out.println("Local time: " + now);
+
+
 
             Map<String, String> vnp_Params = new HashMap<>();
             vnp_Params.put("vnp_Version", vnp_Version);
@@ -97,7 +99,7 @@ public class VnPayRedirectUrlBuilder {
             String vnp_SecureHash = vnPaySignatureUtil.hmacSHA512(vnPayConfig.getHashSecret(), hashData.toString());
             queryUrl += "&vnp_SecureHash=" + vnp_SecureHash;
             return vnPayConfig.getPaymentUrl() + "?" + queryUrl;
-        } catch (Exception e) {
+        } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
     }

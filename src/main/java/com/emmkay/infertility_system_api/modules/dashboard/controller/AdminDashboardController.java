@@ -1,7 +1,7 @@
-package com.emmkay.infertility_system_api.modules.admin.controller;
+package com.emmkay.infertility_system_api.modules.dashboard.controller;
 
-import com.emmkay.infertility_system_api.modules.admin.projection.RoleCountProjection;
-import com.emmkay.infertility_system_api.modules.admin.service.AdminStatisticsService;
+import com.emmkay.infertility_system_api.modules.dashboard.projection.AdminCountRoleProjection;
+import com.emmkay.infertility_system_api.modules.dashboard.service.AdminDashboardService;
 import com.emmkay.infertility_system_api.modules.shared.dto.response.ApiResponse;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -15,17 +15,17 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/v1/admin/statistics")
+@RequestMapping("/v1/dashboard/admin")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class AdminStatisticsController {
+@PreAuthorize("hasRole('ADMIN')")
+public class AdminDashboardController {
 
-    AdminStatisticsService adminStatisticsService;
+    AdminDashboardService adminStatisticsService;
 
     @GetMapping("/users-by-role")
-    public ApiResponse<List<RoleCountProjection>> getUserCountByRole() {
-        return ApiResponse.<List<RoleCountProjection>>builder()
+    public ApiResponse<List<AdminCountRoleProjection>> getUserCountByRole() {
+        return ApiResponse.<List<AdminCountRoleProjection>>builder()
                 .result(adminStatisticsService.getUserCountByRole())
                 .build();
     }

@@ -142,6 +142,9 @@ public class AppointmentService {
     public AppointmentResponse updateStatus(Long appointmentId, String status) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new AppException(ErrorCode.APPOINTMENT_NOT_FOUND));
+        if (appointment.getStatus().equalsIgnoreCase("COMPLETED")) {
+            throw new AppException(ErrorCode.APPOINTMENT_IS_COMPLETED);
+        }
         appointment.setStatus(status.toUpperCase());
         return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
     }
@@ -155,7 +158,6 @@ public class AppointmentService {
                 .shift(shift)
                 .treatmentStep(treatmentStep)
                 .status("CONFIRMED")
-                .purpose(treatmentStep.getStage().getName())
                 .createdAt(LocalDate.now())
                 .build());
         reminderService.createReminderForAppointment(appointment);
@@ -187,7 +189,7 @@ public class AppointmentService {
     }
 
     //create appointment
-    @PreAuthorize("hasRole('DOCTOR') or hasRole('MANAGER')")
+    @PreAuthorize("hasRole('DOCTOR')")
     @Transactional
     public AppointmentResponse createAppointment(AppointmentCreateRequest req) {
         boolean isAvailable = isDoctorAvailable(req.getDoctorId(), req.getAppointmentDate(), req.getShift());

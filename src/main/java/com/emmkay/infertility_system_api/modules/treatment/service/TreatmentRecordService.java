@@ -1,7 +1,6 @@
 package com.emmkay.infertility_system_api.modules.treatment.service;
 
-import com.emmkay.infertility_system_api.modules.manager.projection.ManagerDashboardStatisticsProjection;
-import com.emmkay.infertility_system_api.modules.manager.dto.response.ManagerDashboardStatisticsResponse;
+import com.emmkay.infertility_system_api.modules.payment.service.PaymentTransactionService;
 import com.emmkay.infertility_system_api.modules.treatment.dto.response.TreatmentRecordResponse;
 import com.emmkay.infertility_system_api.modules.shared.exception.AppException;
 import com.emmkay.infertility_system_api.modules.shared.exception.ErrorCode;
@@ -43,27 +42,17 @@ public class TreatmentRecordService {
     TreatmentStepService treatmentStepService;
     AppointmentService appointmentService;
     DoctorService doctorService;
-
-//    public boolean isPaid(Long recordId) {
-//        return treatmentRecordRepository.findIsPaidById(recordId);
-//    }
+    PaymentTransactionService  paymentTransactionService;
 
     @PreAuthorize("hasRole('MANAGER') or hasRole('DOCTOR')")
     public TreatmentRecordResponse updateTreatmentRecord(Long recordId, String status) {
         TreatmentRecord treatmentRecord = treatmentRecordRepository.findById(recordId)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
+        if (!paymentTransactionService.isPaid(recordId) && status.equalsIgnoreCase("COMPLETED")) {
+            throw new AppException(ErrorCode.TREATMENT_NOT_PAID);
+        }
         treatmentRecord.setStatus(status.toUpperCase());
         return treatmentRecordMapper.toTreatmentRecordResponse(treatmentRecordRepository.save(treatmentRecord));
-    }
-
-    @PreAuthorize("hasRole('MANAGER')")
-    public ManagerDashboardStatisticsResponse getManagerDashboardStatistics() {
-        ManagerDashboardStatisticsProjection tmp = treatmentRecordRepository.getManagerDashboardStatistics();
-        return ManagerDashboardStatisticsResponse.builder()
-                .totalCustomersTreated(tmp.getTotalCustomersTreated())
-                .totalRevenue(tmp.getTotalRevenue())
-                .totalAppointments(tmp.getTotalAppointments())
-                .build();
     }
 
     public List<TreatmentRecordResponse> getAllTreatmentRecordsByCustomerId(String customerId) {
@@ -105,7 +94,7 @@ public class TreatmentRecordService {
     }
 
     @Transactional
-    public TreatmentRecordResponse creatTreatmentRecord(
+    public void creatTreatmentRecord(
             TreatmentService treatmentService,
             String customerId,
             String doctorId,
@@ -143,7 +132,7 @@ public class TreatmentRecordService {
                 .doctor(doctor)
                 .service(treatmentService)
                 .startDate(startDate)
-                .status("PENDING")
+                .status("INPROGRESS")
                 .createdDate(LocalDate.now())
                 .cd1Date(cd1Date)
                 .build();
@@ -161,23 +150,25 @@ public class TreatmentRecordService {
 
         TreatmentRecordResponse treatmentRecordResponse = treatmentRecordMapper.toTreatmentRecordResponse(saveTreatmentRecord);
         treatmentRecordResponse.setTreatmentSteps(treatmentStepService.saveAll(steps));
-        return treatmentRecordResponse;
     }
 
 
     @Transactional
     public void cancelTreatmentRecord(Long recordId, String customerId) {
-        TreatmentRecord record = treatmentRecordRepository.findByIdAndCustomerId(recordId, customerId)
+        TreatmentRecord treatmentRecord = treatmentRecordRepository.findByIdAndCustomerId(recordId, customerId)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
 
-        if (record.getStatus().equals("COMPLETED")
-                || record.getStatus().equals("CANCELLED")
-                || record.getStatus().equals("INPROGRESS")) {
+        if (treatmentRecord.getStatus().equals("COMPLETED")
+                || treatmentRecord.getStatus().equals("CANCELLED")) {
             throw new AppException(ErrorCode.CANNOT_CANCEL_TREATMENT);
         }
 
-        record.setStatus("CANCELLED");
-        treatmentRecordRepository.save(record);
+        if (paymentTransactionService.isPaid(recordId)) {
+            throw new AppException(ErrorCode.TREATMENT_RECORD_IS_PAID);
+        }
+
+        treatmentRecord.setStatus("CANCELLED");
+        treatmentRecordRepository.save(treatmentRecord);
         treatmentStepService.cancelStepsByRecordId(recordId);
     }
 

@@ -2,6 +2,7 @@ package com.emmkay.infertility_system_api.modules.appointment.repository;
 
 import com.emmkay.infertility_system_api.modules.appointment.projection.AppointmentBasicProjection;
 import com.emmkay.infertility_system_api.modules.appointment.entity.Appointment;
+import com.emmkay.infertility_system_api.modules.dashboard.projection.DoctorTodayAppointmentProjection;
 import com.emmkay.infertility_system_api.modules.treatment.entity.TreatmentStep;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -37,7 +38,6 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
                        a.id AS id,
                        a.customer.fullName AS customerName,
                        a.doctor.users.fullName AS doctorName,
-                       a.purpose AS purpose,
                        a.appointmentDate AS appointmentDate,
                        shift AS shift,
                        a.status AS status
@@ -51,4 +51,16 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
                 ORDER BY a.appointmentDate DESC
             """)
     Page<AppointmentBasicProjection> searchAppointments(Long stepId, String customerId, String doctorId, LocalDate date, String status, Pageable pageable);
+
+    @Query("""
+                SELECT
+                    a.id AS id,
+                    a.customer.fullName AS customerName,
+                    a.shift AS shift,
+                    a.status AS status
+                FROM Appointment a
+                WHERE a.doctor.id = :doctorId
+                  AND a.appointmentDate = CURRENT_DATE
+            """)
+    Page<DoctorTodayAppointmentProjection> findTodayAppointmentsByDoctorId(String doctorId, Pageable pageable);
 }
