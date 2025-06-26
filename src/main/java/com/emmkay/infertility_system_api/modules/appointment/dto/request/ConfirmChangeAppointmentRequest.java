@@ -1,6 +1,8 @@
 package com.emmkay.infertility_system_api.modules.appointment.dto.request;
 
+import com.emmkay.infertility_system_api.modules.appointment.enums.AppointmentStatus;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -10,7 +12,7 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ConfirmChangeAppointmentRequest {
-    @NotBlank(message = "{validation.required}")
-    String status;
+    @NotNull(message = "{validation.required}")
+    AppointmentStatus status;
     String notes;
 }

@@ -1,6 +1,7 @@
 package com.emmkay.infertility_system_api.modules.payment.service;
 
 import com.emmkay.infertility_system_api.modules.payment.entity.PaymentTransaction;
+import com.emmkay.infertility_system_api.modules.payment.enums.PaymentStatus;
 import com.emmkay.infertility_system_api.modules.payment.repository.PaymentTransactionRepository;
 import com.emmkay.infertility_system_api.modules.payment.util.PaymentUtil;
 import com.emmkay.infertility_system_api.modules.shared.exception.AppException;
@@ -37,7 +38,7 @@ public class PaymentTransactionService {
         PaymentTransaction paymentTransaction = PaymentTransaction.builder()
                 .transactionCode(paymentUtil.getOrderId(treatmentRecord.getId()))
                 .record(treatmentRecord)
-                .status("PENDING")
+                .status(PaymentStatus.PENDING)
                 .amount(treatmentRecord.getService().getPrice())
                 .paymentMethod(paymentMethod)
                 .createdAt(nowZoned.toLocalDateTime())
@@ -51,7 +52,7 @@ public class PaymentTransactionService {
     public PaymentTransaction reloadTransaction(TreatmentRecord treatmentRecord, String paymentMethod, long expirationMinutes) {
         PaymentTransaction paymentTransaction = paymentTransactionRepository.findTopByRecordIdOrderByCreatedAtDesc(treatmentRecord.getId())
                 .orElseThrow(() -> new AppException(ErrorCode.PAYMENT_TRANSACTION_NOT_FOUND));
-        paymentTransaction.setStatus("FAILED");
+        paymentTransaction.setStatus(PaymentStatus.FAILED);
         paymentTransactionRepository.save(paymentTransaction);
         return createTransaction(treatmentRecord, paymentMethod, expirationMinutes);
     }
@@ -61,10 +62,10 @@ public class PaymentTransactionService {
         ZoneId zoneId = ZoneId.of("Asia/Ho_Chi_Minh");
         ZonedDateTime nowZoned = ZonedDateTime.now(zoneId);
         List<PaymentTransaction> expiredTransactions = paymentTransactionRepository
-                .findAllByStatusAndExpiredAtBefore("PENDING", nowZoned.toLocalDateTime());
+                .findAllByStatusAndExpiredAtBefore(PaymentStatus.PENDING, nowZoned.toLocalDateTime());
 
         for (PaymentTransaction tx : expiredTransactions) {
-            tx.setStatus("FAILED");
+            tx.setStatus(PaymentStatus.FAILED);
         }
 
         if (!expiredTransactions.isEmpty()) {
@@ -76,16 +77,16 @@ public class PaymentTransactionService {
     public void cancelled(Long recordId) {
         PaymentTransaction paymentTransaction = paymentTransactionRepository.findTopByRecordIdOrderByCreatedAtDesc(recordId)
                 .orElseThrow(() -> new AppException(ErrorCode.PAYMENT_TRANSACTION_NOT_FOUND));
-        paymentTransaction.setStatus("FAILED");
+        paymentTransaction.setStatus(PaymentStatus.FAILED);
         paymentTransactionRepository.save(paymentTransaction);
     }
 
-    public void updateStatus(PaymentTransaction paymentTransaction, String status) {
+    public void updateStatus(PaymentTransaction paymentTransaction, PaymentStatus status) {
         paymentTransaction.setStatus(status);
         paymentTransactionRepository.save(paymentTransaction);
     }
 
     public boolean isPaid(Long recordId) {
-        return paymentTransactionRepository.existsByRecordIdAndStatus(recordId, "SUCCESS");
+        return paymentTransactionRepository.existsByRecordIdAndStatus(recordId, PaymentStatus.SUCCESS);
     }
 }

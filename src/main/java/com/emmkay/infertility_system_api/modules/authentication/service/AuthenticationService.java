@@ -170,7 +170,7 @@ public class AuthenticationService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         validateUserIsActiveAndVerified(user);
-        otpHelper.generateAndSendOtp(request.getEmail(), "thay đổi");
+        otpHelper.generateAndSendOtp(request.getEmail(), "thay đổi mật khẩu");
     }
 
     public void resetPassword(ResetPasswordRequest request) {
@@ -187,7 +187,7 @@ public class AuthenticationService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         validateUserIsActiveAndVerified(user);
-        otpHelper.generateAndSendOtp(request.getEmail(), "thay đổi");
+        otpHelper.generateAndSendOtp(request.getEmail(), "thay đổi mật khẩu");
     }
 
     public AuthenticationResponse refreshToken(RefreshTokenRequest request) {

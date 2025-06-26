@@ -1,5 +1,6 @@
 package com.emmkay.infertility_system_api.modules.schedule.entity;
 
+import com.emmkay.infertility_system_api.modules.shared.enums.Shift;
 import com.emmkay.infertility_system_api.modules.user.entity.User;
 import com.emmkay.infertility_system_api.modules.doctor.entity.Doctor;
 import jakarta.persistence.*;
@@ -39,7 +40,8 @@ public class WorkSchedule {
     @Size(max = 20)
     @NotNull
     @Column(name = "shift", nullable = false, length = 20)
-    private String shift;
+    @Enumerated(EnumType.STRING)
+    private Shift shift;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.SET_NULL)

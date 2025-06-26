@@ -1,5 +1,7 @@
 package com.emmkay.infertility_system_api.modules.appointment.dto.response;
 
+import com.emmkay.infertility_system_api.modules.appointment.enums.AppointmentStatus;
+import com.emmkay.infertility_system_api.modules.shared.enums.Shift;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -13,10 +15,10 @@ import java.time.LocalDate;
 public class AppointmentResponse {
     Long id;
     LocalDate appointmentDate;
-    String shift;
-    String status;
+    Shift shift;
+    AppointmentStatus status;
     String notes;
-    String requestedShift;
+    Shift requestedShift;
     LocalDate requestedDate;
     LocalDate createdAt;
 

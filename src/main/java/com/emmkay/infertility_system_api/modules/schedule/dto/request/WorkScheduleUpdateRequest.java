@@ -1,5 +1,6 @@
 package com.emmkay.infertility_system_api.modules.schedule.dto.request;
 
+import com.emmkay.infertility_system_api.modules.shared.enums.Shift;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -15,7 +16,7 @@ import java.time.LocalDate;
 public class WorkScheduleUpdateRequest {
 
     @NotBlank(message = "{validation.required}")
-    String shift;
+    Shift shift;
 
     @NotNull(message = "{validation.required}")
     LocalDate workDate;

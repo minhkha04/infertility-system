@@ -1,5 +1,6 @@
 package com.emmkay.infertility_system_api.modules.appointment.dto.request;
 
+import com.emmkay.infertility_system_api.modules.shared.enums.Shift;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -15,8 +16,8 @@ import java.time.LocalDate;
 public class AppointmentCreateRequest {
     @NotNull(message = "{validation.required}")
     Long treatmentStepId;
-    @NotBlank(message = "{validation.required}")
-    String shift;
+    @NotNull(message = "{validation.required}")
+    Shift shift;
     @NotBlank(message = "{validation.required}")
     String customerId;
     @NotBlank(message = "{validation.required}")

@@ -1,5 +1,6 @@
 package com.emmkay.infertility_system_api.modules.feedback.dto.response;
 
+import com.emmkay.infertility_system_api.modules.feedback.enums.FeedbackStatus;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -19,7 +20,7 @@ public class FeedbackResponse {
     String comment;
     LocalDate submitDate;
     boolean isApproved;
-    String status;
+    FeedbackStatus status;
     String note;
     String approvedBy;
     String recordId;

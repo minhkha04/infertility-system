@@ -1,6 +1,7 @@
 package com.emmkay.infertility_system_api.modules.blog.repository;
 
 import com.emmkay.infertility_system_api.modules.blog.entity.Blog;
+import com.emmkay.infertility_system_api.modules.blog.enums.BlogStatus;
 import com.emmkay.infertility_system_api.modules.blog.projection.BlogBasicProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,8 +14,6 @@ import java.util.Optional;
 
 @Repository
 public interface BlogRepository extends JpaRepository<Blog, Long> {
-
-    List<Blog> findAllByAuthorId(String authorId);
 
     @Query(value = """
                 SELECT
@@ -29,7 +28,7 @@ public interface BlogRepository extends JpaRepository<Blog, Long> {
                     AND (:keyword IS NULL OR b.title LIKE %:keyword%)
                     AND (:status IS NULL OR b.status = :status)
             """)
-    Page<BlogBasicProjection> searchBlogs(String userId, String status, String keyword, Pageable pageable);
+    Page<BlogBasicProjection> searchBlogs(String userId, BlogStatus status, String keyword, Pageable pageable);
 
-    Optional<Blog> findByIdAndStatus(Long id, String status);
+    Optional<Blog> findByIdAndStatus(Long id, BlogStatus status);
 }

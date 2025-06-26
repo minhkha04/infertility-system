@@ -1,7 +1,9 @@
 package com.emmkay.infertility_system_api.modules.appointment.entity;
 
+import com.emmkay.infertility_system_api.modules.appointment.enums.AppointmentStatus;
 import com.emmkay.infertility_system_api.modules.doctor.entity.Doctor;
 import com.emmkay.infertility_system_api.modules.reminder.entity.Reminder;
+import com.emmkay.infertility_system_api.modules.shared.enums.Shift;
 import com.emmkay.infertility_system_api.modules.treatment.entity.TreatmentStep;
 import com.emmkay.infertility_system_api.modules.user.entity.User;
 import jakarta.persistence.*;
@@ -48,7 +50,8 @@ public class Appointment {
     @Size(max = 20)
     @NotNull
     @Column(name = "shift", nullable = false, length = 20)
-    private String shift;
+    @Enumerated(EnumType.STRING)
+    private Shift shift;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.SET_NULL)
@@ -57,7 +60,8 @@ public class Appointment {
 
     @Size(max = 50)
     @Column(name = "status", length = 50)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private AppointmentStatus status;
 
     @Lob
     @Column(name = "notes")
@@ -72,7 +76,8 @@ public class Appointment {
 
     @Size(max = 20)
     @Column(name = "requested_shift", length = 20)
-    private String requestedShift;
+    @Enumerated(EnumType.STRING)
+    private Shift requestedShift;
 
     @OneToMany(mappedBy = "appointment")
     private Set<Reminder> reminders = new LinkedHashSet<>();

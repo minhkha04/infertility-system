@@ -3,6 +3,7 @@ package com.emmkay.infertility_system_api.modules.doctor.repository;
 import com.emmkay.infertility_system_api.modules.doctor.projection.DoctorBasicProjection;
 import com.emmkay.infertility_system_api.modules.doctor.entity.Doctor;
 import com.emmkay.infertility_system_api.modules.doctor.projection.DoctorSelectProjection;
+import com.emmkay.infertility_system_api.modules.shared.enums.Shift;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -60,7 +61,7 @@ public interface DoctorRepository extends JpaRepository<Doctor, String> {
                 ORDER BY COUNT(a.id)
             """)
     List<Doctor> findAvailableDoctorByDateAndShift(@Param("inputDate") LocalDate inputDate,
-                                                   @Param("shift") String shift,
+                                                   @Param("shift") Shift shift,
                                                    Pageable pageable);
     @Query(value = """
                 SELECT

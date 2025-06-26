@@ -1,6 +1,7 @@
 package com.emmkay.infertility_system_api.modules.treatment.entity;
 
 import com.emmkay.infertility_system_api.modules.appointment.entity.Appointment;
+import com.emmkay.infertility_system_api.modules.treatment.enums.TreatmentStepStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -49,7 +50,8 @@ public class TreatmentStep {
 
     @Size(max = 50)
     @Column(name = "status", length = 50)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private TreatmentStepStatus status;
 
     @Lob
     @Column(name = "notes")

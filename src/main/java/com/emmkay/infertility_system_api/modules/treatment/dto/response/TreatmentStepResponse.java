@@ -1,5 +1,6 @@
 package com.emmkay.infertility_system_api.modules.treatment.dto.response;
 
+import com.emmkay.infertility_system_api.modules.treatment.enums.TreatmentStepStatus;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -16,6 +17,6 @@ public class TreatmentStepResponse {
     LocalDate scheduledDate;
     LocalDate actualDate;
     String notes;
-    String status;
+    TreatmentStepStatus status;
 
 }

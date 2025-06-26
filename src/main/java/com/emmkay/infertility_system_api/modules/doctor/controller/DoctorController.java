@@ -7,6 +7,7 @@ import com.emmkay.infertility_system_api.modules.doctor.dto.response.DoctorWorkS
 import com.emmkay.infertility_system_api.modules.doctor.projection.DoctorSelectProjection;
 import com.emmkay.infertility_system_api.modules.doctor.service.DoctorService;
 import com.emmkay.infertility_system_api.modules.shared.dto.response.ApiResponse;
+import com.emmkay.infertility_system_api.modules.shared.enums.Shift;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -43,7 +44,7 @@ public class DoctorController {
     @GetMapping("/available")
     public ApiResponse<List<DoctorSelectProjection>> getAvailableDoctors(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-            @RequestParam String shift
+            @RequestParam Shift shift
     ) {
         return ApiResponse.<List<DoctorSelectProjection>>builder()
                 .result(doctorService.getAvailableDoctors(date, shift))

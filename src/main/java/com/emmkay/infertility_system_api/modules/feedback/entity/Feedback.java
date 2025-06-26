@@ -1,5 +1,6 @@
 package com.emmkay.infertility_system_api.modules.feedback.entity;
 
+import com.emmkay.infertility_system_api.modules.feedback.enums.FeedbackStatus;
 import com.emmkay.infertility_system_api.modules.treatment.entity.TreatmentRecord;
 import com.emmkay.infertility_system_api.modules.treatment.entity.TreatmentService;
 import com.emmkay.infertility_system_api.modules.user.entity.User;
@@ -55,7 +56,8 @@ public class Feedback {
 
     @Size(max = 50)
     @Column(name = "status", length = 50)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private FeedbackStatus status;
 
     @Lob
     @Column(name = "note")

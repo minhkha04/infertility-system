@@ -3,6 +3,7 @@ package com.emmkay.infertility_system_api.modules.feedback.controller;
 import com.emmkay.infertility_system_api.modules.feedback.dto.request.FeedbackCreateRequest;
 import com.emmkay.infertility_system_api.modules.feedback.dto.request.FeedbackUpdateRequest;
 import com.emmkay.infertility_system_api.modules.feedback.dto.request.FeedbackUpdateStatusRequest;
+import com.emmkay.infertility_system_api.modules.feedback.enums.FeedbackStatus;
 import com.emmkay.infertility_system_api.modules.feedback.projection.FeedBackBasicProjection;
 import com.emmkay.infertility_system_api.modules.shared.dto.response.ApiResponse;
 import com.emmkay.infertility_system_api.modules.feedback.dto.response.FeedbackResponse;
@@ -28,7 +29,7 @@ public class FeedbackController {
     public ApiResponse<PageResponse<FeedBackBasicProjection>> searchFeedbacks(
             @RequestParam(required = false) String customerId,
             @RequestParam(required = false) String doctorId,
-            @RequestParam(required = false) String status,
+            @RequestParam(required = false) FeedbackStatus status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {

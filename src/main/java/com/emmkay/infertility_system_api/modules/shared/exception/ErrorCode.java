@@ -48,7 +48,6 @@ public enum ErrorCode {
     CAN_NOT_BE_UPDATED_STATUS(1036, "Không thể cập nhật trạng thái", HttpStatus.BAD_REQUEST),
     INVALID_IMAGE_FILE(1037, "File ảnh không hợp lệ. Chỉ chấp nhận JPG, JPEG, PNG", HttpStatus.BAD_REQUEST),
     BLOG_NOT_EXISTED(1038, "Không tìm thấy bài viết", HttpStatus.NOT_FOUND),
-    BLOG_ALREADY_APPROVED(1040, "Bài viết đã được phê duyệt", HttpStatus.BAD_REQUEST),
     BLOG_APPROVED_ERROR(1041, "Chỉ bài viết nháp hoặc bị từ chối mới được gửi duyệt", HttpStatus.BAD_REQUEST),
     INVALID_STATUS(1042, "Trạng thái không hợp lệ", HttpStatus.BAD_REQUEST),
     BLOG_NOT_IN_REVIEW(1043, "Bài viết chưa ở trạng thái chờ duyệt", HttpStatus.BAD_REQUEST),
@@ -71,6 +70,7 @@ public enum ErrorCode {
     TREATMENT_CAN_NOT_DONE(1063, "Các lịch hẹn bước này chưa được hoàn thành", HttpStatus.BAD_REQUEST),
     BLOG_DO_NOT_HAS_IMAGE(1064, "Bài viết không có ảnh đại diện", HttpStatus.BAD_REQUEST),
     TREATMENT_NOT_PAID(1065, "Hồ sơ điều trị chưa được thanh toán", HttpStatus.BAD_REQUEST),
+    INVALID_APPOINTMENT_STATUS(1066, "Trạng thái lịch hẹn không hợp lệ", HttpStatus.BAD_REQUEST)
     ;
 
     int code;

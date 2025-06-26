@@ -1,5 +1,6 @@
 package com.emmkay.infertility_system_api.modules.doctor.dto.response;
 
+import com.emmkay.infertility_system_api.modules.shared.enums.Shift;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -14,5 +15,5 @@ import java.util.Map;
 public class DoctorWorkScheduleResponse {
     String doctorId;
     String from;
-    Map<String, List<String>> schedules;
+    Map<String, List<Shift>> schedules;
 }

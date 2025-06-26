@@ -1,5 +1,6 @@
 package com.emmkay.infertility_system_api.modules.treatment.dto.request;
 
+import com.emmkay.infertility_system_api.modules.shared.enums.Shift;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -25,7 +26,7 @@ public class RegisterServiceRequest {
     LocalDate startDate;
 
     @NotBlank(message = "{validation.required}")
-    String shift;
+    Shift shift;
 
     LocalDate cd1Date;
 

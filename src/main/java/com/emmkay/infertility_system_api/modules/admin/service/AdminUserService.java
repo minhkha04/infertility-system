@@ -4,6 +4,7 @@ import com.emmkay.infertility_system_api.modules.admin.dto.request.AdminUserCrea
 import com.emmkay.infertility_system_api.modules.admin.dto.request.AdminUserUpdatePasswordRequest;
 import com.emmkay.infertility_system_api.modules.admin.dto.request.AdminUserUpdateRequest;
 import com.emmkay.infertility_system_api.modules.admin.projection.AdminUserBasicProjection;
+import com.emmkay.infertility_system_api.modules.shared.enums.RoleName;
 import com.emmkay.infertility_system_api.modules.user.dto.response.UserResponse;
 import com.emmkay.infertility_system_api.modules.doctor.entity.Doctor;
 import com.emmkay.infertility_system_api.modules.user.entity.Role;
@@ -60,7 +61,7 @@ public class AdminUserService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
         user = userRepository.save(user);
-        if (user.getRoleName().getName().equals("DOCTOR")) {
+        if (user.getRoleName().getName().equals(RoleName.DOCTOR.name())) {
             Doctor doctor = Doctor.builder()
                     .users(user)
                     .isPublic(false)

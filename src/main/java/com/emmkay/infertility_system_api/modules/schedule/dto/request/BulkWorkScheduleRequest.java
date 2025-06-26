@@ -1,5 +1,6 @@
 package com.emmkay.infertility_system_api.modules.schedule.dto.request;
 
+import com.emmkay.infertility_system_api.modules.shared.enums.Shift;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -30,6 +31,6 @@ public class BulkWorkScheduleRequest {
         @NotBlank(message = "{validation.required}")
         String weekday; // MONDAY, TUESDAY, ...
         @NotBlank(message = "{validation.required}")
-        String shift;   // morning, afternoon, full_day
+        Shift shift;   // morning, afternoon, full_day
     }
 }

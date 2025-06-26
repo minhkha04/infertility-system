@@ -1,5 +1,7 @@
 package com.emmkay.infertility_system_api.modules.feedback.dto.request;
 
+import com.emmkay.infertility_system_api.modules.feedback.enums.FeedbackStatus;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -10,5 +12,6 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class FeedbackUpdateStatusRequest {
     String note;
-    String status;
+    @NotNull(message = "{validation.required}")
+    FeedbackStatus status;
 }

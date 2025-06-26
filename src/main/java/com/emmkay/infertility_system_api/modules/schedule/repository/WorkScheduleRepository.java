@@ -3,6 +3,7 @@ package com.emmkay.infertility_system_api.modules.schedule.repository;
 import com.emmkay.infertility_system_api.modules.doctor.projection.DoctorSelectProjection;
 import com.emmkay.infertility_system_api.modules.schedule.entity.WorkSchedule;
 import com.emmkay.infertility_system_api.modules.schedule.projection.WorkScheduleDateShiftProjection;
+import com.emmkay.infertility_system_api.modules.shared.enums.Shift;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -47,5 +48,5 @@ public interface WorkScheduleRepository extends JpaRepository<WorkSchedule, Long
                         AND (ws.shift IN :shifts)
                         AND (d.users.isRemoved = FALSE)
             """)
-    List<DoctorSelectProjection> getDoctorsForRegister(LocalDate date, List<String> shifts);
+    List<DoctorSelectProjection> getDoctorsForRegister(LocalDate date, List<Shift> shifts);
 }

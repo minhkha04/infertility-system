@@ -1,5 +1,6 @@
 package com.emmkay.infertility_system_api.modules.blog.dto.response;
 
+import com.emmkay.infertility_system_api.modules.blog.enums.BlogStatus;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -14,7 +15,7 @@ public class BlogResponse {
     Long id;
     String title;
     String content;
-    String status;
+    BlogStatus status;
     String authorType;
     String authorName;
     String approvedByName;

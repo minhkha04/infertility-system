@@ -3,6 +3,7 @@ package com.emmkay.infertility_system_api.modules.blog.controller;
 import com.emmkay.infertility_system_api.modules.blog.dto.request.BlogApprovalRequest;
 import com.emmkay.infertility_system_api.modules.blog.dto.request.BlogCreateRequest;
 import com.emmkay.infertility_system_api.modules.blog.dto.request.BlogUpdateRequest;
+import com.emmkay.infertility_system_api.modules.blog.enums.BlogStatus;
 import com.emmkay.infertility_system_api.modules.blog.projection.BlogBasicProjection;
 import com.emmkay.infertility_system_api.modules.shared.dto.request.UploadImageRequest;
 import com.emmkay.infertility_system_api.modules.shared.dto.response.ApiResponse;
@@ -29,7 +30,7 @@ public class BlogController {
 
     @GetMapping("")
     public ApiResponse<PageResponse<BlogBasicProjection>> searchBlogs(
-            @RequestParam(required = false) String status,
+            @RequestParam(required = false) BlogStatus status,
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size
@@ -61,10 +62,10 @@ public class BlogController {
                 .build();
     }
 
-    @PostMapping("/{blogId}/approveBlog")
-    public ApiResponse<BlogResponse> approveBlog(@PathVariable Long blogId, @RequestBody @Valid BlogApprovalRequest request) {
+    @PostMapping("/{blogId}/updateStatus")
+    public ApiResponse<BlogResponse> updateStatus(@PathVariable Long blogId, @RequestBody @Valid BlogApprovalRequest request) {
         return ApiResponse.<BlogResponse>builder()
-                .result(blogService.approveBlog(blogId, request))
+                .result(blogService.updateStatus(blogId, request))
                 .build();
     }
 
@@ -83,10 +84,10 @@ public class BlogController {
                 .build();
     }
 
-    @PostMapping("/{blogId}/hide")
-    public ApiResponse<BlogResponse> hideBlog(@PathVariable Long blogId) {
+    @PostMapping("/{blogId}/hidden")
+    public ApiResponse<BlogResponse> hiddenBlog(@PathVariable Long blogId) {
         return ApiResponse.<BlogResponse>builder()
-                .result(blogService.hideBlog(blogId))
+                .result(blogService.hiddenBlog(blogId))
                 .build();
     }
 }

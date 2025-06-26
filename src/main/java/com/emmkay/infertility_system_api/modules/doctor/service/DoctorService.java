@@ -6,6 +6,7 @@ import com.emmkay.infertility_system_api.modules.doctor.dto.response.DoctorRespo
 import com.emmkay.infertility_system_api.modules.doctor.dto.response.DoctorWorkScheduleResponse;
 import com.emmkay.infertility_system_api.modules.doctor.entity.Doctor;
 import com.emmkay.infertility_system_api.modules.doctor.projection.DoctorSelectProjection;
+import com.emmkay.infertility_system_api.modules.shared.enums.Shift;
 import com.emmkay.infertility_system_api.modules.shared.security.CurrentUserUtils;
 import com.emmkay.infertility_system_api.modules.user.entity.User;
 import com.emmkay.infertility_system_api.modules.schedule.entity.WorkSchedule;
@@ -21,6 +22,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -84,17 +86,13 @@ public class DoctorService {
         return doctorRepository.searchDoctors(false, true);
     }
 
-    public List<DoctorSelectProjection> getAvailableDoctors(LocalDate date, String shift) {
+    public List<DoctorSelectProjection> getAvailableDoctors(LocalDate date, Shift shift) {
         LocalDate today = LocalDate.now();
         if (date.isBefore(today) || date.isAfter(today.plusDays(14))) {
             throw new AppException(ErrorCode.DATE_OUT_OF_RANGE);
         }
 
-        List<String> shiftsToMatch = switch (shift.toUpperCase()) {
-            case "MORNING", "AFTERNOON" -> List.of(shift, "FULL_DAY");
-            case "FULL_DAY" -> List.of("FULL_DAY");
-            default -> throw new AppException(ErrorCode.INVALID_SHIFT_VALUE);
-        };
+        List<Shift> shiftsToMatch = List.of(shift, Shift.FULL_DAY);
         List<DoctorSelectProjection> doctors = workScheduleRepository.getDoctorsForRegister(date, shiftsToMatch);
         return doctors.stream()
                 .filter(doctor -> appointmentService.isDoctorAvailable(doctor.getId(), date, shift))
@@ -106,29 +104,27 @@ public class DoctorService {
         List<WorkSchedule> schedules = workScheduleRepository
                 .findByDoctorIdAndWorkDateGreaterThanEqual(doctorId, from);
 
-        Map<String, List<String>> grouped = new LinkedHashMap<>();
+        Map<String, List<Shift>> grouped = new LinkedHashMap<>();
 
         for (WorkSchedule ws : schedules) {
             LocalDate date = ws.getWorkDate();
             String dateKey = date.toString();
 
-            List<String> availableShifts = new ArrayList<>();
+            List<Shift> availableShifts = new ArrayList<>();
 
             switch (ws.getShift()) {
-                case "MORNING":
-                case "AFTERNOON":
+                case MORNING, AFTERNOON:
                     if (appointmentService.isDoctorAvailable(doctorId, date, ws.getShift())) {
                         availableShifts.add(ws.getShift());
                     }
                     break;
-
-                case "FULL_DAY":
+                case FULL_DAY:
                     // Kiểm tra từng ca riêng biệt
-                    if (appointmentService.isDoctorAvailable(doctorId, date, "MORNING")) {
-                        availableShifts.add("MORNING");
+                    if (appointmentService.isDoctorAvailable(doctorId, date, Shift.MORNING)) {
+                        availableShifts.add(Shift.MORNING);
                     }
-                    if (appointmentService.isDoctorAvailable(doctorId, date, "AFTERNOON")) {
-                        availableShifts.add("AFTERNOON");
+                    if (appointmentService.isDoctorAvailable(doctorId, date, Shift.AFTERNOON)) {
+                        availableShifts.add(Shift.AFTERNOON);
                     }
                     break;
             }
@@ -145,7 +141,7 @@ public class DoctorService {
                 .build();
     }
 
-    public Optional<Doctor> findBestDoctor(LocalDate date, String shift) {
+    public Optional<Doctor> findBestDoctor(LocalDate date, Shift shift) {
         return doctorRepository
                 .findAvailableDoctorByDateAndShift(date, shift, PageRequest.of(0, 1))
                 .stream()

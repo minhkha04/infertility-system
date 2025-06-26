@@ -1,5 +1,6 @@
 package com.emmkay.infertility_system_api.modules.appointment.controller;
 
+import com.emmkay.infertility_system_api.modules.appointment.enums.AppointmentStatus;
 import com.emmkay.infertility_system_api.modules.appointment.projection.AppointmentBasicProjection;
 import com.emmkay.infertility_system_api.modules.shared.dto.response.ApiResponse;
 import com.emmkay.infertility_system_api.modules.appointment.dto.request.*;
@@ -31,7 +32,7 @@ public class AppointmentController {
             @RequestParam(required = false) String customerId,
             @RequestParam(required = false) String doctorId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-            @RequestParam(required = false) String status,
+            @RequestParam(required = false) AppointmentStatus status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
@@ -48,8 +49,6 @@ public class AppointmentController {
                 .build();
     }
 
-
-    @Operation(summary = "for customer to change appointment")
     @PutMapping("/{appointmentId}/customer-change")
     public ApiResponse<AppointmentResponse> customerChangeAppointment(
             @PathVariable Long appointmentId,
@@ -68,7 +67,6 @@ public class AppointmentController {
                 .build();
     }
 
-    @Operation(summary = "for doctor or manager to confirm appointment")
     @PutMapping("/{appointmentId}/confirm-appointment")
     public ApiResponse<AppointmentResponse> confirmChangeAppointment(
             @PathVariable Long appointmentId,
@@ -78,7 +76,6 @@ public class AppointmentController {
                 .build();
     }
 
-    @Operation(summary = "change by doctor or manager")
     @PutMapping("/{appointmentId}/doctor-or-manager-change")
     public ApiResponse<AppointmentResponse> managerOrDoctorChangeAppointment(@PathVariable Long appointmentId, @RequestBody @Valid ChangeAppointmentByDoctorOrManagerRequest request) {
         return ApiResponse.<AppointmentResponse>builder()

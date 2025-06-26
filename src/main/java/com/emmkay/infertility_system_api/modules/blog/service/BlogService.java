@@ -5,7 +5,9 @@ import com.emmkay.infertility_system_api.modules.blog.dto.request.BlogCreateRequ
 import com.emmkay.infertility_system_api.modules.blog.dto.request.BlogUpdateRequest;
 import com.emmkay.infertility_system_api.modules.blog.dto.response.BlogResponse;
 import com.emmkay.infertility_system_api.modules.blog.entity.Blog;
+import com.emmkay.infertility_system_api.modules.blog.enums.BlogStatus;
 import com.emmkay.infertility_system_api.modules.blog.projection.BlogBasicProjection;
+import com.emmkay.infertility_system_api.modules.shared.enums.RoleName;
 import com.emmkay.infertility_system_api.modules.shared.security.CurrentUserUtils;
 import com.emmkay.infertility_system_api.modules.user.entity.User;
 import com.emmkay.infertility_system_api.modules.shared.exception.AppException;
@@ -50,36 +52,38 @@ public class BlogService {
         return blog;
     }
 
-    public Page<BlogBasicProjection> searchBlogs(String status, String keyword, int page, int size) {
+    public Page<BlogBasicProjection> searchBlogs(BlogStatus status, String keyword, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         String scope = CurrentUserUtils.getCurrentScope();
         String currentUserId = CurrentUserUtils.getCurrentUserId();
         if (scope == null || scope.isBlank() || currentUserId == null || currentUserId.isBlank()) {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
-        return switch (scope.toUpperCase()) {
-            case "MANAGER" -> blogRepository.searchBlogs(null, status, keyword, pageable);
-            case "DOCTOR", "CUSTOMER" -> blogRepository.searchBlogs(currentUserId, status, keyword, pageable);
+        RoleName roleName = RoleName.formString(scope);
+        return switch (roleName) {
+            case MANAGER -> blogRepository.searchBlogs(null, status, keyword, pageable);
+            case DOCTOR, CUSTOMER -> blogRepository.searchBlogs(currentUserId, status, keyword, pageable);
             default -> throw new AppException(ErrorCode.UNAUTHORIZED);
         };
     }
 
     public Page<BlogBasicProjection> searchApprovedBlogs(String keyword, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        return blogRepository.searchBlogs(null, "APPROVED", keyword, pageable);
+        return blogRepository.searchBlogs(null, BlogStatus.APPROVED, keyword, pageable);
     }
 
     public BlogResponse getApprovedBlogById(Long blogId) {
-        Blog blog = blogRepository.findByIdAndStatus(blogId, "APPROVED")
+        Blog blog = blogRepository.findByIdAndStatus(blogId, BlogStatus.APPROVED)
                 .orElseThrow(() -> new AppException(ErrorCode.BLOG_NOT_EXISTED));
         return blogMapper.toBlogResponse(blog);
     }
 
     public BlogResponse submitForApproval(BlogUpdateRequest request, Long blogId) {
         Blog blog = validateAndGetBlog(blogId);
-        if (!blog.getStatus().equals("DRAFT")
-                && !blog.getStatus().equals("REJECTED")
-                && !blog.getStatus().equals("HIDDEN")) {
+
+        if (blog.getStatus() != BlogStatus.DRAFT
+                && blog.getStatus() != BlogStatus.REJECTED
+                && blog.getStatus() != BlogStatus.HIDDEN) {
             throw new AppException(ErrorCode.BLOG_APPROVED_ERROR);
         }
         if (blog.getCoverImageUrl() == null) {
@@ -87,14 +91,14 @@ public class BlogService {
         }
 
         blogMapper.updateBlog(blog, request);
-        blog.setStatus("PENDING_REVIEW");
+        blog.setStatus(BlogStatus.PENDING_REVIEW);
         blog.setNote(null);
         return blogMapper.toBlogResponse(blogRepository.save(blog));
 
     }
 
     @PreAuthorize("hasRole('MANAGER')")
-    public BlogResponse approveBlog(Long blogId, BlogApprovalRequest request) {
+    public BlogResponse updateStatus(Long blogId, BlogApprovalRequest request) {
         String currentUserId = CurrentUserUtils.getCurrentUserId();
         if (currentUserId == null || currentUserId.isBlank()) {
             throw new AppException(ErrorCode.UNAUTHORIZED);
@@ -105,20 +109,16 @@ public class BlogService {
         Blog blog = blogRepository.findById(blogId)
                 .orElseThrow(() -> new AppException(ErrorCode.BLOG_NOT_EXISTED));
 
-        if (!"PENDING_REVIEW".equals(blog.getStatus())) {
-            throw new AppException(ErrorCode.BLOG_NOT_IN_REVIEW);
-        }
-        switch (request.getAction().toUpperCase()) {
-            case "APPROVED":
-                if (blog.getStatus().equals("APPROVED")
-                        || blog.getCoverImageUrl() == null) {
-                    throw new AppException(ErrorCode.BLOG_ALREADY_APPROVED);
+        switch (request.getStatus()) {
+            case APPROVED:
+                if (blog.getCoverImageUrl() == null) {
+                    throw new AppException(ErrorCode.BLOG_DO_NOT_HAS_IMAGE);
                 }
-                blog.setStatus("APPROVED");
+                blog.setStatus(BlogStatus.APPROVED);
                 blog.setPublishedAt(LocalDate.now());
                 break;
-            case "REJECTED":
-                blog.setStatus("REJECTED");
+            case REJECTED:
+                blog.setStatus(request.getStatus());
                 break;
             default:
                 throw new AppException(ErrorCode.INVALID_STATUS);
@@ -137,7 +137,7 @@ public class BlogService {
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         Blog blog = blogMapper.toBlog(request);
-        blog.setStatus("DRAFT");
+        blog.setStatus(BlogStatus.DRAFT);
         blog.setAuthorType(currentUser.getRoleName().getName());
         blog.setAuthor(currentUser);
         blog.setCreatedAt(LocalDate.now());
@@ -153,7 +153,7 @@ public class BlogService {
     public BlogResponse updateBlog(Long blogId, BlogUpdateRequest request) {
         Blog blog = validateAndGetBlog(blogId);
         blogMapper.updateBlog(blog, request);
-        blog.setStatus("DRAFT");
+        blog.setStatus(BlogStatus.DRAFT);
         blog.setApprovedBy(null);
         blog.setNote(null);
         blog.setPublishedAt(null);
@@ -163,19 +163,19 @@ public class BlogService {
     public BlogResponse updateImg(Long blogId, String url) {
         Blog blog = validateAndGetBlog(blogId);
         blog.setCoverImageUrl(url);
-        blog.setStatus("PENDING_REVIEW");
+        blog.setStatus(BlogStatus.DRAFT);
         blog.setApprovedBy(null);
         blog.setNote(null);
         blog.setPublishedAt(null);
         return blogMapper.toBlogResponse(blogRepository.save(blog));
     }
 
-    public BlogResponse hideBlog(Long blogId) {
+    public BlogResponse hiddenBlog(Long blogId) {
         Blog blog = validateAndGetBlog(blogId);
-        if (!blog.getStatus().equals("APPROVED")) {
+        if (blog.getStatus() != BlogStatus.APPROVED) {
             throw new AppException(ErrorCode.CAN_NOT_BE_UPDATED_STATUS);
         }
-        blog.setStatus("HIDDEN");
+        blog.setStatus(BlogStatus.HIDDEN);
         return blogMapper.toBlogResponse(blogRepository.save(blog));
     }
 }

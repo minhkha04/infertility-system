@@ -1,5 +1,7 @@
 package com.emmkay.infertility_system_api.modules.appointment.projection;
 
+import com.emmkay.infertility_system_api.modules.appointment.enums.AppointmentStatus;
+
 import java.time.LocalDate;
 
 public interface AppointmentBasicProjection {
@@ -8,5 +10,5 @@ public interface AppointmentBasicProjection {
     String getDoctorName();
     LocalDate getAppointmentDate();
     String getShift();
-    String getStatus();
+    AppointmentStatus getStatus();
 }

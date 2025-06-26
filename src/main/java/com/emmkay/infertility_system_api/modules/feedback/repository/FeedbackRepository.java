@@ -1,6 +1,7 @@
 package com.emmkay.infertility_system_api.modules.feedback.repository;
 
 
+import com.emmkay.infertility_system_api.modules.feedback.enums.FeedbackStatus;
 import com.emmkay.infertility_system_api.modules.feedback.projection.FeedBackBasicProjection;
 import com.emmkay.infertility_system_api.modules.feedback.entity.Feedback;
 import com.emmkay.infertility_system_api.modules.feedback.projection.PublicFeedbackProjection;
@@ -31,7 +32,7 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
                         AND (:status IS NULL OR f.status = :status)
                     ORDER BY f.createdAt DESC
             """)
-    Page<FeedBackBasicProjection> searchFeedBacks(String customerId, String doctorId, String status, Pageable pageable);
+    Page<FeedBackBasicProjection> searchFeedBacks(String customerId, String doctorId, FeedbackStatus status, Pageable pageable);
 
     @Query(value = """
                     SELECT

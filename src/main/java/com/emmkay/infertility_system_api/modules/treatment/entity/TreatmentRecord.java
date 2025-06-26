@@ -1,5 +1,6 @@
 package com.emmkay.infertility_system_api.modules.treatment.entity;
 
+import com.emmkay.infertility_system_api.modules.treatment.enums.TreatmentRecordStatus;
 import com.emmkay.infertility_system_api.modules.user.entity.User;
 import com.emmkay.infertility_system_api.modules.doctor.entity.Doctor;
 import jakarta.persistence.*;
@@ -51,7 +52,8 @@ public class TreatmentRecord {
 
     @Lob
     @Column(name = "status")
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private TreatmentRecordStatus status;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "created_date")

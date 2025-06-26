@@ -1,5 +1,6 @@
 package com.emmkay.infertility_system_api.modules.payment.entity;
 
+import com.emmkay.infertility_system_api.modules.payment.enums.PaymentStatus;
 import com.emmkay.infertility_system_api.modules.treatment.entity.TreatmentRecord;
 import com.emmkay.infertility_system_api.modules.treatment.entity.TreatmentService;
 import com.emmkay.infertility_system_api.modules.user.entity.User;
@@ -48,7 +49,8 @@ public class PaymentTransaction {
 
     @Size(max = 50)
     @Column(name = "status", length = 50)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private PaymentStatus status;
 
     @Size(max = 100)
     @Column(name = "transaction_code", length = 100)

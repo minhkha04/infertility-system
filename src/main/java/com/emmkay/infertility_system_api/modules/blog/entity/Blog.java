@@ -1,5 +1,6 @@
 package com.emmkay.infertility_system_api.modules.blog.entity;
 
+import com.emmkay.infertility_system_api.modules.blog.enums.BlogStatus;
 import com.emmkay.infertility_system_api.modules.user.entity.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -35,7 +36,8 @@ public class Blog {
     @Size(max = 50)
     @NotNull
     @Column(name = "status", nullable = false, length = 50)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private BlogStatus status;
 
     @Size(max = 50)
     @NotNull

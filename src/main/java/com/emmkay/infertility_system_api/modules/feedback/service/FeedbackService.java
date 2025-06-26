@@ -1,11 +1,13 @@
 package com.emmkay.infertility_system_api.modules.feedback.service;
 
+import com.emmkay.infertility_system_api.modules.feedback.enums.FeedbackStatus;
 import com.emmkay.infertility_system_api.modules.feedback.projection.FeedBackBasicProjection;
 import com.emmkay.infertility_system_api.modules.feedback.dto.request.FeedbackCreateRequest;
 import com.emmkay.infertility_system_api.modules.feedback.dto.request.FeedbackUpdateRequest;
 import com.emmkay.infertility_system_api.modules.feedback.dto.request.FeedbackUpdateStatusRequest;
 import com.emmkay.infertility_system_api.modules.feedback.dto.response.FeedbackResponse;
 import com.emmkay.infertility_system_api.modules.feedback.projection.PublicFeedbackProjection;
+import com.emmkay.infertility_system_api.modules.shared.enums.RoleName;
 import com.emmkay.infertility_system_api.modules.shared.exception.AppException;
 import com.emmkay.infertility_system_api.modules.shared.exception.ErrorCode;
 import com.emmkay.infertility_system_api.modules.feedback.entity.Feedback;
@@ -16,6 +18,7 @@ import com.emmkay.infertility_system_api.modules.feedback.repository.FeedbackRep
 import com.emmkay.infertility_system_api.modules.shared.security.CurrentUserUtils;
 import com.emmkay.infertility_system_api.modules.treatment.entity.TreatmentRecord;
 import com.emmkay.infertility_system_api.modules.treatment.entity.TreatmentService;
+import com.emmkay.infertility_system_api.modules.treatment.enums.TreatmentRecordStatus;
 import com.emmkay.infertility_system_api.modules.treatment.repository.TreatmentRecordRepository;
 import com.emmkay.infertility_system_api.modules.treatment.repository.TreatmentServiceRepository;
 import com.emmkay.infertility_system_api.modules.user.entity.User;
@@ -45,17 +48,18 @@ public class FeedbackService {
     DoctorRepository doctorRepository;
 
 
-    public Page<FeedBackBasicProjection> searchFeedbacks(String customerId, String doctorId, String status, int page, int size) {
+    public Page<FeedBackBasicProjection> searchFeedbacks(String customerId, String doctorId, FeedbackStatus status, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         String currentUserId = CurrentUserUtils.getCurrentUserId();
         String scope = CurrentUserUtils.getCurrentScope();
         if (scope == null || scope.isBlank() || currentUserId == null || currentUserId.isBlank()) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
-        return switch (scope) {
-            case "CUSTOMER" -> feedbackRepository.searchFeedBacks(customerId, null, status, pageable);
-            case "DOCTOR" -> feedbackRepository.searchFeedBacks(null, doctorId, status, pageable);
-            case "MANAGER" -> feedbackRepository.searchFeedBacks(customerId, doctorId, status, pageable);
+        RoleName roleName = RoleName.formString(scope);
+        return switch (roleName) {
+            case CUSTOMER -> feedbackRepository.searchFeedBacks(customerId, null, status, pageable);
+            case DOCTOR -> feedbackRepository.searchFeedBacks(null, doctorId, status, pageable);
+            case MANAGER -> feedbackRepository.searchFeedBacks(customerId, doctorId, status, pageable);
             default -> throw new AppException(ErrorCode.UNAUTHENTICATED);
         };
     }
@@ -71,7 +75,7 @@ public class FeedbackService {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
         feedbackMapper.updateFeedback(feedback, request);
-        feedback.setStatus("PENDING");
+        feedback.setStatus(FeedbackStatus.PENDING);
         feedback.setNote("");
         feedback.setApprovedAt(null);
         feedback.setApprovedBy(null);
@@ -91,7 +95,7 @@ public class FeedbackService {
 
         feedback.setApprovedBy(manager);
         feedback.setApprovedAt(LocalDate.now());
-        feedback.setStatus(request.getStatus().toUpperCase());
+        feedback.setStatus(request.getStatus());
         feedback.setNote(request.getNote());
         return feedbackMapper.toResponse(feedbackRepository.save(feedback));
     }
@@ -105,7 +109,7 @@ public class FeedbackService {
         TreatmentRecord treatmentRecord = treatmentRecordRepository.findById(request.getRecordId())
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
 
-        if (treatmentRecord.getStatus().equals("COMPLETED")) {
+        if (treatmentRecord.getStatus() == TreatmentRecordStatus.COMPLETED) {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
 
@@ -124,7 +128,7 @@ public class FeedbackService {
         feedback.setService(treatmentService);
         feedback.setCustomer(customer);
         feedback.setDoctor(doctor);
-        feedback.setStatus("PENDING");
+        feedback.setStatus(FeedbackStatus.PENDING);
         feedback.setRecord(treatmentRecord);
         return feedbackMapper.toResponse(feedbackRepository.save(feedback));
 

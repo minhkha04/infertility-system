@@ -1,5 +1,7 @@
 package com.emmkay.infertility_system_api.modules.feedback.projection;
 
+import com.emmkay.infertility_system_api.modules.feedback.enums.FeedbackStatus;
+
 import java.time.LocalDateTime;
 
 public interface FeedBackBasicProjection {
@@ -8,6 +10,6 @@ public interface FeedBackBasicProjection {
     String getDoctorFullName();
     Integer getRating();
     String getComment();
-    String getStatus();
+    FeedbackStatus getStatus();
     LocalDateTime getCreatedAt();
 }

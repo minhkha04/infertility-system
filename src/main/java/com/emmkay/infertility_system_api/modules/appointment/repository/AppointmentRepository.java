@@ -1,8 +1,10 @@
 package com.emmkay.infertility_system_api.modules.appointment.repository;
 
+import com.emmkay.infertility_system_api.modules.appointment.enums.AppointmentStatus;
 import com.emmkay.infertility_system_api.modules.appointment.projection.AppointmentBasicProjection;
 import com.emmkay.infertility_system_api.modules.appointment.entity.Appointment;
 import com.emmkay.infertility_system_api.modules.dashboard.projection.DoctorTodayAppointmentProjection;
+import com.emmkay.infertility_system_api.modules.shared.enums.Shift;
 import com.emmkay.infertility_system_api.modules.treatment.entity.TreatmentStep;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,7 +27,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
                   AND a.shift = :shift
                   AND a.status <> 'CANCELLED'
             """)
-    int countActiveByDoctorIdAndDateAndShift(@Param("doctorId") String doctorId, @Param("date") LocalDate date, @Param("shift") String shift);
+    int countActiveByDoctorIdAndDateAndShift(@Param("doctorId") String doctorId, @Param("date") LocalDate date, @Param("shift") Shift shift);
 
     @Query("update Appointment a set a.status = :status where a.treatmentStep = :treatmentStep")
     @Modifying
@@ -50,7 +52,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
                        AND (:stepId IS NULL OR a.status = :stepId)
                 ORDER BY a.appointmentDate DESC
             """)
-    Page<AppointmentBasicProjection> searchAppointments(Long stepId, String customerId, String doctorId, LocalDate date, String status, Pageable pageable);
+    Page<AppointmentBasicProjection> searchAppointments(Long stepId, String customerId, String doctorId, LocalDate date, AppointmentStatus status, Pageable pageable);
 
     @Query("""
                 SELECT
