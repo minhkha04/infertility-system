@@ -1,6 +1,7 @@
 package com.emmkay.infertility_system_api.modules.treatment.repository;
 
 import com.emmkay.infertility_system_api.modules.treatment.entity.TreatmentRecord;
+import com.emmkay.infertility_system_api.modules.treatment.enums.TreatmentRecordStatus;
 import com.emmkay.infertility_system_api.modules.treatment.projection.TreatmentRecordBasicProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -42,6 +43,6 @@ public interface TreatmentRecordRepository extends JpaRepository<TreatmentRecord
                     AND (:doctorId IS NULL OR tr.doctor.id = :doctorId)
                     AND (:status IS NULL OR tr.status = :status)
             """)
-    Page<TreatmentRecordBasicProjection> searchTreatmentRecords(String customerId, String doctorId, String status, Pageable pageable);
+    Page<TreatmentRecordBasicProjection> searchTreatmentRecords(String customerId, String doctorId, TreatmentRecordStatus status, Pageable pageable);
 
 }

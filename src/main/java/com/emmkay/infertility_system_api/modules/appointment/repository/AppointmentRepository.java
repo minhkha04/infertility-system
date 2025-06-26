@@ -31,9 +31,9 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     @Query("update Appointment a set a.status = :status where a.treatmentStep = :treatmentStep")
     @Modifying
-    void updateStatusByTreatmentStep(String status, TreatmentStep treatmentStep);
+    void updateStatusByTreatmentStep(AppointmentStatus status, TreatmentStep treatmentStep);
 
-    boolean existsByStatusInAndTreatmentStep(Collection<String> statuses, TreatmentStep treatmentStep);
+    boolean existsByStatusInAndTreatmentStep(Collection<AppointmentStatus> statuses, TreatmentStep treatmentStep);
 
     @Query(value = """
                 SELECT

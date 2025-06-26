@@ -1,11 +1,13 @@
 package com.emmkay.infertility_system_api.modules.treatment.service;
 
 import com.emmkay.infertility_system_api.modules.payment.service.PaymentTransactionService;
+import com.emmkay.infertility_system_api.modules.shared.enums.RoleName;
 import com.emmkay.infertility_system_api.modules.shared.security.CurrentUserUtils;
 import com.emmkay.infertility_system_api.modules.treatment.dto.request.RegisterServiceRequest;
 import com.emmkay.infertility_system_api.modules.treatment.dto.response.TreatmentRecordResponse;
 import com.emmkay.infertility_system_api.modules.shared.exception.AppException;
 import com.emmkay.infertility_system_api.modules.shared.exception.ErrorCode;
+import com.emmkay.infertility_system_api.modules.treatment.enums.TreatmentRecordStatus;
 import com.emmkay.infertility_system_api.modules.treatment.mapper.TreatmentRecordMapper;
 import com.emmkay.infertility_system_api.modules.appointment.service.AppointmentService;
 import com.emmkay.infertility_system_api.modules.doctor.entity.Doctor;
@@ -58,15 +60,16 @@ public class TreatmentRecordService {
         if (scope == null || scope.isBlank() || currentUserId == null || currentUserId.isBlank()) {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
-        switch (scope.toUpperCase()) {
-            case "MANAGER":
+        RoleName roleName = RoleName.formString(scope);
+        switch (roleName) {
+            case MANAGER:
                 break;
-            case "DOCTOR":
+            case DOCTOR:
                 if (!treatmentRecord.getDoctor().getId().equals(currentUserId)) {
                     throw new AppException(ErrorCode.UNAUTHORIZED);
                 }
                 break;
-            case "CUSTOMER":
+            case CUSTOMER:
                 if (!treatmentRecord.getCustomer().getId().equals(currentUserId)) {
                     throw new AppException(ErrorCode.UNAUTHORIZED);
                 }
@@ -77,7 +80,7 @@ public class TreatmentRecordService {
     }
 
     public Page<TreatmentRecordBasicProjection> searchTreatmentRecords(
-            String customerId, String doctorId, String status, int page, int size) {
+            String customerId, String doctorId, TreatmentRecordStatus status, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         String currentUserId = CurrentUserUtils.getCurrentUserId();
         String scope = CurrentUserUtils.getCurrentScope();
@@ -85,27 +88,28 @@ public class TreatmentRecordService {
         if (scope == null || scope.isBlank() || currentUserId == null || currentUserId.isBlank()) {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
-        return switch (scope.toUpperCase()) {
-            case "CUSTOMER" -> treatmentRecordRepository.searchTreatmentRecords(customerId, null, status, pageable);
-            case "DOCTOR" -> treatmentRecordRepository.searchTreatmentRecords(null, doctorId, status, pageable);
-            case "MANAGER" -> treatmentRecordRepository.searchTreatmentRecords(customerId, doctorId, status, pageable);
+        RoleName roleName = RoleName.formString(scope);
+        return switch (roleName) {
+            case CUSTOMER -> treatmentRecordRepository.searchTreatmentRecords(customerId, null, status, pageable);
+            case DOCTOR -> treatmentRecordRepository.searchTreatmentRecords(null, doctorId, status, pageable);
+            case MANAGER -> treatmentRecordRepository.searchTreatmentRecords(customerId, doctorId, status, pageable);
             default -> throw new AppException(ErrorCode.UNAUTHORIZED);
         };
     }
 
     @PreAuthorize("hasRole('MANAGER') or hasRole('DOCTOR')")
-    public TreatmentRecordResponse updateStatusTreatmentRecord(Long recordId, String status) {
+    public TreatmentRecordResponse updateStatusTreatmentRecord(Long recordId, TreatmentRecordStatus status) {
         TreatmentRecord treatmentRecord = treatmentRecordRepository.findById(recordId)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
 
         canChange(treatmentRecord);
-        if (!paymentTransactionService.isPaid(recordId) && status.equalsIgnoreCase("COMPLETED")) {
+        if (!paymentTransactionService.isPaid(recordId) && status == TreatmentRecordStatus.COMPLETED) {
             throw new AppException(ErrorCode.TREATMENT_NOT_PAID);
         }
-        if (treatmentRecord.getStatus().equals("CANCELLED")) {
+        if (treatmentRecord.getStatus() == TreatmentRecordStatus.CANCELLED) {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
-        treatmentRecord.setStatus(status.toUpperCase());
+        treatmentRecord.setStatus(status);
         return treatmentRecordMapper.toTreatmentRecordResponse(treatmentRecordRepository.save(treatmentRecord));
     }
 
@@ -174,7 +178,7 @@ public class TreatmentRecordService {
                 .doctor(doctor)
                 .service(treatmentService)
                 .startDate(request.getStartDate())
-                .status("INPROGRESS")
+                .status(TreatmentRecordStatus.INPROGRESS)
                 .createdDate(LocalDate.now())
                 .cd1Date(request.getCd1Date())
                 .build();
@@ -199,8 +203,9 @@ public class TreatmentRecordService {
         TreatmentRecord treatmentRecord = treatmentRecordRepository.findById(recordId)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
         canChange(treatmentRecord);
-        if (treatmentRecord.getStatus().equals("COMPLETED")
-                || treatmentRecord.getStatus().equals("CANCELLED")) {
+
+        if (treatmentRecord.getStatus() == TreatmentRecordStatus.COMPLETED
+                || treatmentRecord.getStatus() == TreatmentRecordStatus.CANCELLED) {
             throw new AppException(ErrorCode.CANNOT_CANCEL_TREATMENT);
         }
 
@@ -208,7 +213,7 @@ public class TreatmentRecordService {
             throw new AppException(ErrorCode.TREATMENT_RECORD_IS_PAID);
         }
 
-        treatmentRecord.setStatus("CANCELLED");
+        treatmentRecord.setStatus(TreatmentRecordStatus.CANCELLED);
         treatmentStepService.cancelStepsByRecordId(recordId);
         treatmentRecordRepository.save(treatmentRecord);
     }
@@ -217,7 +222,8 @@ public class TreatmentRecordService {
         TreatmentRecord treatmentRecord = treatmentRecordRepository.findById(recordId)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
         canChange(treatmentRecord);
-        if (treatmentRecord.getStatus().equals("COMPLETED") || treatmentRecord.getStatus().equals("CANCELLED")) {
+        if (treatmentRecord.getStatus() == TreatmentRecordStatus.COMPLETED
+                || treatmentRecord.getStatus() == TreatmentRecordStatus.CANCELLED) {
             throw new AppException(ErrorCode.CANNOT_CANCEL_TREATMENT);
         }
         treatmentRecord.setCd1Date(cd1);

@@ -3,6 +3,7 @@ package com.emmkay.infertility_system_api.modules.payment.strategy;
 import com.emmkay.infertility_system_api.modules.payment.builder.VnPayRedirectUrlBuilder;
 import com.emmkay.infertility_system_api.modules.payment.configuration.VnPayConfig;
 import com.emmkay.infertility_system_api.modules.payment.entity.PaymentTransaction;
+import com.emmkay.infertility_system_api.modules.payment.enums.PaymentStatus;
 import com.emmkay.infertility_system_api.modules.payment.repository.PaymentTransactionRepository;
 import com.emmkay.infertility_system_api.modules.payment.service.PaymentEligibilityService;
 import com.emmkay.infertility_system_api.modules.payment.service.PaymentTransactionService;
@@ -82,9 +83,9 @@ public class VnPaymentStrategy implements PaymentStrategy {
                 String responseCode = request.getParameter("vnp_ResponseCode");
 
                 if ("00".equals(responseCode)) {
-                    paymentTransactionService.updateStatus(paymentTransaction, "SUCCESS");
+                    paymentTransactionService.updateStatus(paymentTransaction, PaymentStatus.SUCCESS);
                 } else {
-                    paymentTransactionService.updateStatus(paymentTransaction, "FAILED");
+                    paymentTransactionService.updateStatus(paymentTransaction, PaymentStatus.FAILED);
                 }
             }
             return true;

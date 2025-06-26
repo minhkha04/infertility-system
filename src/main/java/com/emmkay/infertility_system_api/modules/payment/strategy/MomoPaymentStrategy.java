@@ -9,6 +9,7 @@ import com.emmkay.infertility_system_api.modules.payment.dto.request.MomoIpnRequ
 import com.emmkay.infertility_system_api.modules.payment.dto.response.MomoConfirmResponse;
 import com.emmkay.infertility_system_api.modules.payment.dto.response.MomoCreateResponse;
 import com.emmkay.infertility_system_api.modules.payment.entity.PaymentTransaction;
+import com.emmkay.infertility_system_api.modules.payment.enums.PaymentStatus;
 import com.emmkay.infertility_system_api.modules.payment.helper.QrCodeHelper;
 import com.emmkay.infertility_system_api.modules.payment.repository.PaymentTransactionRepository;
 import com.emmkay.infertility_system_api.modules.payment.service.PaymentEligibilityService;
@@ -48,10 +49,10 @@ public class MomoPaymentStrategy implements PaymentStrategy {
                 log.info("Xác nhận thanh toán thành công với MoMo");
                 if (response.getResultCode() == 0) {
                     log.info("Momo xác nhận capture: {}", response.getMessage());
-                    paymentTransactionService.updateStatus(paymentTransaction, "SUCCESS");
+                    paymentTransactionService.updateStatus(paymentTransaction, PaymentStatus.SUCCESS);
                 } else {
                     log.error("Momo từ chối capture: {}", response.getMessage());
-                    paymentTransactionService.updateStatus(paymentTransaction, "FAILED");
+                    paymentTransactionService.updateStatus(paymentTransaction, PaymentStatus.FAILED);
                 }
                 break;
             case "cancel":
@@ -61,7 +62,7 @@ public class MomoPaymentStrategy implements PaymentStrategy {
                 } else {
                     log.error("MoMo từ chối huỷ: {}", response.getMessage());
                 }
-                paymentTransactionService.updateStatus(paymentTransaction, "FAILED");
+                paymentTransactionService.updateStatus(paymentTransaction, PaymentStatus.FAILED);
                 break;
             default:
                 throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -110,15 +111,15 @@ public class MomoPaymentStrategy implements PaymentStrategy {
                     .orElseThrow(() -> new AppException(ErrorCode.PAYMENT_TRANSACTION_NOT_FOUND));
 
             // 4. Xử lý theo trạng thái
-            String currentStatus = paymentTransaction.getStatus().toUpperCase();
+            PaymentStatus currentStatus = paymentTransaction.getStatus();
 
             switch (currentStatus) {
-                case "FAILED":
+                case FAILED:
                     log.warn("IPN báo thất bại, huỷ giao dịch {}", transactionCode);
                     processPayment(paymentTransaction, "cancel");
                     return false;
 
-                case "PENDING":
+                case PENDING:
                     log.info("IPN xác nhận giao dịch thành công {}", transactionCode);
                     processPayment(paymentTransaction, "capture");
                     return true;

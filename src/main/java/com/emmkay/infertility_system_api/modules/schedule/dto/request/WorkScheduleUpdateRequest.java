@@ -15,7 +15,7 @@ import java.time.LocalDate;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class WorkScheduleUpdateRequest {
 
-    @NotBlank(message = "{validation.required}")
+    @NotNull(message = "{validation.required}")
     Shift shift;
 
     @NotNull(message = "{validation.required}")

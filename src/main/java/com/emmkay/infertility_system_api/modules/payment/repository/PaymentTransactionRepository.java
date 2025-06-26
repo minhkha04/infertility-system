@@ -1,6 +1,5 @@
 package com.emmkay.infertility_system_api.modules.payment.repository;
 
-import com.emmkay.infertility_system_api.modules.appointment.enums.AppointmentStatus;
 import com.emmkay.infertility_system_api.modules.payment.entity.PaymentTransaction;
 import com.emmkay.infertility_system_api.modules.payment.enums.PaymentStatus;
 import com.emmkay.infertility_system_api.modules.treatment.entity.TreatmentRecord;
@@ -20,9 +19,6 @@ public interface PaymentTransactionRepository extends JpaRepository<PaymentTrans
     Optional<PaymentTransaction> findByTransactionCode(String transactionCode);
 
     List<PaymentTransaction> findAllByStatusAndExpiredAtBefore(PaymentStatus status, LocalDateTime now);
-
-    Optional<PaymentTransaction> findByRecordIdAndStatus(Long recordId, PaymentStatus status);
-
     boolean existsByRecordAndStatus(TreatmentRecord record, PaymentStatus status);
 
     Optional<PaymentTransaction> findTopByRecordIdOrderByCreatedAtDesc(Long recordId);

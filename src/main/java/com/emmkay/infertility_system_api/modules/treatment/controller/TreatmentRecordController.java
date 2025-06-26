@@ -5,6 +5,7 @@ import com.emmkay.infertility_system_api.modules.shared.dto.response.ApiResponse
 import com.emmkay.infertility_system_api.modules.shared.dto.response.PageResponse;
 import com.emmkay.infertility_system_api.modules.treatment.dto.request.RegisterServiceRequest;
 import com.emmkay.infertility_system_api.modules.treatment.dto.response.TreatmentRecordResponse;
+import com.emmkay.infertility_system_api.modules.treatment.enums.TreatmentRecordStatus;
 import com.emmkay.infertility_system_api.modules.treatment.projection.TreatmentRecordBasicProjection;
 import com.emmkay.infertility_system_api.modules.treatment.service.TreatmentRecordService;
 import jakarta.validation.Valid;
@@ -29,7 +30,7 @@ public class TreatmentRecordController {
     public ApiResponse<PageResponse<TreatmentRecordBasicProjection>> findAllForCustomer(
             @RequestParam(required = false) String customerId,
             @RequestParam(required = false) String doctorId,
-            @RequestParam(required = false) String status,
+            @RequestParam(required = false) TreatmentRecordStatus status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
@@ -47,7 +48,7 @@ public class TreatmentRecordController {
     }
 
     @PutMapping("/{recordId}/status")
-    public ApiResponse<TreatmentRecordResponse> updateStatusTreatmentRecord(@PathVariable Long recordId, @RequestParam String status) {
+    public ApiResponse<TreatmentRecordResponse> updateStatusTreatmentRecord(@PathVariable Long recordId, @RequestParam TreatmentRecordStatus status) {
         return ApiResponse.<TreatmentRecordResponse>builder()
                 .result(treatmentRecordService.updateStatusTreatmentRecord(recordId, status))
                 .build();

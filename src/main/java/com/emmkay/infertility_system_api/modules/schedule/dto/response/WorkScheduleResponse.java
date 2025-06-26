@@ -1,5 +1,6 @@
 package com.emmkay.infertility_system_api.modules.schedule.dto.response;
 
+import com.emmkay.infertility_system_api.modules.shared.enums.Shift;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -15,7 +16,7 @@ public class WorkScheduleResponse {
     Long id;
     String doctorId;
     LocalDate workDate;
-    String shift;
+    Shift shift;
     LocalDateTime createdAt;
     String createdBy;
 }

@@ -20,7 +20,7 @@ public interface WorkScheduleRepository extends JpaRepository<WorkSchedule, Long
 
     List<WorkScheduleDateShiftProjection> findAllByDoctorIdAndWorkDateBetweenOrderByWorkDateAsc(String doctorId, LocalDate startDate, LocalDate endDate);
 
-    boolean existsByDoctorIdAndWorkDateAndShift(String doctorId, LocalDate workDate, String shift);
+    boolean existsByDoctorIdAndWorkDateAndShift(String doctorId, LocalDate workDate, Shift shift);
 
     Optional<WorkSchedule> findByDoctorIdAndWorkDate(String doctorId, LocalDate workDate);
 

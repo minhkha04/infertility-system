@@ -1,9 +1,11 @@
 package com.emmkay.infertility_system_api.modules.payment.service;
 
+import com.emmkay.infertility_system_api.modules.payment.enums.PaymentStatus;
 import com.emmkay.infertility_system_api.modules.payment.repository.PaymentTransactionRepository;
 import com.emmkay.infertility_system_api.modules.shared.exception.AppException;
 import com.emmkay.infertility_system_api.modules.shared.exception.ErrorCode;
 import com.emmkay.infertility_system_api.modules.treatment.entity.TreatmentRecord;
+import com.emmkay.infertility_system_api.modules.treatment.enums.TreatmentRecordStatus;
 import com.emmkay.infertility_system_api.modules.treatment.repository.TreatmentRecordRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -26,17 +28,17 @@ public class PaymentEligibilityService {
         TreatmentRecord treatmentRecord = treatmentRecordRepository.findById(recordId)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
 
-        if (treatmentRecord.getStatus().equalsIgnoreCase("CANCELLED")) {
+        if (treatmentRecord.getStatus() == TreatmentRecordStatus.CANCELLED) {
             throw new AppException(ErrorCode.CANNOT_PAY);
         }
 
         if (isReload) {
-            boolean hasSuccess = paymentTransactionRepository.existsByRecordAndStatus(treatmentRecord, "SUCCESS");
+            boolean hasSuccess = paymentTransactionRepository.existsByRecordAndStatus(treatmentRecord, PaymentStatus.SUCCESS);
             if (hasSuccess) {
                 throw new AppException(ErrorCode.CANNOT_PAY);
             }
         } else {
-            boolean hasActiveTransaction = paymentTransactionRepository.existsByRecordAndStatusIn(treatmentRecord, List.of("PENDING", "SUCCESS"));
+            boolean hasActiveTransaction = paymentTransactionRepository.existsByRecordAndStatusIn(treatmentRecord, List.of(PaymentStatus.SUCCESS, PaymentStatus.PENDING));
             if (hasActiveTransaction) {
                 throw new AppException(ErrorCode.CANNOT_PAY);
             }

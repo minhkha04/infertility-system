@@ -1,8 +1,10 @@
 package com.emmkay.infertility_system_api.modules.reminder.service;
 
 import com.emmkay.infertility_system_api.modules.appointment.entity.Appointment;
+import com.emmkay.infertility_system_api.modules.appointment.enums.AppointmentStatus;
 import com.emmkay.infertility_system_api.modules.doctor.entity.Doctor;
 import com.emmkay.infertility_system_api.modules.reminder.entity.Reminder;
+import com.emmkay.infertility_system_api.modules.shared.enums.Shift;
 import com.emmkay.infertility_system_api.modules.shared.exception.AppException;
 import com.emmkay.infertility_system_api.modules.shared.exception.ErrorCode;
 import com.emmkay.infertility_system_api.modules.reminder.repository.ReminderRepository;
@@ -28,15 +30,15 @@ public class ReminderService {
     ReminderRepository reminderRepository;
     EmailService emailService;
 
-    private String generateShift(String shift) {
-        return switch (shift.toUpperCase()) {
-            case "MORNING" -> "sáng";
-            case "AFTERNOON" -> "chiều";
+    private String generateShift(Shift shift) {
+        return switch (shift) {
+            case MORNING -> "sáng";
+            case AFTERNOON -> "chiều";
             default -> throw new AppException(ErrorCode.INVALID_SHIFT_VALUE);
         };
     }
 
-    private String buildMess(Doctor doctor, String shift, LocalDate date, String step) {
+    private String buildMess(Doctor doctor, Shift shift, LocalDate date, String step) {
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, 'ngày' d 'tháng' M, yyyy", new Locale("vi", "VN"));
         String formattedDate = date.format(formatter);
