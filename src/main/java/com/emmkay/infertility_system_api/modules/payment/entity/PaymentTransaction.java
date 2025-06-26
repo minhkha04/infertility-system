@@ -47,7 +47,7 @@ public class PaymentTransaction {
     @Column(name = "amount", nullable = false, precision = 15, scale = 2)
     private BigDecimal amount;
 
-    @Size(max = 50)
+
     @Column(name = "status", length = 50)
     @Enumerated(EnumType.STRING)
     private PaymentStatus status;

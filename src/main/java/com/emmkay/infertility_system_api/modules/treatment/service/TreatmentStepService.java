@@ -145,5 +145,4 @@ public class TreatmentStepService {
         treatmentStepMapper.updateTreatmentStep(treatmentStep, request);
         return treatmentStepMapper.toTreatmentStepResponse(treatmentStepRepository.save(treatmentStep));
     }
-
 }

@@ -31,18 +31,18 @@ public class PaymentEligibilityService {
         if (treatmentRecord.getStatus() == TreatmentRecordStatus.CANCELLED) {
             throw new AppException(ErrorCode.CANNOT_PAY);
         }
-
-        if (isReload) {
-            boolean hasSuccess = paymentTransactionRepository.existsByRecordAndStatus(treatmentRecord, PaymentStatus.SUCCESS);
-            if (hasSuccess) {
-                throw new AppException(ErrorCode.CANNOT_PAY);
-            }
-        } else {
-            boolean hasActiveTransaction = paymentTransactionRepository.existsByRecordAndStatusIn(treatmentRecord, List.of(PaymentStatus.SUCCESS, PaymentStatus.PENDING));
-            if (hasActiveTransaction) {
-                throw new AppException(ErrorCode.CANNOT_PAY);
+        boolean hasSuccess = paymentTransactionRepository.existsByRecordAndStatus(treatmentRecord, PaymentStatus.SUCCESS);
+        if (hasSuccess) {
+            throw new AppException(ErrorCode.PAYMENT_SUCCESS);
+        }
+        if (!isReload) {
+            boolean hasPending = paymentTransactionRepository.existsByRecordAndStatus(treatmentRecord, PaymentStatus.PENDING);
+            if (hasPending) {
+                throw new AppException(ErrorCode.PAYMENT_PENDING);
             }
         }
+
+
         return treatmentRecord;
     }
 }

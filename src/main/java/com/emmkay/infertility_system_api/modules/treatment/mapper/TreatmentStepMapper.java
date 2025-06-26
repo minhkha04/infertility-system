@@ -11,6 +11,7 @@ import org.mapstruct.MappingTarget;
 public interface TreatmentStepMapper {
 
     @Mapping(target = "name", source = "stage.name")
+    @Mapping(target = "orderIndex", source = "stage.orderIndex")
     TreatmentStepResponse toTreatmentStepResponse(TreatmentStep treatmentStep);
 
     void updateTreatmentStep(@MappingTarget TreatmentStep treatmentStep, TreatmentStepUpdateRequest request);

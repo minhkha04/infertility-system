@@ -48,7 +48,6 @@ public class TreatmentStep {
     @Column(name = "actual_date")
     private LocalDate actualDate;
 
-    @Size(max = 50)
     @Column(name = "status", length = 50)
     @Enumerated(EnumType.STRING)
     private TreatmentStepStatus status;

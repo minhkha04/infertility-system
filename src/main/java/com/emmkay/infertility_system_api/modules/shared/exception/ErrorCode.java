@@ -70,7 +70,8 @@ public enum ErrorCode {
     TREATMENT_CAN_NOT_DONE(1063, "Các lịch hẹn bước này chưa được hoàn thành", HttpStatus.BAD_REQUEST),
     BLOG_DO_NOT_HAS_IMAGE(1064, "Bài viết không có ảnh đại diện", HttpStatus.BAD_REQUEST),
     TREATMENT_NOT_PAID(1065, "Hồ sơ điều trị chưa được thanh toán", HttpStatus.BAD_REQUEST),
-    INVALID_APPOINTMENT_STATUS(1066, "Trạng thái lịch hẹn không hợp lệ", HttpStatus.BAD_REQUEST)
+    PAYMENT_SUCCESS(1066, "Hồ sơ điều trị này đã được thanh toán", HttpStatus.BAD_REQUEST),
+    PAYMENT_PENDING(1067, "Vui lòng thử lại sau 5 phút", HttpStatus.BAD_REQUEST)
     ;
 
     int code;

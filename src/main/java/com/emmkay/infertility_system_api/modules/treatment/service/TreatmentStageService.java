@@ -47,9 +47,9 @@ public class TreatmentStageService {
         return treatmentStageMapper.toTreatmentStageResponse(treatmentStageRepository.save(treatmentStage));
     }
 
-    public void deleteTreatmentStage(Long id) {
-        treatmentStageRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_STAGE_NOT_EXISTED));
-        treatmentStageRepository.deleteById(id);
-    }
+//    public void deleteTreatmentStage(Long id) {
+//        treatmentStageRepository.findById(id)
+//                .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_STAGE_NOT_EXISTED));
+//        treatmentStageRepository.deleteById(id);
+//    }
 }

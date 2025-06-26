@@ -54,7 +54,6 @@ public class Feedback {
     @JoinColumn(name = "approved_by")
     private User approvedBy;
 
-    @Size(max = 50)
     @Column(name = "status", length = 50)
     @Enumerated(EnumType.STRING)
     private FeedbackStatus status;

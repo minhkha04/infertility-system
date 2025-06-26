@@ -33,7 +33,6 @@ public class Blog {
     @Column(name = "content", nullable = false)
     private String content;
 
-    @Size(max = 50)
     @NotNull
     @Column(name = "status", nullable = false, length = 50)
     @Enumerated(EnumType.STRING)

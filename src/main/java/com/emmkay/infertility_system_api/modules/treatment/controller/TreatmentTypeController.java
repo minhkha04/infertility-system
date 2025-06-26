@@ -22,9 +22,12 @@ public class TreatmentTypeController {
     TreatmentTypeService treatmentTypeService;
 
     @GetMapping("")
-    public ApiResponse<List<TreatmentTypeResponse>> findAll() {
+    public ApiResponse<List<TreatmentTypeResponse>> findAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
         return ApiResponse.<List<TreatmentTypeResponse>>builder()
-                .result(treatmentTypeService.findAll())
+                .result(treatmentTypeService.findAll(page, size))
                 .build();
     }
 

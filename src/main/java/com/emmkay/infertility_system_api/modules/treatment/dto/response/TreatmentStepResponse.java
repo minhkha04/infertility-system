@@ -18,5 +18,5 @@ public class TreatmentStepResponse {
     LocalDate actualDate;
     String notes;
     TreatmentStepStatus status;
-
+    Integer orderIndex;
 }

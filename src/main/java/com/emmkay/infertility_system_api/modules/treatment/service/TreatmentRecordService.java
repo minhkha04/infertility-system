@@ -126,18 +126,19 @@ public class TreatmentRecordService {
                 .toTreatmentRecordResponse(treatmentRecord);
         treatmentRecordResponse.setTreatmentSteps(treatmentStepService.getStepsByRecordId(treatmentRecord.getId()));
         treatmentRecordResponse.setIsPaid(paymentTransactionService.isPaid(treatmentRecordId));
-        switch (scope.toUpperCase()) {
-            case "CUSTOMER":
+        RoleName roleName = RoleName.formString(scope);
+        switch (roleName) {
+            case CUSTOMER:
                 if (!treatmentRecord.getCustomer().getId().equals(currentUserId)) {
                     throw new AppException(ErrorCode.UNAUTHORIZED);
                 }
                 break;
-            case "DOCTOR":
+            case DOCTOR:
                 if (!treatmentRecord.getDoctor().getId().equals(currentUserId)) {
                     throw new AppException(ErrorCode.UNAUTHORIZED);
                 }
                 break;
-            case "MANAGER":
+            case MANAGER:
                 break;
             default:
                 throw new AppException(ErrorCode.UNAUTHORIZED);

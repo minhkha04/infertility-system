@@ -35,11 +35,12 @@ public class TreatmentStageController {
                 .build();
     }
 
-    @DeleteMapping("/{id}")
-    public ApiResponse<String> deleteTreatmentStage(@PathVariable Long id) {
-        treatmentStageService.deleteTreatmentStage(id);
-        return ApiResponse.<String>builder()
-                .result("Xóa giai đoạn điều trị thành công")
-                .build();
-    }
+//    TODO: add isRomoved field to TreatmentStage entity and implement delete method, and update logic add TreatmentStep
+//    @DeleteMapping("/{id}")
+//    public ApiResponse<String> deleteTreatmentStage(@PathVariable Long id) {
+//        treatmentStageService.deleteTreatmentStage(id);
+//        return ApiResponse.<String>builder()
+//                .result("Xóa giai đoạn điều trị thành công")
+//                .build();
+//    }
 }

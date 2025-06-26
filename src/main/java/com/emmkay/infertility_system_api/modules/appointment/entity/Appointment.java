@@ -58,7 +58,6 @@ public class Appointment {
     @JoinColumn(name = "treatment_step_id")
     private TreatmentStep treatmentStep;
 
-    @Size(max = 50)
     @Column(name = "status", length = 50)
     @Enumerated(EnumType.STRING)
     private AppointmentStatus status;
@@ -74,7 +73,6 @@ public class Appointment {
     @Column(name = "requested_date")
     private LocalDate requestedDate;
 
-    @Size(max = 20)
     @Column(name = "requested_shift", length = 20)
     @Enumerated(EnumType.STRING)
     private Shift requestedShift;
