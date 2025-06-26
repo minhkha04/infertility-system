@@ -2,6 +2,7 @@ package com.emmkay.infertility_system_api.modules.shared.exception;
 
 import com.emmkay.infertility_system_api.modules.shared.dto.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +17,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @Slf4j
 public class GlobalExceptionHandler {
     @ExceptionHandler(value = Exception.class)
-    ResponseEntity<ApiResponse<Void>> handleException(RuntimeException exception) {
+    ResponseEntity<ApiResponse<Void>> handleException(Exception exception) {
         log.error("Exception: {}", exception.getMessage());
         return ResponseEntity.status(ErrorCode.UNCATEGORIZED_EXCEPTION.getHttpStatus())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -54,7 +55,7 @@ public class GlobalExceptionHandler {
                 .getAllErrors()
                 .stream()
                 .findFirst()
-                .map(error -> error.getDefaultMessage())
+                .map(DefaultMessageSourceResolvable::getDefaultMessage)
                 .orElse("Validation error");
         return ResponseEntity.badRequest()
                 .contentType(MediaType.APPLICATION_JSON)

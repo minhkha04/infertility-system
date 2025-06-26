@@ -1,12 +1,15 @@
 package com.emmkay.infertility_system_api.modules.payment.controller;
 
+import com.emmkay.infertility_system_api.modules.payment.projection.PaymentInfoProjection;
 import com.emmkay.infertility_system_api.modules.payment.service.PaymentTransactionService;
 import com.emmkay.infertility_system_api.modules.shared.dto.response.ApiResponse;
 import com.emmkay.infertility_system_api.modules.payment.service.PaymentService;
+import com.emmkay.infertility_system_api.modules.shared.dto.response.PageResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
@@ -51,6 +54,16 @@ public class PaymentController {
     public  ApiResponse<Void> cancelled(@PathVariable Long recordId) {
         paymentTransactionService.cancelled(recordId);
         return ApiResponse.<Void>builder().build();
+    }
+
+    @GetMapping("/info")
+    public ApiResponse<PageResponse<PaymentInfoProjection>> getPaymentInfo(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Page<PaymentInfoProjection> result = paymentTransactionService.getPaymentInfo(page, size);
+        return ApiResponse.<PageResponse<PaymentInfoProjection>>builder()
+                .result(PageResponse.from(result))
+                .build();
     }
 
 }

@@ -35,7 +35,9 @@ public class UserController {
     }
 
     @PutMapping("/{userId}/upload-avatar")
-    public ApiResponse<UserResponse> uploadAvatar(@ModelAttribute @Valid UploadImageRequest request, @PathVariable  String userId) {
+    public ApiResponse<UserResponse> uploadAvatar(
+            @ModelAttribute @Valid UploadImageRequest request,
+            @PathVariable  String userId) {
         String imageUrl = cloudinaryService.uploadImage(request.getFile(), "avt", userId);
         return ApiResponse.<UserResponse>builder()
                 .result(userService.uploadAvatar(userId, imageUrl))

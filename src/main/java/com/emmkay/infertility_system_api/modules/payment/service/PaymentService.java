@@ -1,5 +1,6 @@
 package com.emmkay.infertility_system_api.modules.payment.service;
 
+import com.emmkay.infertility_system_api.modules.payment.projection.PaymentInfoProjection;
 import com.emmkay.infertility_system_api.modules.payment.strategy.PaymentStrategy;
 import com.emmkay.infertility_system_api.modules.payment.strategy.PaymentStrategyFactory;
 import com.emmkay.infertility_system_api.modules.shared.exception.AppException;
@@ -10,6 +11,9 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -37,10 +41,13 @@ public class PaymentService {
     }
 
     public String reloadPayment(String paymentMethod, Object request, Long recordId) {
+        String currentUserId = CurrentUserUtils.getCurrentUserId();
         PaymentStrategy strategy = paymentStrategyFactory.getStrategy(paymentMethod);
         TreatmentRecord treatmentRecord = paymentEligibilityService.isAvailable(recordId, true);
+        if (currentUserId == null || currentUserId.isBlank() || !treatmentRecord.getCustomer().getId().equalsIgnoreCase(currentUserId)) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
         return strategy.reloadPayment(request, treatmentRecord);
     }
-
 
 }

@@ -81,7 +81,9 @@ public class TreatmentServiceController {
     }
 
     @PostMapping("/{id}/upload-image")
-    public ApiResponse<TreatmentServiceResponse> uploadImage(@ModelAttribute @Valid UploadImageRequest request, @PathVariable  Long id) {
+    public ApiResponse<TreatmentServiceResponse> uploadImage(
+            @ModelAttribute @Valid UploadImageRequest request,
+            @PathVariable  Long id) {
         String imageUrl = cloudinaryService.uploadImage(request.getFile(), "service_img", String.valueOf(id));
         return ApiResponse.<TreatmentServiceResponse>builder()
                 .result(treatmentServiceService.uploadImage(id, imageUrl))

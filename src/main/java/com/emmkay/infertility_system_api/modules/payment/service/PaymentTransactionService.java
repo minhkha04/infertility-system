@@ -2,16 +2,22 @@ package com.emmkay.infertility_system_api.modules.payment.service;
 
 import com.emmkay.infertility_system_api.modules.payment.entity.PaymentTransaction;
 import com.emmkay.infertility_system_api.modules.payment.enums.PaymentStatus;
+import com.emmkay.infertility_system_api.modules.payment.projection.PaymentInfoProjection;
 import com.emmkay.infertility_system_api.modules.payment.repository.PaymentTransactionRepository;
 import com.emmkay.infertility_system_api.modules.payment.util.PaymentUtil;
 import com.emmkay.infertility_system_api.modules.shared.exception.AppException;
 import com.emmkay.infertility_system_api.modules.shared.exception.ErrorCode;
+import com.emmkay.infertility_system_api.modules.shared.security.CurrentUserUtils;
 import com.emmkay.infertility_system_api.modules.treatment.entity.TreatmentRecord;
 import com.emmkay.infertility_system_api.modules.treatment.repository.TreatmentRecordRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.config.PageableHandlerMethodArgumentResolverCustomizer;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -88,5 +94,14 @@ public class PaymentTransactionService {
 
     public boolean isPaid(Long recordId) {
         return paymentTransactionRepository.existsByRecordIdAndStatus(recordId, PaymentStatus.SUCCESS);
+    }
+
+    public Page<PaymentInfoProjection> getPaymentInfo(int page, int size) {
+        String currentUserId = CurrentUserUtils.getCurrentUserId();
+        if (currentUserId == null || currentUserId.isBlank()) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+        Pageable pageable = PageRequest.of(page, size);
+        return paymentTransactionRepository.searchPaymentInfo(currentUserId, pageable);
     }
 }
