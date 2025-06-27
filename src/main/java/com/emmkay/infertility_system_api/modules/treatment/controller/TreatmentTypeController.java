@@ -1,5 +1,6 @@
 package com.emmkay.infertility_system_api.modules.treatment.controller;
 
+import com.emmkay.infertility_system_api.modules.shared.dto.response.PageResponse;
 import com.emmkay.infertility_system_api.modules.treatment.dto.request.TreatmentTypeCreateRequest;
 import com.emmkay.infertility_system_api.modules.treatment.dto.request.TreatmentTypeUpdateRequest;
 import com.emmkay.infertility_system_api.modules.shared.dto.response.ApiResponse;
@@ -9,6 +10,7 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,12 +24,12 @@ public class TreatmentTypeController {
     TreatmentTypeService treatmentTypeService;
 
     @GetMapping("")
-    public ApiResponse<List<TreatmentTypeResponse>> findAll(
+    public ApiResponse<PageResponse<TreatmentTypeResponse>> findAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        return ApiResponse.<List<TreatmentTypeResponse>>builder()
-                .result(treatmentTypeService.findAll(page, size))
+        return ApiResponse.<PageResponse<TreatmentTypeResponse>>builder()
+                .result(PageResponse.from(treatmentTypeService.findAll(page, size)))
                 .build();
     }
 

@@ -16,6 +16,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -38,12 +39,10 @@ public class TreatmentTypeService {
     TreatmentStageMapper treatmentStageMapper;
     TreatmentStageRepository treatmentStageRepository;
 
-    public List<TreatmentTypeResponse> findAll(int page, int size) {
+    public Page<TreatmentTypeResponse> findAll(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         return treatmentTypeRepository.findAll(pageable)
-                .stream()
-                .map(treatmentTypeMapper::toTreatmentTypeResponse)
-                .toList();
+                .map(treatmentTypeMapper::toTreatmentTypeResponse);
     }
 
     @Transactional

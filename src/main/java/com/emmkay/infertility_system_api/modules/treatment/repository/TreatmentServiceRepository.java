@@ -26,7 +26,8 @@ public interface TreatmentServiceRepository extends JpaRepository<TreatmentServi
                     t.price AS price,
                     t.duration AS duration,
                     t.isRemove AS isRemove,
-                    t.coverImageUrl AS coverImageUrl
+                    t.coverImageUrl AS coverImageUrl,
+                    t.description AS description
                 FROM TreatmentService t
                 WHERE (:name IS NULL OR t.name LIKE CONCAT('%', :name, '%'))
                     AND (:isRemove IS NULL OR t.isRemove = :isRemove)

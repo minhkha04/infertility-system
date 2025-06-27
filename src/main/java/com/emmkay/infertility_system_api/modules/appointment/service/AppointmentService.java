@@ -100,6 +100,53 @@ public class AppointmentService {
         }
     }
 
+    private AppointmentResponse confirmChangeAppointment(Appointment appointment, UpdateAppointmentRequest request) {
+        validateCanChangeAppointment(appointment);
+        if (appointment.getStatus() != AppointmentStatus.PENDING_CHANGE) {
+            throw new AppException(ErrorCode.CAN_NOT_BE_UPDATED_STATUS);
+        }
+        switch (request.getStatus()) {
+            case CONFIRMED:
+                boolean isAvailable = isDoctorAvailable(appointment.getDoctor().getId(), appointment.getRequestedDate(), appointment.getRequestedShift());
+                if (!isAvailable) {
+                    throw new AppException(ErrorCode.DOCTOR_NOT_AVAILABLE);
+                }
+                reminderRepository.deleteByAppointment_Id(appointment.getId());
+                appointment.setAppointmentDate(appointment.getRequestedDate());
+                appointment.setShift(appointment.getRequestedShift());
+                reminderService.createReminderForAppointment(appointment);
+                break;
+            case REJECTED:
+                break;
+            default:
+                throw new AppException(ErrorCode.STATUS_IS_INVALID);
+        }
+        appointment.setRequestedDate(null);
+        appointment.setRequestedShift(null);
+        appointment.setStatus(request.getStatus());
+        appointment.setNotes(request.getNote());
+        return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
+    }
+
+    private AppointmentResponse cancelAppointment(Appointment appointment, UpdateAppointmentRequest request) {
+        validateCanChangeAppointment(appointment);
+        appointment.setStatus(AppointmentStatus.CANCELLED);
+        appointment.setNotes(request.getNote());
+        reminderRepository.deleteByAppointment_Id(appointment.getId());
+        return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
+    }
+
+    private AppointmentResponse changeAppointmentWithStatusCompleted(Appointment appointment, UpdateAppointmentRequest request) {
+        validateCanChangeAppointment(appointment);
+        LocalDate today = LocalDate.now();
+        if (!appointment.getAppointmentDate().equals(today)) {
+            throw new AppException(ErrorCode.CAN_NOT_BE_UPDATED_STATUS);
+        }
+        appointment.setStatus(request.getStatus());
+        appointment.setNotes(request.getNote());
+        return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
+    }
+
     public Page<AppointmentBasicProjection> searchAppointments(Long stepId, String customerId, String doctorId, LocalDate date, AppointmentStatus status, int page, int size) {
         String scope = CurrentUserUtils.getCurrentScope();
         if (scope == null || scope.isBlank()) {
@@ -146,18 +193,29 @@ public class AppointmentService {
         }
     }
 
+    @Transactional
     @PreAuthorize("hasRole('DOCTOR') or hasRole('MANAGER')")
-    public AppointmentResponse updateStatus(Long appointmentId, String status) {
+    public AppointmentResponse updateStatus(Long appointmentId, UpdateAppointmentRequest request) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new AppException(ErrorCode.APPOINTMENT_NOT_FOUND));
         if (appointment.getStatus() == AppointmentStatus.COMPLETED) {
             throw new AppException(ErrorCode.APPOINTMENT_IS_COMPLETED);
         }
-        appointment.setStatus(AppointmentStatus.from(status));
-        return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
+
+        switch (request.getStatus()) {
+            case CANCELLED -> {
+                return cancelAppointment(appointment, request);
+            }
+            case CONFIRMED, REJECTED -> {
+                return confirmChangeAppointment(appointment, request);
+            }
+            case COMPLETED -> {
+                return changeAppointmentWithStatusCompleted(appointment, request);
+            }
+            default -> throw new AppException(ErrorCode.STATUS_IS_INVALID);
+        }
     }
 
-    //auto generate
     public void createInitialAppointment(User customer,Doctor doctor, LocalDate date, Shift shift, TreatmentStep treatmentStep) {
         Appointment appointment = appointmentRepository.save(Appointment.builder()
                 .customer(customer)
@@ -171,32 +229,6 @@ public class AppointmentService {
         reminderService.createReminderForAppointment(appointment);
     }
 
-    public boolean isDoctorAvailable(String doctorId, LocalDate date, Shift shift) {
-        Doctor doctor = doctorRepository.findById(doctorId)
-                .orElse(null);
-        if (doctor.getUsers().getIsRemoved() || !doctor.getIsPublic()) {
-            return false;
-        }
-        Optional<WorkSchedule> workScheduleOpt = workScheduleRepository
-                .findByDoctorIdAndWorkDate(doctorId, date);
-
-
-        if (workScheduleOpt.isEmpty()) return false;
-        Shift actualShift = workScheduleOpt.get().getShift();
-
-        // Nếu bác sĩ không làm ca đó (không phải ca tương ứng và cũng không phải full_day)
-        if (actualShift != shift && actualShift != Shift.FULL_DAY) {
-            return false;
-        }
-
-        // Đếm số lịch trong ca cụ thể (morning hoặc afternoon)
-        int shiftAppointmentCount = appointmentRepository
-                .countActiveByDoctorIdAndDateAndShift(doctorId, date, shift);
-
-        return shiftAppointmentCount < 10;
-    }
-
-    //create appointment
     @PreAuthorize("hasRole('DOCTOR')")
     @Transactional
     public AppointmentResponse createAppointment(AppointmentCreateRequest req) {
@@ -239,7 +271,31 @@ public class AppointmentService {
         return appointmentMapper.toAppointmentResponse(appointment);
     }
 
-    //thay đổi lịch hẹn customer yêu cầu
+    public boolean isDoctorAvailable(String doctorId, LocalDate date, Shift shift) {
+        Doctor doctor = doctorRepository.findById(doctorId)
+                .orElse(null);
+        if (doctor.getUsers().getIsRemoved() || !doctor.getIsPublic()) {
+            return false;
+        }
+        Optional<WorkSchedule> workScheduleOpt = workScheduleRepository
+                .findByDoctorIdAndWorkDate(doctorId, date);
+
+
+        if (workScheduleOpt.isEmpty()) return false;
+        Shift actualShift = workScheduleOpt.get().getShift();
+
+        // Nếu bác sĩ không làm ca đó (không phải ca tương ứng và cũng không phải full_day)
+        if (actualShift != shift && actualShift != Shift.FULL_DAY) {
+            return false;
+        }
+
+        // Đếm số lịch trong ca cụ thể (morning hoặc afternoon)
+        int shiftAppointmentCount = appointmentRepository
+                .countActiveByDoctorIdAndDateAndShift(doctorId, date, shift);
+
+        return shiftAppointmentCount < 10;
+    }
+
     @Transactional
     public AppointmentResponse changeAppointmentForCustomer(Long appointmentId, ChangeAppointmentByCustomerRequest request) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
@@ -258,39 +314,6 @@ public class AppointmentService {
 
         appointmentMapper.requestChangeAppointment(appointment, request);
         appointment.setStatus(AppointmentStatus.PENDING_CHANGE);
-        return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
-    }
-
-    //confirm change appointment by doctor and manager
-    @PreAuthorize("hasRole('DOCTOR') or hasRole('MANAGER')")
-    @Transactional
-    public AppointmentResponse confirmChangeAppointment(Long id, ConfirmChangeAppointmentRequest request) {
-        Appointment appointment = appointmentRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.APPOINTMENT_NOT_FOUND));
-        validateCanChangeAppointment(appointment);
-        if (appointment.getStatus() != AppointmentStatus.PENDING_CHANGE) {
-            throw new AppException(ErrorCode.CAN_NOT_BE_UPDATED_STATUS);
-        }
-        switch (request.getStatus()) {
-            case CONFIRMED:
-                boolean isAvailable = isDoctorAvailable(appointment.getDoctor().getId(), appointment.getRequestedDate(), appointment.getRequestedShift());
-                if (!isAvailable) {
-                    throw new AppException(ErrorCode.DOCTOR_NOT_AVAILABLE);
-                }
-                reminderRepository.deleteByAppointment_Id(appointment.getId());
-                appointment.setAppointmentDate(appointment.getRequestedDate());
-                appointment.setShift(appointment.getRequestedShift());
-                reminderService.createReminderForAppointment(appointment);
-                break;
-            case REJECTED:
-                appointment.setNotes(request.getNotes());
-                break;
-            default:
-                throw new AppException(ErrorCode.STATUS_IS_INVALID);
-        }
-        appointment.setRequestedDate(null);
-        appointment.setRequestedShift(null);
-        appointment.setStatus(request.getStatus());
         return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
     }
 
@@ -316,17 +339,6 @@ public class AppointmentService {
         appointment.setStatus(AppointmentStatus.CONFIRMED);
         reminderRepository.deleteByAppointment_Id(appointment.getId());
         reminderService.createReminderForAppointment(appointment);
-        return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
-    }
-
-    @PreAuthorize("hasRole('DOCTOR') or hasRole('MANAGER')")
-    public AppointmentResponse cancelAppointment(AppointmentCancelRequest request) {
-        Appointment appointment = appointmentRepository.findById(request.getAppointmentId())
-                .orElseThrow(() -> new AppException(ErrorCode.APPOINTMENT_NOT_FOUND));
-        validateCanChangeAppointment(appointment);
-        appointment.setStatus(AppointmentStatus.CANCELLED);
-        appointment.setNotes(request.getNote());
-        reminderRepository.deleteByAppointment_Id(request.getAppointmentId());
         return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
     }
 }

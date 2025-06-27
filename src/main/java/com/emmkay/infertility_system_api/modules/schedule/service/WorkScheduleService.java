@@ -6,6 +6,7 @@ import com.emmkay.infertility_system_api.modules.schedule.dto.request.WorkSchedu
 import com.emmkay.infertility_system_api.modules.schedule.dto.response.WorkScheduleResponse;
 import com.emmkay.infertility_system_api.modules.doctor.entity.Doctor;
 import com.emmkay.infertility_system_api.modules.schedule.projection.WorkScheduleDateShiftProjection;
+import com.emmkay.infertility_system_api.modules.shared.security.CurrentUserUtils;
 import com.emmkay.infertility_system_api.modules.user.entity.User;
 import com.emmkay.infertility_system_api.modules.schedule.entity.WorkSchedule;
 import com.emmkay.infertility_system_api.modules.shared.exception.AppException;
@@ -88,11 +89,15 @@ public class WorkScheduleService {
         YearMonth yearMonth = YearMonth.parse(request.getMonth()); // "2025-06"
         LocalDate start = yearMonth.atDay(1);
         LocalDate end = yearMonth.atEndOfMonth();
+        String currentUserId = CurrentUserUtils.getCurrentUserId();
+        if (currentUserId == null || currentUserId.isBlank()) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
 
         Doctor doctor = doctorRepository.findById(request.getDoctorId())
                 .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_NOT_EXISTED));
 
-        User manager = userRepository.findById(request.getCreatedBy())
+        User manager = userRepository.findById(currentUserId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         workScheduleRepository.deleteSchedulesByDoctorIdAndMonth(doctor.getId(), start, end);
@@ -101,7 +106,7 @@ public class WorkScheduleService {
         for (LocalDate date = start; !date.isAfter(end); date = date.plusDays(1)) {
             String weekday = date.getDayOfWeek().name(); // "MONDAY"
 
-            for (BulkWorkScheduleRequest.ShiftRule rule : request.getRules()) {
+            for (BulkWorkScheduleRequest.ShiftRule rule : request.getShiftRules()) {
                 if (rule.getWeekday().equalsIgnoreCase(weekday)) {
 
                     WorkSchedule schedule = WorkSchedule.builder()
