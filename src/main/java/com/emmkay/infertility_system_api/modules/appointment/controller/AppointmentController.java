@@ -7,7 +7,6 @@ import com.emmkay.infertility_system_api.modules.appointment.dto.request.*;
 import com.emmkay.infertility_system_api.modules.appointment.dto.response.AppointmentResponse;
 import com.emmkay.infertility_system_api.modules.appointment.service.AppointmentService;
 import com.emmkay.infertility_system_api.modules.shared.dto.response.PageResponse;
-import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -67,15 +66,6 @@ public class AppointmentController {
                 .build();
     }
 
-    @PutMapping("/{appointmentId}/confirm-appointment")
-    public ApiResponse<AppointmentResponse> confirmChangeAppointment(
-            @PathVariable Long appointmentId,
-            @RequestBody @Valid ConfirmChangeAppointmentRequest request) {
-        return ApiResponse.<AppointmentResponse>builder()
-                .result(appointmentService.confirmChangeAppointment(appointmentId, request))
-                .build();
-    }
-
     @PutMapping("/{appointmentId}/doctor-or-manager-change")
     public ApiResponse<AppointmentResponse> managerOrDoctorChangeAppointment(@PathVariable Long appointmentId, @RequestBody @Valid ChangeAppointmentByDoctorOrManagerRequest request) {
         return ApiResponse.<AppointmentResponse>builder()
@@ -84,18 +74,12 @@ public class AppointmentController {
     }
 
     @PutMapping("/{appointmentId}/status")
-    public ApiResponse<AppointmentResponse> updateAppointmentStatus(@PathVariable Long appointmentId, @RequestParam String status) {
+    public ApiResponse<AppointmentResponse> updateAppointmentStatus(
+            @PathVariable Long appointmentId,
+            @RequestBody UpdateAppointmentRequest request) {
         return ApiResponse.<AppointmentResponse>builder()
-                .result(appointmentService.updateStatus(appointmentId, status))
+                .result(appointmentService.updateStatus(appointmentId, request))
                 .build();
     }
 
-    @Operation(summary = "for doctor or manager cancel appointment")
-    @PutMapping("/cancel")
-    public ApiResponse<AppointmentResponse> cancelAppointment(
-            @RequestBody @Valid AppointmentCancelRequest request) {
-        return ApiResponse.<AppointmentResponse>builder()
-                .result(appointmentService.cancelAppointment(request))
-                .build();
-    }
 }

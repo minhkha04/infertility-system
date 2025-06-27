@@ -41,7 +41,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
                        a.customer.fullName AS customerName,
                        a.doctor.users.fullName AS doctorName,
                        a.appointmentDate AS appointmentDate,
-                       shift AS shift,
+                       a.shift AS shift,
                        a.status AS status
                 FROM Appointment a
                 WHERE
@@ -49,7 +49,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
                        AND (:doctorId IS NULL OR a.doctor.id = :doctorId)
                        AND (:date IS NULL OR a.appointmentDate = :date)
                        AND (:status IS NULL OR a.status = :status)
-                       AND (:stepId IS NULL OR a.status = :stepId)
+                       AND (:stepId IS NULL OR a.treatmentStep.id = :stepId)
                 ORDER BY a.appointmentDate DESC
             """)
     Page<AppointmentBasicProjection> searchAppointments(Long stepId, String customerId, String doctorId, LocalDate date, AppointmentStatus status, Pageable pageable);

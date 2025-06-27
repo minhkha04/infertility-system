@@ -47,7 +47,7 @@ public class Appointment {
     @Column(name = "appointment_date", nullable = false)
     private LocalDate appointmentDate;
 
-    @Size(max = 20)
+
     @NotNull
     @Column(name = "shift", nullable = false, length = 20)
     @Enumerated(EnumType.STRING)

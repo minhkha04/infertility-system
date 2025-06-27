@@ -7,4 +7,5 @@ public interface TreatmentServiceBasicProjection {
     Integer getDuration();
     Boolean getIsRemove();
     String getCoverImageUrl();
+    String getDescription();
 }

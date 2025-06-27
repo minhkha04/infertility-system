@@ -20,8 +20,7 @@ public class BulkWorkScheduleRequest {
     @NotBlank(message = "{validation.required}")
     String month; // yyyy-MM
     @Valid
-    List<ShiftRule> rules;
-    String createdBy;
+    List<ShiftRule> shiftRules;
 
     @Data
     @NoArgsConstructor

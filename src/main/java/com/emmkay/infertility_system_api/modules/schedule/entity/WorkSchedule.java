@@ -37,7 +37,6 @@ public class WorkSchedule {
     @Column(name = "work_date", nullable = false)
     private LocalDate workDate;
 
-    @Size(max = 20)
     @NotNull
     @Column(name = "shift", nullable = false, length = 20)
     @Enumerated(EnumType.STRING)
