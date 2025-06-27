@@ -13,7 +13,6 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -41,8 +40,6 @@ public class PaymentEligibilityService {
                 throw new AppException(ErrorCode.PAYMENT_PENDING);
             }
         }
-
-
         return treatmentRecord;
     }
 }
