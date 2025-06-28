@@ -1,6 +1,7 @@
 package com.emmkay.infertility_system_api.modules.payment.controller;
 
 import com.emmkay.infertility_system_api.modules.payment.dto.request.MomoIpnRequest;
+import com.emmkay.infertility_system_api.modules.payment.enums.PaymentMethod;
 import com.emmkay.infertility_system_api.modules.payment.service.PaymentService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AccessLevel;
@@ -19,13 +20,13 @@ public class PaymentCallbackController {
 
     @GetMapping("/vnpay")
     public ResponseEntity<String> handleVnPayIpn(HttpServletRequest request) {
-        boolean success = paymentService.processReturnUrl("VNPAY", request);
+        boolean success = paymentService.processReturnUrl(PaymentMethod.VNPAY, request);
         return ResponseEntity.ok(success ? "00" : "99");
     }
 
     @PostMapping("/momo")
     public ResponseEntity<String> handleMomoIpn(@RequestBody MomoIpnRequest request) {
-        boolean success = paymentService.processReturnUrl("MOMO", request);
+        boolean success = paymentService.processReturnUrl(PaymentMethod.MOMO, request);
         return ResponseEntity.ok(success ? "0" : "1");
     }
 }

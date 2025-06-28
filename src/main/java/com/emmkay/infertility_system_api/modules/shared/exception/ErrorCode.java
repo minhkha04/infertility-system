@@ -71,7 +71,8 @@ public enum ErrorCode {
     BLOG_DO_NOT_HAS_IMAGE(1064, "Bài viết không có ảnh đại diện", HttpStatus.BAD_REQUEST),
     TREATMENT_NOT_PAID(1065, "Hồ sơ điều trị chưa được thanh toán", HttpStatus.BAD_REQUEST),
     PAYMENT_SUCCESS(1066, "Hồ sơ điều trị này đã được thanh toán", HttpStatus.BAD_REQUEST),
-    PAYMENT_PENDING(1067, "Vui lòng thử lại sau 5 phút", HttpStatus.BAD_REQUEST)
+    PAYMENT_PENDING(1067, "Vui lòng thử lại sau 5 phút", HttpStatus.BAD_REQUEST),
+    UNSUPPORTED_OAUTH_PROVIDER(1068, "Nhà cung cấp OAuth không được hỗ trợ", HttpStatus.BAD_REQUEST)
     ;
 
     int code;

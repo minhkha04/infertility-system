@@ -1,5 +1,6 @@
 package com.emmkay.infertility_system_api.modules.payment.service;
 
+import com.emmkay.infertility_system_api.modules.payment.enums.PaymentMethod;
 import com.emmkay.infertility_system_api.modules.payment.projection.PaymentInfoProjection;
 import com.emmkay.infertility_system_api.modules.payment.strategy.PaymentStrategy;
 import com.emmkay.infertility_system_api.modules.payment.strategy.PaymentStrategyFactory;
@@ -25,7 +26,7 @@ public class PaymentService {
     PaymentStrategyFactory paymentStrategyFactory;
     PaymentEligibilityService paymentEligibilityService;
 
-    public String createPayment(String paymentMethod, Object request, Long recordId) {
+    public String createPayment(PaymentMethod paymentMethod, Object request, Long recordId) {
         String currentUserId = CurrentUserUtils.getCurrentUserId();
         TreatmentRecord treatmentRecord = paymentEligibilityService.isAvailable(recordId, false);
         if (currentUserId == null || currentUserId.isBlank() || !treatmentRecord.getCustomer().getId().equalsIgnoreCase(currentUserId)) {
@@ -35,12 +36,12 @@ public class PaymentService {
         return strategy.createPayment(request, treatmentRecord);
     }
 
-    public boolean processReturnUrl(String method, Object object) {
+    public boolean processReturnUrl(PaymentMethod method, Object object) {
         PaymentStrategy strategy = paymentStrategyFactory.getStrategy(method);
         return strategy.handleIpn(object);
     }
 
-    public String reloadPayment(String paymentMethod, Object request, Long recordId) {
+    public String reloadPayment(PaymentMethod paymentMethod, Object request, Long recordId) {
         String currentUserId = CurrentUserUtils.getCurrentUserId();
         PaymentStrategy strategy = paymentStrategyFactory.getStrategy(paymentMethod);
         TreatmentRecord treatmentRecord = paymentEligibilityService.isAvailable(recordId, true);

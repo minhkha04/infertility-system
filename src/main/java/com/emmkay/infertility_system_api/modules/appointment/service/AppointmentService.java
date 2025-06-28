@@ -60,7 +60,7 @@ public class AppointmentService {
 
     private void validateAppointmentAvailableForChange(Appointment appointment, LocalDate dateChange, Shift shiftChange) {
         // Chỉ cho đổi trong 14 ngày tới
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh"));
         if (dateChange.isBefore(today) || dateChange.isAfter(today.plusDays(14))) {
             throw new AppException(ErrorCode.DATE_OUT_OF_RANGE);
         }
@@ -142,8 +142,6 @@ public class AppointmentService {
     private AppointmentResponse changeAppointmentWithStatusCompleted(Appointment appointment, UpdateAppointmentRequest request) {
         validateCanChangeAppointment(appointment);
         LocalDate today = LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh"));
-        log.info("Today: {}", today);
-        log.info("Appointment date: {}", appointment.getAppointmentDate());
         if (!appointment.getAppointmentDate().equals(today)) {
             throw new AppException(ErrorCode.CAN_NOT_BE_UPDATED_STATUS);
         }
@@ -229,7 +227,7 @@ public class AppointmentService {
                 .shift(shift)
                 .treatmentStep(treatmentStep)
                 .status(AppointmentStatus.CONFIRMED)
-                .createdAt(LocalDate.now())
+                .createdAt(LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh")))
                 .build());
         reminderService.createReminderForAppointment(appointment);
     }
@@ -244,7 +242,7 @@ public class AppointmentService {
         TreatmentStep step = treatmentStepRepository.findById(req.getTreatmentStepId())
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_TYPE_NOT_EXISTED));
 
-        if (!req.getAppointmentDate().isAfter(LocalDate.now())) {
+        if (!req.getAppointmentDate().isAfter(LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh")))) {
             throw new AppException(ErrorCode.INVALID_START_DATE);
         }
 
@@ -269,7 +267,7 @@ public class AppointmentService {
         appointment.setDoctor(doctor);
         appointment.setTreatmentStep(step);
         appointment.setStatus(AppointmentStatus.CONFIRMED);
-        appointment.setCreatedAt(LocalDate.now());
+        appointment.setCreatedAt(LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh")));
         appointment.setCustomer(customer);
         appointment = appointmentRepository.save(appointment);
         reminderService.createReminderForAppointment(appointment);
@@ -313,7 +311,7 @@ public class AppointmentService {
             throw new AppException(ErrorCode.APPOINTMENT_NOT_CHANGE);
         }
 
-        if (request.getRequestedDate().isBefore(LocalDate.now().plusDays(1))) {
+        if (request.getRequestedDate().isBefore(LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh")).plusDays(1))) {
             throw new AppException(ErrorCode.INVALID_START_DATE);
         }
 
@@ -334,7 +332,7 @@ public class AppointmentService {
                 || appointment.getTreatmentStep().getStatus() == TreatmentStepStatus.CANCELLED) {
             throw new AppException(ErrorCode.APPOINTMENT_NOT_CHANGE);
         }
-        if (request.getAppointmentDate().isBefore(LocalDate.now().plusDays(1))) {
+        if (request.getAppointmentDate().isBefore(LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh")).plusDays(1))) {
             throw new AppException(ErrorCode.INVALID_START_DATE);
         }
 

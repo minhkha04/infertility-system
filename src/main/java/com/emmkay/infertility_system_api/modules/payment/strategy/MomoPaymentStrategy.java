@@ -9,6 +9,7 @@ import com.emmkay.infertility_system_api.modules.payment.dto.request.MomoIpnRequ
 import com.emmkay.infertility_system_api.modules.payment.dto.response.MomoConfirmResponse;
 import com.emmkay.infertility_system_api.modules.payment.dto.response.MomoCreateResponse;
 import com.emmkay.infertility_system_api.modules.payment.entity.PaymentTransaction;
+import com.emmkay.infertility_system_api.modules.payment.enums.PaymentMethod;
 import com.emmkay.infertility_system_api.modules.payment.enums.PaymentStatus;
 import com.emmkay.infertility_system_api.modules.payment.helper.QrCodeHelper;
 import com.emmkay.infertility_system_api.modules.payment.repository.PaymentTransactionRepository;
@@ -82,7 +83,7 @@ public class MomoPaymentStrategy implements PaymentStrategy {
 
     @Override
     public String createPayment(Object request, TreatmentRecord treatmentRecord) {
-        PaymentTransaction paymentTransaction = paymentTransactionService.createTransaction(treatmentRecord, "MOMO", 5);
+        PaymentTransaction paymentTransaction = paymentTransactionService.createTransaction(treatmentRecord, PaymentMethod.MOMO, 5);
         MomoCreateRequest momoCreateRequest = momoRequestBuilder.buildMomoRequest(paymentTransaction, UUID.randomUUID().toString());
         MomoCreateResponse momoCreateResponse = createMomoQrSafe(momoCreateRequest);
         String url = momoCreateResponse.getQrCodeUrl();
@@ -136,13 +137,13 @@ public class MomoPaymentStrategy implements PaymentStrategy {
     }
 
     @Override
-    public String getPaymentMethod() {
-        return "MOMO";
+    public PaymentMethod getPaymentMethod() {
+        return PaymentMethod.MOMO;
     }
 
     @Override
     public String reloadPayment(Object request, TreatmentRecord treatmentRecord) {
-        PaymentTransaction paymentTransaction = paymentTransactionService.reloadTransaction(treatmentRecord, "MOMO", 5);
+        PaymentTransaction paymentTransaction = paymentTransactionService.reloadTransaction(treatmentRecord, PaymentMethod.MOMO, 5);
         MomoCreateRequest momoCreateRequest = momoRequestBuilder.buildMomoRequest(paymentTransaction, UUID.randomUUID().toString());
         MomoCreateResponse momoCreateResponse = createMomoQrSafe(momoCreateRequest);
         String url = momoCreateResponse.getQrCodeUrl();

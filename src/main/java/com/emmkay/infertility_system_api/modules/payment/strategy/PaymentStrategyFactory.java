@@ -1,5 +1,6 @@
 package com.emmkay.infertility_system_api.modules.payment.strategy;
 
+import com.emmkay.infertility_system_api.modules.payment.enums.PaymentMethod;
 import com.emmkay.infertility_system_api.modules.shared.exception.AppException;
 import com.emmkay.infertility_system_api.modules.shared.exception.ErrorCode;
 import lombok.AccessLevel;
@@ -15,9 +16,9 @@ import java.util.List;
 public class PaymentStrategyFactory {
     List<PaymentStrategy> strategies;
 
-    public PaymentStrategy getStrategy(String paymentMethod) {
+    public PaymentStrategy getStrategy(PaymentMethod paymentMethod) {
         return strategies.stream()
-                .filter(s -> s.getPaymentMethod().equalsIgnoreCase(paymentMethod))
+                .filter(s -> s.getPaymentMethod().equals(paymentMethod))
                 .findFirst()
                 .orElseThrow(() -> new AppException(ErrorCode.PAYMENT_METHOD_NOT_SUPPORTED));
     }
