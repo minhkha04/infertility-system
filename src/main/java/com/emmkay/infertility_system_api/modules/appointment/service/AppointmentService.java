@@ -29,6 +29,7 @@ import com.emmkay.infertility_system_api.modules.reminder.service.ReminderServic
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -38,8 +39,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -138,7 +141,9 @@ public class AppointmentService {
 
     private AppointmentResponse changeAppointmentWithStatusCompleted(Appointment appointment, UpdateAppointmentRequest request) {
         validateCanChangeAppointment(appointment);
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh"));
+        log.info("Today: {}", today);
+        log.info("Appointment date: {}", appointment.getAppointmentDate());
         if (!appointment.getAppointmentDate().equals(today)) {
             throw new AppException(ErrorCode.CAN_NOT_BE_UPDATED_STATUS);
         }
