@@ -38,6 +38,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Optional;
 
 @Service
@@ -57,7 +58,7 @@ public class AppointmentService {
 
     private void validateAppointmentAvailableForChange(Appointment appointment, LocalDate dateChange, Shift shiftChange) {
         // Chỉ cho đổi trong 14 ngày tới
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh"));
         if (dateChange.isBefore(today) || dateChange.isAfter(today.plusDays(14))) {
             throw new AppException(ErrorCode.DATE_OUT_OF_RANGE);
         }

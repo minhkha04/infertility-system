@@ -24,7 +24,7 @@ import java.util.UUID;
 @Component
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class JwtHelper {
+public class JwtProvider {
 
     @NonFinal
     @Value("${jwt.signerKey}")
@@ -36,7 +36,7 @@ public class JwtHelper {
             // Create JWT claims set
             JWTClaimsSet jwsClaimSet = new JWTClaimsSet.Builder()
                     .subject(user.getId())
-                    .issuer("emkay.unaux.com")
+                    .issuer("techleaf.pro")
                     .issueTime(new Date())
                     .expirationTime(new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000))
                     .claim("scope", user.getRoleName().getName())

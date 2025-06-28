@@ -1,5 +1,6 @@
 package com.emmkay.infertility_system_api.modules.authentication.controller;
 
+import com.emmkay.infertility_system_api.modules.authentication.enums.OAuthProvider;
 import com.emmkay.infertility_system_api.modules.authentication.strategy.OAuthStrategy;
 import com.emmkay.infertility_system_api.modules.shared.dto.response.ApiResponse;
 import com.emmkay.infertility_system_api.modules.authentication.dto.request.*;
@@ -46,10 +47,13 @@ public class AuthenticationController {
                 .build();
     }
 
-    @PostMapping("/login/google/{accessToken}")
-    public ApiResponse<AuthenticationResponse> loginWithOAuth(@PathVariable String accessToken) {
+    @PostMapping("/login/{accessToken}")
+    public ApiResponse<AuthenticationResponse> loginWithOAuth(
+            @RequestParam OAuthProvider provider,
+            @PathVariable String accessToken
+    ) {
         return ApiResponse.<AuthenticationResponse>builder()
-                .result(authenticationService.loginGoogle(accessToken))
+                .result(authenticationService.loginWithOAuth(accessToken, provider))
                 .build();
     }
 

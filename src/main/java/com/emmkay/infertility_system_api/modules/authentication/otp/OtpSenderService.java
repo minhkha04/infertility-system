@@ -1,4 +1,4 @@
-package com.emmkay.infertility_system_api.modules.authentication.helper;
+package com.emmkay.infertility_system_api.modules.authentication.otp;
 
 import com.emmkay.infertility_system_api.modules.authentication.entity.EmailOtp;
 import com.emmkay.infertility_system_api.modules.authentication.repository.EmailOtpRepository;
@@ -14,7 +14,8 @@ import java.util.Random;
 @Component
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class OtpHelper {
+public class OtpSenderService {
+
     EmailOtpRepository emailOtpRepository;
     EmailService emailService;
 
@@ -60,6 +61,4 @@ public class OtpHelper {
                 """.formatted(type, otp);
         emailService.sendEmail(email, subject, htmlContent);
     }
-
-
 }
