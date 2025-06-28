@@ -1,5 +1,6 @@
 package com.emmkay.infertility_system_api.modules.payment.entity;
 
+import com.emmkay.infertility_system_api.modules.payment.enums.PaymentMethod;
 import com.emmkay.infertility_system_api.modules.payment.enums.PaymentStatus;
 import com.emmkay.infertility_system_api.modules.treatment.entity.TreatmentRecord;
 import com.emmkay.infertility_system_api.modules.treatment.entity.TreatmentService;
@@ -39,9 +40,9 @@ public class PaymentTransaction {
     @JoinColumn(name = "customer_id", nullable = false)
     private User customer;
 
-    @Size(max = 50)
     @Column(name = "payment_method", length = 50)
-    private String paymentMethod;
+    @Enumerated(EnumType.STRING)
+    private PaymentMethod paymentMethod;
 
     @NotNull
     @Column(name = "amount", nullable = false, precision = 15, scale = 2)

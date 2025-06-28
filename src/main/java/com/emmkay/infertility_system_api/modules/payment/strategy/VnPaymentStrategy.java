@@ -3,9 +3,9 @@ package com.emmkay.infertility_system_api.modules.payment.strategy;
 import com.emmkay.infertility_system_api.modules.payment.builder.VnPayRedirectUrlBuilder;
 import com.emmkay.infertility_system_api.modules.payment.configuration.VnPayConfig;
 import com.emmkay.infertility_system_api.modules.payment.entity.PaymentTransaction;
+import com.emmkay.infertility_system_api.modules.payment.enums.PaymentMethod;
 import com.emmkay.infertility_system_api.modules.payment.enums.PaymentStatus;
 import com.emmkay.infertility_system_api.modules.payment.repository.PaymentTransactionRepository;
-import com.emmkay.infertility_system_api.modules.payment.service.PaymentEligibilityService;
 import com.emmkay.infertility_system_api.modules.payment.service.PaymentTransactionService;
 import com.emmkay.infertility_system_api.modules.payment.util.VnPaySignatureUtil;
 import com.emmkay.infertility_system_api.modules.treatment.entity.TreatmentRecord;
@@ -30,7 +30,6 @@ public class VnPaymentStrategy implements PaymentStrategy {
 
     VnPayConfig vnPayConfig;
     VnPaySignatureUtil vnPaySignatureUtil;
-    PaymentEligibilityService paymentEligibilityService;
     PaymentTransactionService paymentTransactionService;
     VnPayRedirectUrlBuilder vnPayRedirectUrlBuilder;
     PaymentTransactionRepository paymentTransactionRepository;
@@ -44,7 +43,7 @@ public class VnPaymentStrategy implements PaymentStrategy {
             log.error("Error when create payment url: {}", e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
-        PaymentTransaction paymentTransaction = paymentTransactionService.createTransaction(treatmentRecord, "VNPAY", 5);
+        PaymentTransaction paymentTransaction = paymentTransactionService.createTransaction(treatmentRecord, PaymentMethod.VNPAY, 5);
 
         return vnPayRedirectUrlBuilder.buildRedirectUrl(paymentTransaction, req);
     }
@@ -55,10 +54,10 @@ public class VnPaymentStrategy implements PaymentStrategy {
         try {
             HttpServletRequest request = (HttpServletRequest) object;
 
-            Map fields = new HashMap();
-            for (Enumeration params = request.getParameterNames(); params.hasMoreElements();) {
-                String fieldName = URLEncoder.encode((String) params.nextElement(), StandardCharsets.US_ASCII.toString());
-                String fieldValue = URLEncoder.encode(request.getParameter(fieldName), StandardCharsets.US_ASCII.toString());
+            Map<String, String> fields = new HashMap<>();
+            for (Enumeration<String> params = request.getParameterNames(); params.hasMoreElements();) {
+                String fieldName = URLEncoder.encode( params.nextElement(), StandardCharsets.US_ASCII);
+                String fieldValue = URLEncoder.encode(request.getParameter(fieldName), StandardCharsets.US_ASCII);
                 if ((fieldValue != null) && (fieldValue.length() > 0)) {
                     fields.put(fieldName, fieldValue);
                 }
@@ -97,8 +96,8 @@ public class VnPaymentStrategy implements PaymentStrategy {
     }
 
     @Override
-    public String getPaymentMethod() {
-        return "VNPAY";
+    public PaymentMethod getPaymentMethod() {
+        return PaymentMethod.VNPAY;
     }
 
     @Override

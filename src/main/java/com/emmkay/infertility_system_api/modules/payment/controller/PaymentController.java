@@ -1,5 +1,6 @@
 package com.emmkay.infertility_system_api.modules.payment.controller;
 
+import com.emmkay.infertility_system_api.modules.payment.enums.PaymentMethod;
 import com.emmkay.infertility_system_api.modules.payment.projection.PaymentInfoProjection;
 import com.emmkay.infertility_system_api.modules.payment.service.PaymentTransactionService;
 import com.emmkay.infertility_system_api.modules.shared.dto.response.ApiResponse;
@@ -24,12 +25,12 @@ public class PaymentController {
     @PostMapping("/vnpay/create/{recordId}")
     public ApiResponse<String> url(HttpServletRequest request, @PathVariable Long recordId) {
         return ApiResponse.<String>builder()
-                .result(paymentService.createPayment("VNPAY", request, recordId)).build();
+                .result(paymentService.createPayment(PaymentMethod.VNPAY, request, recordId)).build();
     }
 
     @PostMapping("/momo/create/{recordId}")
     public ApiResponse<String> createQrMomo(@PathVariable Long recordId) {
-        String result = paymentService.createPayment("MOMO", null, recordId);
+        String result = paymentService.createPayment(PaymentMethod.MOMO, null, recordId);
         return ApiResponse.<String>builder()
                 .result(result)
                 .build();
@@ -37,7 +38,7 @@ public class PaymentController {
 
     @PostMapping("/momo/reload/{recordId}")
     public ApiResponse<String> reloadMomo(@PathVariable Long recordId) {
-        String result = paymentService.reloadPayment("MOMO", null, recordId);
+        String result = paymentService.reloadPayment(PaymentMethod.MOMO, null, recordId);
         return ApiResponse.<String>builder()
                 .result(result)
                 .build();

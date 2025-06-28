@@ -50,6 +50,7 @@ public class CloudinaryService {
             throw new AppException(ErrorCode.UPLOAD_IMAGE_FAILED);
         }
     }
+
     public void validateImageFile(MultipartFile file) {
         String originalFilename = file.getOriginalFilename();
         String contentType = file.getContentType();
@@ -64,6 +65,7 @@ public class CloudinaryService {
             throw new AppException(ErrorCode.INVALID_IMAGE_FILE);
         }
     }
+
     public File convertToPng(MultipartFile file) throws IOException {
         BufferedImage originalImage = ImageIO.read(file.getInputStream());
         if (originalImage == null) {

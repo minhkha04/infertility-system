@@ -11,7 +11,7 @@ import com.emmkay.infertility_system_api.modules.user.entity.Role;
 import com.emmkay.infertility_system_api.modules.user.entity.User;
 import com.emmkay.infertility_system_api.modules.shared.exception.AppException;
 import com.emmkay.infertility_system_api.modules.shared.exception.ErrorCode;
-import com.emmkay.infertility_system_api.modules.authentication.helper.GoogleTokenHelper;
+import com.emmkay.infertility_system_api.modules.authentication.helper.GoogleLoginHelper;
 import com.emmkay.infertility_system_api.modules.shared.security.JwtHelper;
 import com.emmkay.infertility_system_api.modules.authentication.helper.OtpHelper;
 import com.emmkay.infertility_system_api.modules.user.mapper.UserMapper;
@@ -27,7 +27,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.text.Normalizer;
 import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -45,7 +44,7 @@ public class AuthenticationService {
     PasswordEncoder passwordEncoder;
     OtpHelper otpHelper;
     JwtHelper jwtHelper;
-    GoogleTokenHelper googleTokenHelper;
+    GoogleLoginHelper googleTokenHelper;
 
     private void validateUserIsActiveAndVerified(User user) {
         if (user.getIsRemoved()) {
@@ -83,13 +82,18 @@ public class AuthenticationService {
     }
 
     public AuthenticationResponse loginGoogle(GoogleLoginRequest request) {
+        log.info("Token: {}", request.getIdToken());
+
         GoogleIdToken.Payload payload = googleTokenHelper.verifyToken(request.getIdToken());
         String name = (String) payload.get("name");
         String email = payload.getEmail();
+        String picture = (String) payload.get("picture");
         Optional<User> existingUserOpt = userRepository.findByEmail(email);
         User user;
         if (existingUserOpt.isPresent()) {
             user = existingUserOpt.get();
+            user.setAvatarUrl(picture);
+            userRepository.save(user);
             validateUserIsActiveAndVerified(user);
         } else {
             Role role = roleRepository.findById("CUSTOMER")
@@ -102,7 +106,7 @@ public class AuthenticationService {
                     .password("")
                     .roleName(role)
                     .isVerified(true)
-                    .avatarUrl("https://res.cloudinary.com/di6hi1r0g/image/upload/v1749288955/default-avatar_qwb4ru.png")
+                    .avatarUrl(picture)
                     .build();
             userRepository.save(user);
         }

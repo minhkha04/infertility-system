@@ -1,6 +1,7 @@
 package com.emmkay.infertility_system_api.modules.payment.service;
 
 import com.emmkay.infertility_system_api.modules.payment.entity.PaymentTransaction;
+import com.emmkay.infertility_system_api.modules.payment.enums.PaymentMethod;
 import com.emmkay.infertility_system_api.modules.payment.enums.PaymentStatus;
 import com.emmkay.infertility_system_api.modules.payment.projection.PaymentInfoProjection;
 import com.emmkay.infertility_system_api.modules.payment.repository.PaymentTransactionRepository;
@@ -36,7 +37,7 @@ public class PaymentTransactionService {
     PaymentTransactionRepository paymentTransactionRepository;
     PaymentUtil paymentUtil;
 
-    public PaymentTransaction createTransaction(TreatmentRecord treatmentRecord, String paymentMethod, long expirationMinutes) {
+    public PaymentTransaction createTransaction(TreatmentRecord treatmentRecord, PaymentMethod paymentMethod, long expirationMinutes) {
         ZoneId zoneId = ZoneId.of("Asia/Ho_Chi_Minh");
         ZonedDateTime nowZoned = ZonedDateTime.now(zoneId);
         ZonedDateTime expiredZoned = nowZoned.plusMinutes(expirationMinutes);
@@ -55,7 +56,7 @@ public class PaymentTransactionService {
         return paymentTransactionRepository.save(paymentTransaction);
     }
 
-    public PaymentTransaction reloadTransaction(TreatmentRecord treatmentRecord, String paymentMethod, long expirationMinutes) {
+    public PaymentTransaction reloadTransaction(TreatmentRecord treatmentRecord, PaymentMethod paymentMethod, long expirationMinutes) {
         PaymentTransaction paymentTransaction = paymentTransactionRepository.findTopByRecordIdOrderByCreatedAtDesc(treatmentRecord.getId())
                 .orElseThrow(() -> new AppException(ErrorCode.PAYMENT_TRANSACTION_NOT_FOUND));
         paymentTransaction.setStatus(PaymentStatus.FAILED);

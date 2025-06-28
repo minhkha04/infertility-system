@@ -20,7 +20,7 @@ import java.util.Collections;
 @Component
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class GoogleTokenHelper {
+public class GoogleLoginHelper {
 
     @NonFinal
     @Value("${google.clientId}")
