@@ -147,6 +147,7 @@ public class TreatmentRecordService {
     }
 
     @Transactional
+    @PreAuthorize("hasRole('CUSTOMER')")
     public void creatTreatmentRecord(RegisterServiceRequest request) {
 //      check has Record before
 //        if (treatmentRecordRepository.existsByCustomerIdAndStatusIn(
@@ -160,8 +161,12 @@ public class TreatmentRecordService {
         if (request.getStartDate().isBefore(LocalDate.now().plusDays(1))) {
             throw new AppException(ErrorCode.INVALID_START_DATE);
         }
+        String currentUserId = CurrentUserUtils.getCurrentUserId();
+        if (currentUserId == null || currentUserId.isBlank()) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
         Doctor doctor;
-        User customer = userRepository.findById(request.getCustomerId())
+        User customer = userRepository.findById(currentUserId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         if (!request.getDoctorId().isEmpty()) {
             doctor = doctorRepository.findById(request.getDoctorId())

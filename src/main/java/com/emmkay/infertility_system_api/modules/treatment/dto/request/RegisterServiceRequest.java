@@ -14,8 +14,6 @@ import java.time.LocalDate;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class RegisterServiceRequest {
-    @NotBlank(message = "{validation.required}")
-    String customerId;
 
     String doctorId;
 
@@ -25,7 +23,7 @@ public class RegisterServiceRequest {
     @NotNull(message = "{validation.required}")
     LocalDate startDate;
 
-    @NotBlank(message = "{validation.required}")
+    @NotNull(message = "{validation.required}")
     Shift shift;
 
     LocalDate cd1Date;
