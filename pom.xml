@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.emmkay</groupId>
     <artifactId>infertility-system-api</artifactId>
-    <version>0.0.7</version>
+    <version>0.0.8</version>
     <name>infertility-system-api</name>
     <url/>
     <licenses>
