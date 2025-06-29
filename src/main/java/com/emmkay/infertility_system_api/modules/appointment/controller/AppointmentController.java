@@ -76,9 +76,18 @@ public class AppointmentController {
     @PutMapping("/{appointmentId}/status")
     public ApiResponse<AppointmentResponse> updateAppointmentStatus(
             @PathVariable Long appointmentId,
-            @RequestBody UpdateAppointmentRequest request) {
+            @RequestBody @Valid AppointmentStatusUpdateRequest request) {
         return ApiResponse.<AppointmentResponse>builder()
                 .result(appointmentService.updateStatus(appointmentId, request))
+                .build();
+    }
+
+    @PutMapping("/{appointmentId}")
+    public ApiResponse<AppointmentResponse> updateAppointment(
+            @PathVariable Long appointmentId,
+            @RequestBody @Valid AppointmentUpdateRequest request) {
+        return ApiResponse.<AppointmentResponse>builder()
+                .result(appointmentService.updateAppointment(request, appointmentId))
                 .build();
     }
 

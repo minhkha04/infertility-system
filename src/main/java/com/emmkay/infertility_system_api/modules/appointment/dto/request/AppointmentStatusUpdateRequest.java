@@ -11,7 +11,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class UpdateAppointmentRequest {
+public class AppointmentStatusUpdateRequest {
 
     @NotNull(message = "{validation.required}")
     AppointmentStatus status;

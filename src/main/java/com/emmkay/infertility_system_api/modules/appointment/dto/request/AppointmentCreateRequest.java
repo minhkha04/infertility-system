@@ -25,5 +25,7 @@ public class AppointmentCreateRequest {
     @NotNull(message = "{validation.required}")
     LocalDate appointmentDate;
     String notes;
+    @NotNull(message = "{validation.required}")
+    String purpose;
 
 }

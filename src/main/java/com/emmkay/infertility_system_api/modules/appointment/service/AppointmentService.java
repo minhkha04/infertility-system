@@ -103,7 +103,7 @@ public class AppointmentService {
         }
     }
 
-    private AppointmentResponse confirmChangeAppointment(Appointment appointment, UpdateAppointmentRequest request) {
+    private AppointmentResponse confirmChangeAppointment(Appointment appointment, AppointmentStatusUpdateRequest request) {
         validateCanChangeAppointment(appointment);
         if (appointment.getStatus() != AppointmentStatus.PENDING_CHANGE) {
             throw new AppException(ErrorCode.CAN_NOT_BE_UPDATED_STATUS);
@@ -131,7 +131,7 @@ public class AppointmentService {
         return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
     }
 
-    private AppointmentResponse cancelAppointment(Appointment appointment, UpdateAppointmentRequest request) {
+    private AppointmentResponse cancelAppointment(Appointment appointment, AppointmentStatusUpdateRequest request) {
         validateCanChangeAppointment(appointment);
         appointment.setStatus(AppointmentStatus.CANCELLED);
         appointment.setNotes(request.getNote());
@@ -139,7 +139,7 @@ public class AppointmentService {
         return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
     }
 
-    private AppointmentResponse changeAppointmentWithStatusCompleted(Appointment appointment, UpdateAppointmentRequest request) {
+    private AppointmentResponse changeAppointmentWithStatusCompleted(Appointment appointment, AppointmentStatusUpdateRequest request) {
         validateCanChangeAppointment(appointment);
         LocalDate today = LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh"));
         if (!appointment.getAppointmentDate().equals(today)) {
@@ -198,7 +198,7 @@ public class AppointmentService {
 
     @Transactional
     @PreAuthorize("hasRole('DOCTOR') or hasRole('MANAGER')")
-    public AppointmentResponse updateStatus(Long appointmentId, UpdateAppointmentRequest request) {
+    public AppointmentResponse updateStatus(Long appointmentId, AppointmentStatusUpdateRequest request) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new AppException(ErrorCode.APPOINTMENT_NOT_FOUND));
         if (appointment.getStatus() == AppointmentStatus.COMPLETED) {
@@ -342,6 +342,20 @@ public class AppointmentService {
         appointment.setStatus(AppointmentStatus.CONFIRMED);
         reminderRepository.deleteByAppointment_Id(appointment.getId());
         reminderService.createReminderForAppointment(appointment);
+        return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
+    }
+
+
+    public AppointmentResponse updateAppointment(AppointmentUpdateRequest request, Long appointmentId) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new AppException(ErrorCode.APPOINTMENT_NOT_FOUND));
+        validateCanChangeAppointment(appointment);
+
+        appointmentMapper.updateAppointment(appointment, request);
+
+        Doctor doctor = doctorRepository.findById(request.getDoctorId())
+                .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_NOT_EXISTED));
+        appointment.setDoctor(doctor);
         return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
     }
 }

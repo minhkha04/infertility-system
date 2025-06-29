@@ -1,7 +1,6 @@
 package com.emmkay.infertility_system_api.modules.appointment.dto.request;
 
 import com.emmkay.infertility_system_api.modules.shared.enums.Shift;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -18,7 +17,7 @@ public class ChangeAppointmentByDoctorOrManagerRequest {
     @NotNull(message = "{validation.required}")
     LocalDate appointmentDate;
     @NotNull(message = "{validation.required}")
-    Shift shift; // morning / afternoon
+    Shift shift;
 
     String notes;
 }

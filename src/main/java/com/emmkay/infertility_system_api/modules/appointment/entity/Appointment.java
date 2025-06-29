@@ -8,7 +8,6 @@ import com.emmkay.infertility_system_api.modules.treatment.entity.TreatmentStep;
 import com.emmkay.infertility_system_api.modules.user.entity.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
@@ -79,4 +78,8 @@ public class Appointment {
 
     @OneToMany(mappedBy = "appointment")
     private Set<Reminder> reminders = new LinkedHashSet<>();
+
+    @Column(name = "purpose")
+    private String purpose;
+
 }

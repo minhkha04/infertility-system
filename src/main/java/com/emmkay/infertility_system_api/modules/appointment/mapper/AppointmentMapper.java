@@ -2,6 +2,7 @@ package com.emmkay.infertility_system_api.modules.appointment.mapper;
 
 
 import com.emmkay.infertility_system_api.modules.appointment.dto.request.AppointmentCreateRequest;
+import com.emmkay.infertility_system_api.modules.appointment.dto.request.AppointmentUpdateRequest;
 import com.emmkay.infertility_system_api.modules.appointment.dto.request.ChangeAppointmentByCustomerRequest;
 import com.emmkay.infertility_system_api.modules.appointment.dto.response.AppointmentResponse;
 import com.emmkay.infertility_system_api.modules.appointment.entity.Appointment;
@@ -23,4 +24,6 @@ public interface AppointmentMapper {
     void requestChangeAppointment(@MappingTarget Appointment appointment, ChangeAppointmentByCustomerRequest request);
 
     Appointment toAppointment(AppointmentCreateRequest request);
+
+    void updateAppointment(@MappingTarget Appointment appointment, AppointmentUpdateRequest request);
 }

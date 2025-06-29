@@ -12,4 +12,6 @@ public interface AppointmentBasicProjection {
     LocalDate getAppointmentDate();
     Shift getShift();
     AppointmentStatus getStatus();
+    String getStep();
+    String getPurpose();
 }
