@@ -1,0 +1,11 @@
+package com.emmkay.infertility_system.modules.treatment.projection;
+
+public interface TreatmentServiceBasicProjection {
+    Long getId();
+    String getName();
+    Double getPrice();
+    Integer getDuration();
+    Boolean getIsRemove();
+    String getCoverImageUrl();
+    String getDescription();
+}

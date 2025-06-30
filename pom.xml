@@ -9,9 +9,9 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.emmkay</groupId>
-    <artifactId>infertility-system-api</artifactId>
+    <artifactId>infertility-system</artifactId>
     <version>0.0.8</version>
-    <name>infertility-system-api</name>
+    <name>infertility-system</name>
     <url/>
     <licenses>
         <license/>
