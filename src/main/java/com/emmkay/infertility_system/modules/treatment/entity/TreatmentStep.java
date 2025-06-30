@@ -57,7 +57,9 @@ public class TreatmentStep {
     private String notes;
 
 
-    @OneToMany(mappedBy = "treatmentStep")
-    private Set<Appointment> appointments = new LinkedHashSet<>();
+    @OneToOne(fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
+    @JoinColumn(name = "appointment_id")
+    private Appointment appointment;
 
 }

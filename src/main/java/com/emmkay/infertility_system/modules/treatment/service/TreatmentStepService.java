@@ -104,10 +104,15 @@ public class TreatmentStepService {
                 recordId,  cancellableStatuses, TreatmentStepStatus.CANCELLED
         );
         List<TreatmentStep> treatmentStepList = treatmentStepRepository.findByRecord_Id(recordId);
-        treatmentStepList.forEach(x -> {
-            x.getAppointments().forEach(reminderRepository::deleteByAppointment);
-            appointmentRepository.updateStatusByTreatmentStep(AppointmentStatus.CANCELLED, x);
-        });
+        treatmentStepList.forEach(
+                x -> {
+                    reminderRepository.deleteByAppointment(x.getAppointment());
+                }
+        );
+//        treatmentStepList.forEach(x -> {
+//            x.getAppointments().forEach(reminderRepository::deleteByAppointment);
+//            appointmentRepository.updateStatusByTreatmentStep(AppointmentStatus.CANCELLED, x);
+//        });
     }
 
     public List<TreatmentStepResponse> getStepsByRecordId(Long recordId) {

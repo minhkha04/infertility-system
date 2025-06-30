@@ -240,6 +240,10 @@ public class AppointmentService {
         if (!isAvailable) {
             throw new AppException(ErrorCode.DOCTOR_NOT_AVAILABLE);
         }
+        Appointment appointmentCheck = appointmentRepository.getAppointmentsByTreatmentStepId(req.getTreatmentStepId());
+        if (appointmentCheck != null) {
+            throw new AppException(ErrorCode.APPOINTMENT_EXISTED);
+        }
         TreatmentStep step = treatmentStepRepository.findById(req.getTreatmentStepId())
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_TYPE_NOT_EXISTED));
 

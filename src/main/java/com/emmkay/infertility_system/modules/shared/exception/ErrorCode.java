@@ -75,6 +75,7 @@ public enum ErrorCode {
     UNSUPPORTED_OAUTH_PROVIDER(1068, "Nhà cung cấp OAuth không được hỗ trợ", HttpStatus.BAD_REQUEST),
     INVALID_EMAIL_TYPE(1069, "Loại email không hợp lệ", HttpStatus.INTERNAL_SERVER_ERROR),
     TEMPLATE_NOT_FOUND(1070, "Không tìm thấy mẫu email", HttpStatus.INTERNAL_SERVER_ERROR),
+    APPOINTMENT_EXISTED(1071, "Đã có lịch hẹn cho bước điều trị này", HttpStatus.BAD_REQUEST)
     ;
 
     int code;

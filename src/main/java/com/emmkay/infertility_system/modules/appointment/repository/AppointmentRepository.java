@@ -68,4 +68,6 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
                   AND a.appointmentDate = CURRENT_DATE
             """)
     Page<DoctorTodayAppointmentProjection> findTodayAppointmentsByDoctorId(String doctorId, Pageable pageable);
+
+    Appointment getAppointmentsByTreatmentStepId(Long treatmentStepId);
 }

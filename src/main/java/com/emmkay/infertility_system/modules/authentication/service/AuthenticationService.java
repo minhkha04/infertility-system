@@ -122,14 +122,11 @@ public class AuthenticationService {
     }
 
     public void resendOtp(String email) {
-        User user = userRepository.findByEmail(email)
+        userRepository.findByEmail(email)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-
-        if (user.getIsVerified()) {
-            throw new AppException(ErrorCode.USER_ALREADY_ACTIVE);
-        }
         String otp = OtpGenerateUtils.generate(6);
         EmailRequest emailRequest = EmailRequest.builder()
+                .subject("Yêu cầu xác thực tài khoản")
                 .emailType(EmailType.OTP_VERIFICATION)
                 .toEmail(email)
                 .params(Map.of(
@@ -147,6 +144,7 @@ public class AuthenticationService {
         String otp = OtpGenerateUtils.generate(6);
         EmailRequest emailRequest = EmailRequest.builder()
                 .emailType(EmailType.OTP_VERIFICATION)
+                .subject("Yêu cầu đặt lại mật khẩu")
                 .toEmail(request.getEmail())
                 .params(Map.of(
                         "action", "quên mật khẩu",
@@ -174,6 +172,7 @@ public class AuthenticationService {
         UserValidationUtils.validateUserIsActiveAndVerified(user);
         String otp = OtpGenerateUtils.generate(6);
         EmailRequest emailRequest = EmailRequest.builder()
+                .subject("Yêu cầu thay đổi mật khẩu")
                 .emailType(EmailType.OTP_VERIFICATION)
                 .toEmail(request.getEmail())
                 .params(Map.of(
