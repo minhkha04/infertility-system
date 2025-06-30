@@ -14,4 +14,5 @@ public interface AppointmentBasicProjection {
     AppointmentStatus getStatus();
     String getStep();
     String getPurpose();
+    Long getRecordId();
 }

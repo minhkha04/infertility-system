@@ -13,6 +13,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.List;
+
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
@@ -27,7 +29,7 @@ public class ApplicationInitConfig {
                Role role = roleRepository.findById("ADMIN").orElseThrow();
                User user = User.builder()
                        .username("admin")
-                       .password(passwordEncoder.encode("admin"))
+                       .password(passwordEncoder.encode("12345678"))
                        .roleName(role)
                        .isRemoved(false)
                        .isVerified(true)

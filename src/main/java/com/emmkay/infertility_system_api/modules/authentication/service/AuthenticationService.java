@@ -4,9 +4,12 @@ import com.emmkay.infertility_system_api.modules.authentication.dto.request.*;
 import com.emmkay.infertility_system_api.modules.authentication.dto.response.AuthenticationResponse;
 import com.emmkay.infertility_system_api.modules.authentication.dto.response.IntrospectResponse;
 import com.emmkay.infertility_system_api.modules.authentication.enums.OAuthProvider;
-import com.emmkay.infertility_system_api.modules.authentication.otp.OtpSenderService;
+import com.emmkay.infertility_system_api.modules.authentication.utils.OtpGenerateUtils;
 import com.emmkay.infertility_system_api.modules.authentication.utils.OtpValidatorUtils;
 import com.emmkay.infertility_system_api.modules.authentication.utils.UserValidationUtils;
+import com.emmkay.infertility_system_api.modules.email.dto.request.EmailRequest;
+import com.emmkay.infertility_system_api.modules.email.enums.EmailType;
+import com.emmkay.infertility_system_api.modules.email.service.EmailService;
 import com.emmkay.infertility_system_api.modules.user.dto.request.UserCreateRequest;
 import com.emmkay.infertility_system_api.modules.user.dto.response.UserResponse;
 import com.emmkay.infertility_system_api.modules.authentication.entity.EmailOtp;
@@ -43,8 +46,7 @@ public class AuthenticationService {
     PasswordEncoder passwordEncoder;
     JwtProvider jwtProvider;
     OAuthLoginService oAuthLoginService;
-    OtpSenderService otpSenderService;
-
+    EmailService emailService;
 
     public AuthenticationResponse loginWithOAuth(String accessToken, OAuthProvider provider) {
         return oAuthLoginService.login(provider, accessToken);
@@ -82,7 +84,16 @@ public class AuthenticationService {
         user.setIsVerified(false);
         user.setAvatarUrl("https://res.cloudinary.com/di6hi1r0g/image/upload/v1749288955/default-avatar_qwb4ru.png");
         userRepository.save(user);
-        otpSenderService.generateAndSendOtp(request.getEmail(), "đăng ký tài khoản");
+        String otp = OtpGenerateUtils.generate(6);
+        EmailRequest emailRequest = EmailRequest.builder()
+                .emailType(EmailType.OTP_VERIFICATION)
+                .toEmail(request.getEmail())
+                .params(Map.of(
+                        "action", "đăng ký tài khoản",
+                        "otp", otp
+                ))
+                .build();
+        emailService.sendMail(emailRequest);
         return userMapper.toUserResponse(user);
     }
 
@@ -117,14 +128,32 @@ public class AuthenticationService {
         if (user.getIsVerified()) {
             throw new AppException(ErrorCode.USER_ALREADY_ACTIVE);
         }
-        otpSenderService.generateAndSendOtp(email, "xác thực");
+        String otp = OtpGenerateUtils.generate(6);
+        EmailRequest emailRequest = EmailRequest.builder()
+                .emailType(EmailType.OTP_VERIFICATION)
+                .toEmail(email)
+                .params(Map.of(
+                        "action", "xác thực tài khoản",
+                        "otp", otp
+                ))
+                .build();
+        emailService.sendMail(emailRequest);
     }
 
     public void forgotPassword(ForgotPasswordRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         UserValidationUtils.validateUserIsActiveAndVerified(user);
-        otpSenderService.generateAndSendOtp(request.getEmail(), "thay đổi mật khẩu");
+        String otp = OtpGenerateUtils.generate(6);
+        EmailRequest emailRequest = EmailRequest.builder()
+                .emailType(EmailType.OTP_VERIFICATION)
+                .toEmail(request.getEmail())
+                .params(Map.of(
+                        "action", "quên mật khẩu",
+                        "otp", otp
+                ))
+                .build();
+        emailService.sendMail(emailRequest);
     }
 
     public void resetPassword(ResetPasswordRequest request) {
@@ -143,7 +172,16 @@ public class AuthenticationService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         UserValidationUtils.validateUserIsActiveAndVerified(user);
-        otpSenderService.generateAndSendOtp(request.getEmail(), "thay đổi mật khẩu");
+        String otp = OtpGenerateUtils.generate(6);
+        EmailRequest emailRequest = EmailRequest.builder()
+                .emailType(EmailType.OTP_VERIFICATION)
+                .toEmail(request.getEmail())
+                .params(Map.of(
+                        "action", "thay đổi mật khẩu",
+                        "otp", otp
+                ))
+                .build();
+        emailService.sendMail(emailRequest);
     }
 
     public AuthenticationResponse refreshToken(RefreshTokenRequest request) {

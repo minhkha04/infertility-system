@@ -11,6 +11,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
+
 @RestController
 @RequestMapping("/api/v1/public/blogs")
 @RequiredArgsConstructor
@@ -32,10 +33,9 @@ public class PublicBlogController {
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<BlogResponse> getApprovedBlogById(@PathVariable  Long id) {
+    public ApiResponse<BlogResponse> getApprovedBlogById(@PathVariable Long id) {
         return ApiResponse.<BlogResponse>builder()
                 .result(blogService.getApprovedBlogById(id))
                 .build();
     }
-
 }

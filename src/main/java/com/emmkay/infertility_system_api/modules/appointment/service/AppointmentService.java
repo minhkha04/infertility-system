@@ -141,10 +141,11 @@ public class AppointmentService {
 
     private AppointmentResponse changeAppointmentWithStatusCompleted(Appointment appointment, AppointmentStatusUpdateRequest request) {
         validateCanChangeAppointment(appointment);
-        LocalDate today = LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh"));
-        if (!appointment.getAppointmentDate().equals(today)) {
-            throw new AppException(ErrorCode.CAN_NOT_BE_UPDATED_STATUS);
-        }
+//        check today is appointment date
+//        LocalDate today = LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh"));
+//        if (!appointment.getAppointmentDate().equals(today)) {
+//            throw new AppException(ErrorCode.CAN_NOT_BE_UPDATED_STATUS);
+//        }
         appointment.setStatus(request.getStatus());
         appointment.setNotes(request.getNote());
         return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
@@ -355,6 +356,9 @@ public class AppointmentService {
 
         Doctor doctor = doctorRepository.findById(request.getDoctorId())
                 .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_NOT_EXISTED));
+        if (!appointment.getDoctor().getId().equals(doctor.getId()) && !isDoctorAvailable(doctor.getId(), appointment.getAppointmentDate(), appointment.getShift())) {
+                throw new AppException(ErrorCode.DOCTOR_NOT_AVAILABLE);
+        }
         appointment.setDoctor(doctor);
         return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
     }

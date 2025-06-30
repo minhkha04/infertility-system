@@ -62,7 +62,7 @@ public class BlogController {
                 .build();
     }
 
-    @PostMapping("/{blogId}/updateStatus")
+    @PutMapping("/{blogId}/updateStatus")
     public ApiResponse<BlogResponse> updateStatus(@PathVariable Long blogId, @RequestBody @Valid BlogApprovalRequest request) {
         return ApiResponse.<BlogResponse>builder()
                 .result(blogService.updateStatus(blogId, request))
@@ -84,7 +84,7 @@ public class BlogController {
                 .build();
     }
 
-    @PostMapping("/{blogId}/hidden")
+    @PutMapping("/{blogId}/hidden")
     public ApiResponse<BlogResponse> hiddenBlog(@PathVariable Long blogId) {
         return ApiResponse.<BlogResponse>builder()
                 .result(blogService.hiddenBlog(blogId))

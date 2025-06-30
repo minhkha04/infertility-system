@@ -7,4 +7,5 @@ public interface PaymentInfoProjection {
     Boolean getIsPaid();
     String getTreatmentServiceName();
     Double getPrice();
+    String getRecordStatus();
 }

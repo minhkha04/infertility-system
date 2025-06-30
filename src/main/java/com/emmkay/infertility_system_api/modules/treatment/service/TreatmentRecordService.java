@@ -103,9 +103,10 @@ public class TreatmentRecordService {
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
 
         canChange(treatmentRecord);
-        if (!paymentTransactionService.isPaid(recordId) && status == TreatmentRecordStatus.COMPLETED) {
-            throw new AppException(ErrorCode.TREATMENT_NOT_PAID);
-        }
+//        check the record is available for status change to completed
+//        if (!paymentTransactionService.isPaid(recordId) && status == TreatmentRecordStatus.COMPLETED) {
+//            throw new AppException(ErrorCode.TREATMENT_NOT_PAID);
+//        }
         if (treatmentRecord.getStatus() == TreatmentRecordStatus.CANCELLED) {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }

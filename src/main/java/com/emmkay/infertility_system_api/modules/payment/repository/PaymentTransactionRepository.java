@@ -18,8 +18,6 @@ import java.util.Optional;
 @Repository
 public interface PaymentTransactionRepository extends JpaRepository<PaymentTransaction, Long> {
 
-    boolean existsByRecordAndStatusIn(TreatmentRecord record, Collection<PaymentStatus> statuses);
-
     Optional<PaymentTransaction> findByTransactionCode(String transactionCode);
 
     List<PaymentTransaction> findAllByStatusAndExpiredAtBefore(PaymentStatus status, LocalDateTime now);
@@ -44,7 +42,8 @@ public interface PaymentTransactionRepository extends JpaRepository<PaymentTrans
                              ) THEN true
                              ELSE false
                              END
-                        ) AS isPaid
+                        ) AS isPaid,
+                        tr.status AS recordStatus
                     FROM TreatmentRecord tr
                     WHERE tr.customer.id = :customerId
                 """)
