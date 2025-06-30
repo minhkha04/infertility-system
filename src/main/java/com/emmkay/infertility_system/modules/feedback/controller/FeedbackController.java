@@ -5,6 +5,7 @@ import com.emmkay.infertility_system.modules.feedback.dto.request.FeedbackUpdate
 import com.emmkay.infertility_system.modules.feedback.dto.request.FeedbackUpdateStatusRequest;
 import com.emmkay.infertility_system.modules.feedback.enums.FeedbackStatus;
 import com.emmkay.infertility_system.modules.feedback.projection.FeedBackBasicProjection;
+import com.emmkay.infertility_system.modules.feedback.projection.InfoToFeedbackProjection;
 import com.emmkay.infertility_system.modules.shared.dto.response.ApiResponse;
 import com.emmkay.infertility_system.modules.feedback.dto.response.FeedbackResponse;
 import com.emmkay.infertility_system.modules.feedback.service.FeedbackService;
@@ -65,6 +66,13 @@ public class FeedbackController {
     public ApiResponse<FeedbackResponse> createFeedback(@RequestBody @Valid FeedbackCreateRequest request) {
         return ApiResponse.<FeedbackResponse>builder()
                 .result(feedbackService.createFeedback(request))
+                .build();
+    }
+
+    @GetMapping("/{treatmentRecordId}/get-info-to-feedback")
+    public ApiResponse<InfoToFeedbackProjection> getInfoToFeedback(@PathVariable Long treatmentRecordId) {
+        return ApiResponse.<InfoToFeedbackProjection>builder()
+                .result(feedbackService.getInfoToFeedback(treatmentRecordId))
                 .build();
     }
 

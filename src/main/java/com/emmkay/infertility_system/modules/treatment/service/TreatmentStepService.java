@@ -125,9 +125,10 @@ public class TreatmentStepService {
     public TreatmentStepResponse updateTreatmentStepById(Long id, TreatmentStepUpdateRequest request) {
         TreatmentStep treatmentStep = treatmentStepRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_STEP_NOT_FOUND));
-        if (treatmentStep.getStatus() == TreatmentStepStatus.COMPLETED) {
+        if (request.getStatus() == TreatmentStepStatus.COMPLETED) {
             List<AppointmentStatus> appointmentStatuses = List.of(AppointmentStatus.CONFIRMED, AppointmentStatus.PENDING_CHANGE, AppointmentStatus.REJECTED);
             boolean hasUnprocessedAppointments  = appointmentRepository.existsByStatusInAndTreatmentStep(appointmentStatuses, treatmentStep);
+            System.out.println("hasUnprocessedAppointments = " + hasUnprocessedAppointments);
             if (hasUnprocessedAppointments ) {
                 throw new AppException(ErrorCode.TREATMENT_CAN_NOT_DONE);
             }

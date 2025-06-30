@@ -4,6 +4,7 @@ package com.emmkay.infertility_system.modules.feedback.repository;
 import com.emmkay.infertility_system.modules.feedback.enums.FeedbackStatus;
 import com.emmkay.infertility_system.modules.feedback.projection.FeedBackBasicProjection;
 import com.emmkay.infertility_system.modules.feedback.entity.Feedback;
+import com.emmkay.infertility_system.modules.feedback.projection.InfoToFeedbackProjection;
 import com.emmkay.infertility_system.modules.feedback.projection.PublicFeedbackProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -47,4 +48,14 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
                     ORDER BY f.createdAt DESC
             """)
     Page<PublicFeedbackProjection> getFeedbackApproved(String doctorId, Pageable pageable);
+
+    @Query(value = """
+                    SELECT
+                        tr.doctor.id AS doctorId,
+                        tr.customer.id AS customerId,
+                        tr.service.id AS serviceId
+                    FROM TreatmentRecord tr
+                    WHERE tr.id = :recordId
+            """)
+    InfoToFeedbackProjection getInfoToFeedback(Long recordId);
 }

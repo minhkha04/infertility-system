@@ -6,6 +6,7 @@ import com.emmkay.infertility_system.modules.feedback.dto.request.FeedbackCreate
 import com.emmkay.infertility_system.modules.feedback.dto.request.FeedbackUpdateRequest;
 import com.emmkay.infertility_system.modules.feedback.dto.request.FeedbackUpdateStatusRequest;
 import com.emmkay.infertility_system.modules.feedback.dto.response.FeedbackResponse;
+import com.emmkay.infertility_system.modules.feedback.projection.InfoToFeedbackProjection;
 import com.emmkay.infertility_system.modules.feedback.projection.PublicFeedbackProjection;
 import com.emmkay.infertility_system.modules.shared.enums.RoleName;
 import com.emmkay.infertility_system.modules.shared.exception.AppException;
@@ -145,5 +146,10 @@ public class FeedbackService {
         Feedback feedback = feedbackRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.FEEDBACK_NOT_EXISTED));
         return feedbackMapper.toResponse(feedback);
+    }
+
+
+    public InfoToFeedbackProjection getInfoToFeedback(Long recordId) {
+        return feedbackRepository.getInfoToFeedback(recordId);
     }
 }

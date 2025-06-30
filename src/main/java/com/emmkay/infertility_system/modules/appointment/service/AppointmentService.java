@@ -160,9 +160,12 @@ public class AppointmentService {
         String currentUserId = CurrentUserUtils.getCurrentUserId();
         Pageable pageable = PageRequest.of(page, size, Sort.by("appointmentDate").ascending());
         return switch (roleName) {
-            case CUSTOMER -> appointmentRepository.searchAppointments(stepId, currentUserId, null, date, status, pageable);
-            case DOCTOR -> appointmentRepository.searchAppointments(stepId,null, currentUserId, date, status, pageable);
-            case MANAGER -> appointmentRepository.searchAppointments(stepId, customerId, doctorId, date, status, pageable);
+            case CUSTOMER ->
+                    appointmentRepository.searchAppointments(stepId, currentUserId, null, date, status, pageable);
+            case DOCTOR ->
+                    appointmentRepository.searchAppointments(stepId, null, currentUserId, date, status, pageable);
+            case MANAGER ->
+                    appointmentRepository.searchAppointments(stepId, customerId, doctorId, date, status, pageable);
             default -> throw new AppException(ErrorCode.ROLE_NOT_EXISTED);
         };
     }
@@ -220,7 +223,7 @@ public class AppointmentService {
         }
     }
 
-    public void createInitialAppointment(User customer,Doctor doctor, LocalDate date, Shift shift, TreatmentStep treatmentStep) {
+    public void createInitialAppointment(User customer, Doctor doctor, LocalDate date, Shift shift, TreatmentStep treatmentStep) {
         Appointment appointment = appointmentRepository.save(Appointment.builder()
                 .customer(customer)
                 .doctor(doctor)
@@ -237,6 +240,10 @@ public class AppointmentService {
     @Transactional
     public AppointmentResponse createAppointment(AppointmentCreateRequest req) {
         boolean isAvailable = isDoctorAvailable(req.getDoctorId(), req.getAppointmentDate(), req.getShift());
+        workScheduleRepository.findByDoctorIdAndWorkDate(req.getDoctorId(), req.getAppointmentDate())
+                .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_DONT_WORK_ON_THIS_DATE));
+
+
         if (!isAvailable) {
             throw new AppException(ErrorCode.DOCTOR_NOT_AVAILABLE);
         }
@@ -308,6 +315,8 @@ public class AppointmentService {
     public AppointmentResponse changeAppointmentForCustomer(Long appointmentId, ChangeAppointmentByCustomerRequest request) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new AppException(ErrorCode.APPOINTMENT_NOT_FOUND));
+        workScheduleRepository.findByDoctorIdAndWorkDate(appointment.getDoctor().getId(), request.getRequestedDate())
+                .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_DONT_WORK_ON_THIS_DATE));
         validateAppointmentAvailableForChange(appointment, request.getRequestedDate(), request.getRequestedShift());
         validateCanChangeAppointment(appointment);
 
@@ -330,6 +339,8 @@ public class AppointmentService {
     public AppointmentResponse changeAppointmentForManagerOrDoctor(Long appointmentId, ChangeAppointmentByDoctorOrManagerRequest request) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new AppException(ErrorCode.APPOINTMENT_NOT_FOUND));
+        workScheduleRepository.findByDoctorIdAndWorkDate(appointment.getDoctor().getId(), request.getAppointmentDate())
+                .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_DONT_WORK_ON_THIS_DATE));
         validateCanChangeAppointment(appointment);
         validateAppointmentAvailableForChange(appointment, request.getAppointmentDate(), request.getShift());
 
@@ -361,7 +372,7 @@ public class AppointmentService {
         Doctor doctor = doctorRepository.findById(request.getDoctorId())
                 .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_NOT_EXISTED));
         if (!appointment.getDoctor().getId().equals(doctor.getId()) && !isDoctorAvailable(doctor.getId(), appointment.getAppointmentDate(), appointment.getShift())) {
-                throw new AppException(ErrorCode.DOCTOR_NOT_AVAILABLE);
+            throw new AppException(ErrorCode.DOCTOR_NOT_AVAILABLE);
         }
         appointment.setDoctor(doctor);
         return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
