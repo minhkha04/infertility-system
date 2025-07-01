@@ -59,25 +59,6 @@ public class AppointmentService {
     ReminderRepository reminderRepository;
     TreatmentRecordRepository treatmentRecordRepository;
 
-    private void validateAppointmentAvailableForChange(Appointment appointment, LocalDate dateChange, Shift shiftChange) {
-        // Chỉ cho đổi trong 14 ngày tới
-        LocalDate today = LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh"));
-        if (dateChange.isBefore(today) || dateChange.isAfter(today.plusDays(14))) {
-            throw new AppException(ErrorCode.DATE_OUT_OF_RANGE);
-        }
-
-        // Kiểm tra ca đó có nằm trong lịch làm việc rảnh không
-        String doctorId = appointment.getDoctor().getId();
-        boolean isAvailable = isDoctorAvailable(doctorId, dateChange, shiftChange);
-
-        if (!isAvailable) {
-            throw new AppException(ErrorCode.DOCTOR_NOT_AVAILABLE);
-        }
-        if (appointment.getStatus() == AppointmentStatus.COMPLETED
-                || appointment.getStatus() == AppointmentStatus.CANCELLED) {
-            throw new AppException(ErrorCode.CAN_NOT_BE_UPDATED_STATUS);
-        }
-    }
 
     private void validateCanChangeAppointment(Appointment appointment) {
         String scope = CurrentUserUtils.getCurrentScope();
@@ -102,6 +83,31 @@ public class AppointmentService {
             default:
                 throw new AppException(ErrorCode.UNAUTHORIZED);
         }
+    }
+
+    private void validateAppointmentAvailableForChange(Appointment appointment, LocalDate dateChange, Shift shiftChange) {
+        // Chỉ cho đổi trong 14 ngày tới
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh"));
+        if (dateChange.isBefore(today) || dateChange.isAfter(today.plusDays(14))) {
+            throw new AppException(ErrorCode.DATE_OUT_OF_RANGE);
+        }
+
+        // Kiểm tra ca đó có nằm trong lịch làm việc rảnh không
+        String doctorId = appointment.getDoctor().getId();
+        boolean isAvailable = isDoctorAvailable(doctorId, dateChange, shiftChange);
+
+        if (!isAvailable) {
+            throw new AppException(ErrorCode.DOCTOR_NOT_AVAILABLE);
+        }
+        if (appointment.getStatus() == AppointmentStatus.COMPLETED
+                || appointment.getStatus() == AppointmentStatus.CANCELLED) {
+            throw new AppException(ErrorCode.CAN_NOT_BE_UPDATED_STATUS);
+        }
+    }
+
+    private void checkDoctorHasWorkSchedule(String doctorId, LocalDate date, List<Shift> shift) {
+        workScheduleRepository.findByDoctorIdAndWorkDateAndShiftIn(doctorId, date, shift)
+                .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_DONT_WORK_ON_THIS_DATE));
     }
 
     private AppointmentResponse confirmChangeAppointment(Appointment appointment, AppointmentStatusUpdateRequest request) {
@@ -236,11 +242,6 @@ public class AppointmentService {
                 .createdAt(LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh")))
                 .build());
         reminderService.createReminderForAppointment(appointment);
-    }
-
-    private void checkDoctorHasWorkSchedule(String doctorId, LocalDate date, List<Shift> shift) {
-        workScheduleRepository.findByDoctorIdAndWorkDateAndShiftIn(doctorId, date, shift)
-                .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_DONT_WORK_ON_THIS_DATE));
     }
 
     @PreAuthorize("hasRole('DOCTOR')")
