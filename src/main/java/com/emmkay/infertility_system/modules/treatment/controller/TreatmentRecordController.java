@@ -4,6 +4,7 @@ package com.emmkay.infertility_system.modules.treatment.controller;
 import com.emmkay.infertility_system.modules.shared.dto.response.ApiResponse;
 import com.emmkay.infertility_system.modules.shared.dto.response.PageResponse;
 import com.emmkay.infertility_system.modules.treatment.dto.request.RegisterServiceRequest;
+import com.emmkay.infertility_system.modules.treatment.dto.request.TreatmentRecordUpdateRequest;
 import com.emmkay.infertility_system.modules.treatment.dto.response.TreatmentRecordResponse;
 import com.emmkay.infertility_system.modules.treatment.enums.TreatmentRecordStatus;
 import com.emmkay.infertility_system.modules.treatment.projection.TreatmentRecordBasicProjection;
@@ -54,10 +55,10 @@ public class TreatmentRecordController {
                 .build();
     }
 
-    @PutMapping("/{recordId}/cd1")
-    public ApiResponse<TreatmentRecordResponse> updateCd1TreatmentRecord(@PathVariable Long recordId, @RequestParam LocalDate cd1) {
+    @PutMapping("/{recordId}")
+    public ApiResponse<TreatmentRecordResponse> updateTreatmentRecord(@RequestBody @Valid TreatmentRecordUpdateRequest request, @PathVariable Long recordId) {
         return ApiResponse.<TreatmentRecordResponse>builder()
-                .result(treatmentRecordService.updateCd1TreatmentRecord(recordId, cd1))
+                .result(treatmentRecordService.updateTreatmentRecord(request, recordId))
                 .build();
     }
 

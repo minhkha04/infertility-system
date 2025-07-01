@@ -1,7 +1,6 @@
 package com.emmkay.infertility_system.modules.treatment.enums;
 
 public enum TreatmentStepStatus {
-    PLANNED,
     CONFIRMED,
     COMPLETED,
     CANCELLED,

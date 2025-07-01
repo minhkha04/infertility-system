@@ -231,7 +231,8 @@ public class AppointmentService {
         }
     }
 
-    public void createInitialAppointment(User customer, Doctor doctor, LocalDate date, Shift shift, TreatmentStep treatmentStep) {
+    @Transactional
+    public void createInitialAppointment(User customer, Doctor doctor, LocalDate date, Shift shift, TreatmentStep treatmentStep, boolean isFirstStep, String purpose) {
         Appointment appointment = appointmentRepository.save(Appointment.builder()
                 .customer(customer)
                 .doctor(doctor)
@@ -240,6 +241,7 @@ public class AppointmentService {
                 .treatmentStep(treatmentStep)
                 .status(AppointmentStatus.CONFIRMED)
                 .createdAt(LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh")))
+                .purpose(isFirstStep ? treatmentStep.getStepType() : purpose)
                 .build());
         reminderService.createReminderForAppointment(appointment);
     }
@@ -252,10 +254,7 @@ public class AppointmentService {
         if (!isAvailable) {
             throw new AppException(ErrorCode.DOCTOR_NOT_AVAILABLE);
         }
-        Appointment appointmentCheck = appointmentRepository.getAppointmentsByTreatmentStepId(req.getTreatmentStepId());
-        if (appointmentCheck != null) {
-            throw new AppException(ErrorCode.APPOINTMENT_EXISTED);
-        }
+
         TreatmentStep step = treatmentStepRepository.findById(req.getTreatmentStepId())
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_TYPE_NOT_EXISTED));
 

@@ -20,6 +20,5 @@ public class ChangeAppointmentByCustomerRequest {
     @NotNull(message = "{validation.required}")
     Shift requestedShift;
 
-    @NotNull(message = "{validation.required}")
     String notes;
 }

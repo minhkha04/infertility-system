@@ -21,6 +21,7 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TreatmentStep {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -42,24 +43,19 @@ public class TreatmentStep {
     @Column(name = "step_type", nullable = false)
     private String stepType;
 
-    @Column(name = "scheduled_date")
-    private LocalDate scheduledDate;
+    @Column(name = "start_date")
+    private LocalDate startDate;
 
-    @Column(name = "actual_date")
-    private LocalDate actualDate;
+    @Column(name = "end_date")
+    private LocalDate endDate;
 
     @Column(name = "status", length = 50)
     @Enumerated(EnumType.STRING)
     private TreatmentStepStatus status;
 
-    @Lob
     @Column(name = "notes")
     private String notes;
 
-
-    @OneToOne(fetch = FetchType.LAZY)
-    @OnDelete(action = OnDeleteAction.SET_NULL)
-    @JoinColumn(name = "appointment_id")
-    private Appointment appointment;
-
+    @OneToMany(mappedBy = "treatmentStep")
+    private Set<Appointment> appointments = new LinkedHashSet<>();
 }

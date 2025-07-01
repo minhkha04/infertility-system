@@ -8,6 +8,7 @@ import com.emmkay.infertility_system.modules.treatment.dto.request.TreatmentServ
 import com.emmkay.infertility_system.modules.shared.dto.response.ApiResponse;
 import com.emmkay.infertility_system.modules.treatment.dto.response.TreatmentServiceResponse;
 import com.emmkay.infertility_system.modules.treatment.projection.TreatmentServiceBasicProjection;
+import com.emmkay.infertility_system.modules.treatment.projection.TreatmentServiceSelectProjection;
 import com.emmkay.infertility_system.modules.treatment.service.TreatmentServiceService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -16,6 +17,8 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/treatment-services")
@@ -86,6 +89,13 @@ public class TreatmentServiceController {
         String imageUrl = cloudinaryService.uploadImage(request.getFile(), "service_img", String.valueOf(id));
         return ApiResponse.<TreatmentServiceResponse>builder()
                 .result(treatmentServiceService.uploadImage(id, imageUrl))
+                .build();
+    }
+
+    @GetMapping("/select")
+    public ApiResponse<List<TreatmentServiceSelectProjection>> selectTreatmentService() {
+        return ApiResponse.<List<TreatmentServiceSelectProjection>>builder()
+                .result(treatmentServiceService.getTreatmentServiceSelect())
                 .build();
     }
 }

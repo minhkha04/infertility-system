@@ -5,13 +5,13 @@ import com.emmkay.infertility_system.modules.treatment.enums.TreatmentRecordStat
 import java.time.LocalDate;
 
 public interface TreatmentRecordBasicProjection {
-    Long getId();
+    long getId();
     String getCustomerName();
     String getDoctorName();
     TreatmentRecordStatus getStatus();
-    Integer getTotalSteps();
-    Integer getCompletedSteps();
+    int getTotalSteps();
+    int getCompletedSteps();
     LocalDate getStartDate();
     String getServiceName();
-    Boolean getIsPaid();
+    boolean getIsPaid();
 }

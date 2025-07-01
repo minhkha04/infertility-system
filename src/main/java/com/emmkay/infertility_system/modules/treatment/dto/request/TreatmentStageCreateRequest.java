@@ -29,5 +29,5 @@ public class TreatmentStageCreateRequest {
     String expectedDayRange;
 
     @NotNull(message = "{validation.required}")
-    Integer orderIndex;
+    int orderIndex;
 }

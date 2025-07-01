@@ -1,12 +1,10 @@
 package com.emmkay.infertility_system.modules.treatment.projection;
 
 public interface PublicServiceProjection {
-    Long getServiceId();
+    long getServiceId();
     String getServiceName();
     String getCoverImageUrl();
-    Double getPrice();
-    String getTypeName();
-    Long getTypeId();
-    Integer getDuration();
+    double getPrice();
+    int getDuration();
     String getDescription();
 }

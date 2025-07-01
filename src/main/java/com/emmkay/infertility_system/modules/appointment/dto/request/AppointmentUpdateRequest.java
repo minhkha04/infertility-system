@@ -15,8 +15,5 @@ public class AppointmentUpdateRequest {
     String notes;
 
     @NotBlank(message = "{validation.required}")
-    String purpose;
-
-    @NotBlank(message = "{validation.required}")
     String doctorId;
 }

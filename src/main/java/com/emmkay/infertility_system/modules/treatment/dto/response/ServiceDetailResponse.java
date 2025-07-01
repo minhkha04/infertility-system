@@ -11,13 +11,12 @@ import java.util.List;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ServiceDetailResponse {
-    Long serviceId;
+    long serviceId;
     String serviceName;
-    String typeName;
     String description;
     String coverImageUrl;
-    Double price;
-    Integer duration;
+    double price;
+    int duration;
     List<TreatmentStageResponse> treatmentStageResponses;
 }
 

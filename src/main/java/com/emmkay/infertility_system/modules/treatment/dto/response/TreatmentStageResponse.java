@@ -13,11 +13,11 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class TreatmentStageResponse {
-    Long id;
-    Long typeId;
-    String typeName;
+    long id;
+    long serviceId;
+    String serviceName;
     String name;
     String description;
     String expectedDayRange;
-    Integer orderIndex;
+    int orderIndex;
 }

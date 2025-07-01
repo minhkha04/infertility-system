@@ -1,5 +1,6 @@
 package com.emmkay.infertility_system.modules.treatment.controller;
 
+import com.emmkay.infertility_system.modules.treatment.dto.request.TreatmentStepCreateRequest;
 import com.emmkay.infertility_system.modules.treatment.dto.request.TreatmentStepUpdateRequest;
 import com.emmkay.infertility_system.modules.shared.dto.response.ApiResponse;
 import com.emmkay.infertility_system.modules.treatment.dto.response.SuggestedTreatmentStepResponse;
@@ -29,10 +30,11 @@ public class TreatmentStepController {
                 .build();
     }
 
-    @GetMapping("/{recordId}/get-suggest")
-    public ApiResponse<List<SuggestedTreatmentStepResponse>> getSuggest(@PathVariable Long recordId) {
-        return ApiResponse.<List<SuggestedTreatmentStepResponse>>builder()
-                .result(treatmentStepService.getSuggestedSteps(recordId))
+    @PostMapping("")
+    public ApiResponse<TreatmentStepResponse> createTreatmentStep(@RequestBody TreatmentStepCreateRequest request) {
+        return ApiResponse.<TreatmentStepResponse>builder()
+                .result(treatmentStepService.createTreatmentStep(request))
                 .build();
     }
+
 }

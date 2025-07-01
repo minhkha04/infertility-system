@@ -29,11 +29,10 @@ public class PublicServiceService {
 
     public ServiceDetailResponse getServiceDetail(Long id) {
         PublicServiceProjection publicServiceProjection = treatmentServiceRepository.getPublicServiceById(id);
-        List<TreatmentStageResponse> treatmentStageResponses = treatmentStageService.findByTypeId(publicServiceProjection.getTypeId());
+        List<TreatmentStageResponse> treatmentStageResponses = treatmentStageService.findByServiceId(publicServiceProjection.getServiceId());
         return ServiceDetailResponse.builder()
                 .serviceId(publicServiceProjection.getServiceId())
                 .serviceName(publicServiceProjection.getServiceName())
-                .typeName(publicServiceProjection.getTypeName())
                 .description(publicServiceProjection.getDescription())
                 .coverImageUrl(publicServiceProjection.getCoverImageUrl())
                 .price(publicServiceProjection.getPrice())

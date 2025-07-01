@@ -14,8 +14,6 @@ public class TreatmentServiceResponse {
     String description;
     double price;
     int duration;
-    int treatmentTypeId;
-    String treatmentTypeName;
     String createdBy;
     String coverImageUrl;
     boolean isRemove;

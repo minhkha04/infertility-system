@@ -28,11 +28,6 @@ public class TreatmentService {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "type_id", nullable = false)
-    private TreatmentType type;
-
     @Size(max = 255)
     @NotNull
     @Column(name = "name", nullable = false)
@@ -69,5 +64,8 @@ public class TreatmentService {
     @Size(max = 255)
     @Column(name = "cover_image_url")
     private String coverImageUrl;
+
+    @OneToMany(mappedBy = "service")
+    private Set<TreatmentStage> treatmentStages = new LinkedHashSet<>();
 
 }

@@ -19,7 +19,7 @@ import lombok.experimental.SuperBuilder;
 public class TreatmentStageUpdateRequest {
 
     @NotBlank(message = "{validation.required}")
-    Long typeId;
+    Long serviceId;
 
     @NotBlank(message = "{validation.required}")
     @Size(max = 255, message = "{validation.size}")
@@ -32,5 +32,5 @@ public class TreatmentStageUpdateRequest {
     String expectedDayRange;
 
     @NotNull(message = "{validation.required}")
-    Integer orderIndex;
+    int orderIndex;
 }

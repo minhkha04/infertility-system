@@ -4,10 +4,13 @@ import com.emmkay.infertility_system.modules.payment.service.PaymentTransactionS
 import com.emmkay.infertility_system.modules.shared.enums.RoleName;
 import com.emmkay.infertility_system.modules.shared.security.CurrentUserUtils;
 import com.emmkay.infertility_system.modules.treatment.dto.request.RegisterServiceRequest;
+import com.emmkay.infertility_system.modules.treatment.dto.request.TreatmentRecordUpdateRequest;
+import com.emmkay.infertility_system.modules.treatment.dto.request.TreatmentStepCreateRequest;
 import com.emmkay.infertility_system.modules.treatment.dto.response.TreatmentRecordResponse;
 import com.emmkay.infertility_system.modules.shared.exception.AppException;
 import com.emmkay.infertility_system.modules.shared.exception.ErrorCode;
 import com.emmkay.infertility_system.modules.treatment.enums.TreatmentRecordStatus;
+import com.emmkay.infertility_system.modules.treatment.enums.TreatmentStepStatus;
 import com.emmkay.infertility_system.modules.treatment.mapper.TreatmentRecordMapper;
 import com.emmkay.infertility_system.modules.appointment.service.AppointmentService;
 import com.emmkay.infertility_system.modules.doctor.entity.Doctor;
@@ -15,12 +18,10 @@ import com.emmkay.infertility_system.modules.doctor.repository.DoctorRepository;
 import com.emmkay.infertility_system.modules.doctor.service.DoctorService;
 import com.emmkay.infertility_system.modules.treatment.entity.TreatmentRecord;
 import com.emmkay.infertility_system.modules.treatment.entity.TreatmentService;
-import com.emmkay.infertility_system.modules.treatment.entity.TreatmentStage;
 import com.emmkay.infertility_system.modules.treatment.entity.TreatmentStep;
 import com.emmkay.infertility_system.modules.treatment.projection.TreatmentRecordBasicProjection;
 import com.emmkay.infertility_system.modules.treatment.repository.TreatmentRecordRepository;
 import com.emmkay.infertility_system.modules.treatment.repository.TreatmentServiceRepository;
-import com.emmkay.infertility_system.modules.treatment.repository.TreatmentStageRepository;
 import com.emmkay.infertility_system.modules.user.entity.User;
 import com.emmkay.infertility_system.modules.user.repository.UserRepository;
 import lombok.AccessLevel;
@@ -44,7 +45,6 @@ import java.util.List;
 public class TreatmentRecordService {
 
     TreatmentRecordRepository treatmentRecordRepository;
-    TreatmentStageRepository treatmentStageRepository;
     UserRepository userRepository;
     DoctorRepository doctorRepository;
     TreatmentRecordMapper treatmentRecordMapper;
@@ -126,7 +126,7 @@ public class TreatmentRecordService {
         TreatmentRecordResponse treatmentRecordResponse = treatmentRecordMapper
                 .toTreatmentRecordResponse(treatmentRecord);
         treatmentRecordResponse.setTreatmentSteps(treatmentStepService.getStepsByRecordId(treatmentRecord.getId()));
-        treatmentRecordResponse.setIsPaid(paymentTransactionService.isPaid(treatmentRecordId));
+        treatmentRecordResponse.setPaid(paymentTransactionService.isPaid(treatmentRecordId));
         RoleName roleName = RoleName.formString(scope);
         switch (roleName) {
             case CUSTOMER:
@@ -179,7 +179,6 @@ public class TreatmentRecordService {
         if (!appointmentService.isDoctorAvailable(doctor.getId(), request.getStartDate(), request.getShift())) {
             throw new AppException(ErrorCode.DOCTOR_NOT_AVAILABLE);
         }
-
         TreatmentRecord treatmentRecord = TreatmentRecord.builder()
                 .customer(customer)
                 .doctor(doctor)
@@ -190,19 +189,14 @@ public class TreatmentRecordService {
                 .cd1Date(request.getCd1Date())
                 .build();
         TreatmentRecord saveTreatmentRecord = treatmentRecordRepository.save(treatmentRecord);
-
-        List<TreatmentStage> stages = treatmentStageRepository.findByTypeIdOrderByOrderIndexAsc(treatmentService.getType().getId());
-        List<TreatmentStep> steps = treatmentStepService.buildSteps(saveTreatmentRecord, stages, request.getStartDate());
-
-        TreatmentStep firstStep = steps.stream()
-                .filter(step -> step.getStage().getOrderIndex() == 1)
-                .findFirst()
-                .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_STEP_NOT_FOUND));
-
-        appointmentService.createInitialAppointment(customer, doctor, request.getStartDate(), request.getShift(), firstStep);
-
-        TreatmentRecordResponse treatmentRecordResponse = treatmentRecordMapper.toTreatmentRecordResponse(saveTreatmentRecord);
-        treatmentRecordResponse.setTreatmentSteps(treatmentStepService.saveAll(steps));
+        TreatmentStep treatmentStep = treatmentStepService.createFirstStepInit(TreatmentStepCreateRequest.builder()
+                .treatmentRecordId(saveTreatmentRecord.getId())
+                .stageId(0L)
+                .scheduledDate(request.getStartDate())
+                .status(TreatmentStepStatus.CONFIRMED)
+                .build());
+        log.info("Created treatment step: {}", treatmentStep.getId());
+        appointmentService.createInitialAppointment(customer, doctor, request.getStartDate(), request.getShift(), treatmentStep, true, null);
     }
 
     @Transactional
@@ -213,6 +207,7 @@ public class TreatmentRecordService {
 
         if (treatmentRecord.getStatus() == TreatmentRecordStatus.COMPLETED
                 || treatmentRecord.getStatus() == TreatmentRecordStatus.CANCELLED) {
+            log.info("Treatment record {} is already completed or cancelled", recordId);
             throw new AppException(ErrorCode.CANNOT_CANCEL_TREATMENT);
         }
 
@@ -221,19 +216,24 @@ public class TreatmentRecordService {
         }
 
         treatmentRecord.setStatus(TreatmentRecordStatus.CANCELLED);
+        log.info("Cancel treatment record: {}", recordId);
         treatmentStepService.cancelStepsByRecordId(recordId);
         treatmentRecordRepository.save(treatmentRecord);
     }
 
-    public TreatmentRecordResponse updateCd1TreatmentRecord(Long recordId, LocalDate cd1) {
+    @PreAuthorize("hasRole('DOCTOR')")
+    public TreatmentRecordResponse updateTreatmentRecord(TreatmentRecordUpdateRequest request, Long recordId) {
         TreatmentRecord treatmentRecord = treatmentRecordRepository.findById(recordId)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
         canChange(treatmentRecord);
         if (treatmentRecord.getStatus() == TreatmentRecordStatus.COMPLETED
                 || treatmentRecord.getStatus() == TreatmentRecordStatus.CANCELLED) {
-            throw new AppException(ErrorCode.CANNOT_CANCEL_TREATMENT);
+            throw new AppException(ErrorCode.CAN_UPDATE_TREATMENT_RECORD);
         }
-        treatmentRecord.setCd1Date(cd1);
+        TreatmentService treatmentService = treatmentServiceRepository.findById(request.getServiceId())
+                .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_SERVICE_NOT_EXISTED));
+        treatmentRecordMapper.updateTreatmentRecord(treatmentRecord, request);
+        treatmentRecord.setService(treatmentService);
         return treatmentRecordMapper.toTreatmentRecordResponse(treatmentRecordRepository.save(treatmentRecord));
     }
 

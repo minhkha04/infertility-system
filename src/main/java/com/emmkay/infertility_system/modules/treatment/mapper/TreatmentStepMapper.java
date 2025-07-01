@@ -1,5 +1,6 @@
 package com.emmkay.infertility_system.modules.treatment.mapper;
 
+import com.emmkay.infertility_system.modules.treatment.dto.request.TreatmentStepCreateRequest;
 import com.emmkay.infertility_system.modules.treatment.dto.request.TreatmentStepUpdateRequest;
 import com.emmkay.infertility_system.modules.treatment.dto.response.TreatmentStepResponse;
 import com.emmkay.infertility_system.modules.treatment.entity.TreatmentStep;
@@ -15,4 +16,6 @@ public interface TreatmentStepMapper {
     TreatmentStepResponse toTreatmentStepResponse(TreatmentStep treatmentStep);
 
     void updateTreatmentStep(@MappingTarget TreatmentStep treatmentStep, TreatmentStepUpdateRequest request);
+
+    TreatmentStep toTreatmentStep(TreatmentStepCreateRequest request);
 }

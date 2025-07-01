@@ -13,7 +13,7 @@ import java.util.List;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class TreatmentRecordResponse {
-    Long id;
+    long id;
     String customerId;
     String customerName;
     String doctorName;
@@ -22,6 +22,7 @@ public class TreatmentRecordResponse {
     LocalDate endDate;
     TreatmentRecordStatus status;
     LocalDate createdDate;
-    Boolean isPaid;
+    boolean isPaid;
+    long treatmentServiceId;
     List<TreatmentStepResponse> treatmentSteps;
 }

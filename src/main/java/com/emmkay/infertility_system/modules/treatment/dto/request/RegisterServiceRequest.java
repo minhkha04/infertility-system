@@ -17,7 +17,7 @@ public class RegisterServiceRequest {
     String doctorId;
 
     @NotNull(message = "{validation.required}")
-    Long treatmentServiceId;
+    long treatmentServiceId;
 
     @NotNull(message = "{validation.required}")
     LocalDate startDate;

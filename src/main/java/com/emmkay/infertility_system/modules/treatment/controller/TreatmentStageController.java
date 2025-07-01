@@ -21,10 +21,10 @@ public class TreatmentStageController {
 
     TreatmentStageService treatmentStageService;
 
-    @GetMapping("/{typeId}/find-by-type")
-    public ApiResponse<List<TreatmentStageResponse>> findByTypeId(@PathVariable Long typeId) {
+    @GetMapping("/{serviceId}/find-by-service")
+    public ApiResponse<List<TreatmentStageResponse>> findByTypeId(@PathVariable Long serviceId) {
         return ApiResponse.<List<TreatmentStageResponse>>builder()
-                .result(treatmentStageService.findByTypeId(typeId))
+                .result(treatmentStageService.findByServiceId(serviceId))
                 .build();
     }
 

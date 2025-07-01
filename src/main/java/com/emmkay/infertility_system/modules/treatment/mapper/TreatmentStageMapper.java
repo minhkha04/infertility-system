@@ -11,14 +11,13 @@ import org.mapstruct.MappingTarget;
 @Mapper(componentModel = "spring")
 public interface TreatmentStageMapper {
 
-    @Mapping(target = "type", ignore = true)
+    @Mapping(target = "service", ignore = true)
     TreatmentStage toTreatmentStage(TreatmentStageCreateRequest request);
 
 
-    @Mapping(target = "type", ignore = true)
     void updateTreatmentStage(@MappingTarget TreatmentStage treatmentStage, TreatmentStageUpdateRequest request);
 
-    @Mapping(target = "typeId", source = "type.id")
-    @Mapping(target = "typeName", source = "type.name")
+    @Mapping(target = "serviceId", source = "service.id")
+    @Mapping(target = "serviceName", source = "service.name")
     TreatmentStageResponse toTreatmentStageResponse(TreatmentStage treatmentStage);
 }

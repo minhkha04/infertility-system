@@ -50,7 +50,6 @@ public class TreatmentRecord {
     @Column(name = "end_date")
     private LocalDate endDate;
 
-    @Lob
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private TreatmentRecordStatus status;
@@ -64,6 +63,4 @@ public class TreatmentRecord {
 
     @Column(name = "cd1_date")
     private LocalDate cd1Date;
-
-
 }

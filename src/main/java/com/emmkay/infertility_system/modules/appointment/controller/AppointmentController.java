@@ -57,7 +57,6 @@ public class AppointmentController {
                 .result(appointmentService.changeAppointmentForCustomer(appointmentId, request))
                 .build();
     }
-
     @PostMapping("")
     public ApiResponse<AppointmentResponse> createAppointment(
             @RequestBody @Valid AppointmentCreateRequest request) {

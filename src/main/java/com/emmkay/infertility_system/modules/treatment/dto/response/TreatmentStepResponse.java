@@ -12,11 +12,11 @@ import java.time.LocalDate;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class TreatmentStepResponse {
-    Long id;
+    long id;
     String name;
     LocalDate scheduledDate;
     LocalDate actualDate;
     String notes;
     TreatmentStepStatus status;
-    Integer orderIndex;
+    int orderIndex;
 }

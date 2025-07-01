@@ -29,10 +29,6 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             """)
     int countActiveByDoctorIdAndDateAndShift(@Param("doctorId") String doctorId, @Param("date") LocalDate date, @Param("shift") Shift shift);
 
-    @Query("update Appointment a set a.status = :status where a.treatmentStep = :treatmentStep")
-    @Modifying
-    void updateStatusByTreatmentStep(AppointmentStatus status, TreatmentStep treatmentStep);
-
     boolean existsByStatusInAndTreatmentStep(Collection<AppointmentStatus> statuses, TreatmentStep treatmentStep);
 
     @Query(value = """
@@ -44,7 +40,6 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
                        a.shift AS shift,
                        a.status AS status,
                        a.treatmentStep.stepType AS step,
-                       a.purpose AS purpose,
                        a.treatmentStep.record.id AS recordId
                 FROM Appointment a
                 WHERE
@@ -69,5 +64,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             """)
     Page<DoctorTodayAppointmentProjection> findTodayAppointmentsByDoctorId(String doctorId, Pageable pageable);
 
-    Appointment getAppointmentsByTreatmentStepId(Long treatmentStepId);
+    void deleteByTreatmentStep(TreatmentStep treatmentStep);
+
+    Appointment getAppointmentsByTreatmentStep(TreatmentStep treatmentStep);
 }

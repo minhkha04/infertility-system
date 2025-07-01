@@ -21,11 +21,6 @@ public class TreatmentStage {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "type_id", nullable = false)
-    private TreatmentType type;
-
     @Size(max = 255)
     @NotNull
     @Column(name = "name", nullable = false)
@@ -46,4 +41,7 @@ public class TreatmentStage {
     @OneToMany(mappedBy = "stage")
     private Set<TreatmentStep> treatmentSteps = new LinkedHashSet<>();
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "service_id")
+    private TreatmentService service;
 }

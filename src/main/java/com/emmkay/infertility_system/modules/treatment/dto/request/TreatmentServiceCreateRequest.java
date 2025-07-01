@@ -1,10 +1,14 @@
 package com.emmkay.infertility_system.modules.treatment.dto.request;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -26,7 +30,7 @@ public class TreatmentServiceCreateRequest {
     @Min(value = 1, message = "{validation.min}")
     int duration;
 
-    @NotNull(message = "{validation.required}")
-    Long treatmentTypeId;
-
+    @NotEmpty
+    @Valid
+    List<TreatmentStageCreateRequest> treatmentStages;
 }
