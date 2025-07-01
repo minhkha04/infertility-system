@@ -53,7 +53,9 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
                     SELECT
                         tr.doctor.id AS doctorId,
                         tr.customer.id AS customerId,
-                        tr.service.id AS serviceId
+                        tr.service.id AS serviceId,
+                        tr.service.name AS serviceName,
+                        tr.doctor.users.fullName AS doctorFullName
                     FROM TreatmentRecord tr
                     WHERE tr.id = :recordId
             """)

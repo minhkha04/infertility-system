@@ -44,7 +44,7 @@ public enum ErrorCode {
     CANNOT_CANCEL_TREATMENT(1031, "Không thể huỷ hồ sơ điều trị này", HttpStatus.BAD_REQUEST),
     APPOINTMENT_NOT_FOUND(1032, "Không tìm thấy lịch hẹn", HttpStatus.NOT_FOUND),
     DOCTOR_NOT_AVAILABLE(1033, "Bác sĩ đã đủ lịch hẹn vào ngày và ca làm được chọn", HttpStatus.BAD_REQUEST),
-    APPOINTMENT_IS_COMPLETED(1034, "Không thể đổi lịch hẹn đã hoàn tất", HttpStatus.BAD_REQUEST),
+    APPOINTMENT_IS_COMPLETED(1034, "Không thể thay đổi trạng thái", HttpStatus.BAD_REQUEST),
     CAN_NOT_BE_UPDATED_STATUS(1036, "Không thể cập nhật trạng thái", HttpStatus.BAD_REQUEST),
     INVALID_IMAGE_FILE(1037, "File ảnh không hợp lệ. Chỉ chấp nhận JPG, JPEG, PNG", HttpStatus.BAD_REQUEST),
     BLOG_NOT_EXISTED(1038, "Không tìm thấy bài viết", HttpStatus.NOT_FOUND),
@@ -76,7 +76,7 @@ public enum ErrorCode {
     INVALID_EMAIL_TYPE(1069, "Loại email không hợp lệ", HttpStatus.INTERNAL_SERVER_ERROR),
     TEMPLATE_NOT_FOUND(1070, "Không tìm thấy mẫu email", HttpStatus.INTERNAL_SERVER_ERROR),
     APPOINTMENT_EXISTED(1071, "Đã có lịch hẹn cho bước điều trị này", HttpStatus.BAD_REQUEST),
-    DOCTOR_DONT_WORK_ON_THIS_DATE(1072, "Bác sĩ không làm việc vào ngày này", HttpStatus.BAD_REQUEST)
+    DOCTOR_DONT_WORK_ON_THIS_DATE(1072, "Bác sĩ không có lịch làm việc vào thời gian này", HttpStatus.BAD_REQUEST)
     ;
 
     int code;

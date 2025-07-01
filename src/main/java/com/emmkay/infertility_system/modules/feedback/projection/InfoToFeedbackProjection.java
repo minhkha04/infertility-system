@@ -4,4 +4,6 @@ public interface InfoToFeedbackProjection {
     String getDoctorId();
     String getCustomerId();
     String getServiceId();
+    String getServiceName();
+    String getDoctorFullName();
 }

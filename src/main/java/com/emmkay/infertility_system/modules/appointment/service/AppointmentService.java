@@ -40,6 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -205,7 +206,8 @@ public class AppointmentService {
     public AppointmentResponse updateStatus(Long appointmentId, AppointmentStatusUpdateRequest request) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new AppException(ErrorCode.APPOINTMENT_NOT_FOUND));
-        if (appointment.getStatus() == AppointmentStatus.COMPLETED) {
+        if (appointment.getStatus() == AppointmentStatus.COMPLETED
+            || appointment.getStatus() == AppointmentStatus.CANCELLED) {
             throw new AppException(ErrorCode.APPOINTMENT_IS_COMPLETED);
         }
 
@@ -236,14 +238,16 @@ public class AppointmentService {
         reminderService.createReminderForAppointment(appointment);
     }
 
+    private void checkDoctorHasWorkSchedule(String doctorId, LocalDate date, List<Shift> shift) {
+        workScheduleRepository.findByDoctorIdAndWorkDateAndShiftIn(doctorId, date, shift)
+                .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_DONT_WORK_ON_THIS_DATE));
+    }
+
     @PreAuthorize("hasRole('DOCTOR')")
     @Transactional
     public AppointmentResponse createAppointment(AppointmentCreateRequest req) {
         boolean isAvailable = isDoctorAvailable(req.getDoctorId(), req.getAppointmentDate(), req.getShift());
-        workScheduleRepository.findByDoctorIdAndWorkDate(req.getDoctorId(), req.getAppointmentDate())
-                .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_DONT_WORK_ON_THIS_DATE));
-
-
+        checkDoctorHasWorkSchedule(req.getDoctorId(), req.getAppointmentDate(), List.of(req.getShift(), Shift.FULL_DAY));
         if (!isAvailable) {
             throw new AppException(ErrorCode.DOCTOR_NOT_AVAILABLE);
         }
@@ -315,8 +319,7 @@ public class AppointmentService {
     public AppointmentResponse changeAppointmentForCustomer(Long appointmentId, ChangeAppointmentByCustomerRequest request) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new AppException(ErrorCode.APPOINTMENT_NOT_FOUND));
-        workScheduleRepository.findByDoctorIdAndWorkDate(appointment.getDoctor().getId(), request.getRequestedDate())
-                .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_DONT_WORK_ON_THIS_DATE));
+        checkDoctorHasWorkSchedule(appointment.getDoctor().getId(), request.getRequestedDate(), List.of(request.getRequestedShift(), Shift.FULL_DAY));
         validateAppointmentAvailableForChange(appointment, request.getRequestedDate(), request.getRequestedShift());
         validateCanChangeAppointment(appointment);
 
@@ -339,8 +342,7 @@ public class AppointmentService {
     public AppointmentResponse changeAppointmentForManagerOrDoctor(Long appointmentId, ChangeAppointmentByDoctorOrManagerRequest request) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new AppException(ErrorCode.APPOINTMENT_NOT_FOUND));
-        workScheduleRepository.findByDoctorIdAndWorkDate(appointment.getDoctor().getId(), request.getAppointmentDate())
-                .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_DONT_WORK_ON_THIS_DATE));
+        checkDoctorHasWorkSchedule(appointment.getDoctor().getId(), request.getAppointmentDate(), List.of(request.getShift(), Shift.FULL_DAY));
         validateCanChangeAppointment(appointment);
         validateAppointmentAvailableForChange(appointment, request.getAppointmentDate(), request.getShift());
 
