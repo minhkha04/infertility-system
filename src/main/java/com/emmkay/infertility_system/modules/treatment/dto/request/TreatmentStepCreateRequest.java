@@ -16,13 +16,13 @@ import java.time.LocalDate;
 public class TreatmentStepCreateRequest {
 
     @NotBlank(message = "{validation.required}")
-    Long stageId;
+    long stageId;
     @NotBlank(message = "{validation.required}")
     LocalDate startDate;
     @NotBlank(message = "{validation.required}")
     TreatmentStepStatus status;
     @NotBlank(message = "{validation.required}")
-    Long treatmentRecordId;
+    long treatmentRecordId;
     String notes;
 
     boolean isAuto;

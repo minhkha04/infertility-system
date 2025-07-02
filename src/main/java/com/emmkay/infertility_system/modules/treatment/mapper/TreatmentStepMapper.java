@@ -13,6 +13,7 @@ public interface TreatmentStepMapper {
 
     @Mapping(target = "name", source = "stage.name")
     @Mapping(target = "orderIndex", source = "stage.orderIndex")
+    @Mapping(target = "treatmentStageId",source = "stage.id")
     TreatmentStepResponse toTreatmentStepResponse(TreatmentStep treatmentStep);
 
     void updateTreatmentStep(@MappingTarget TreatmentStep treatmentStep, TreatmentStepUpdateRequest request);

@@ -63,7 +63,7 @@ public class AppointmentService {
     private void validateCanChangeAppointment(Appointment appointment) {
         String scope = CurrentUserUtils.getCurrentScope();
         String currentUserId = CurrentUserUtils.getCurrentUserId();
-        if (scope == null || scope.isBlank() || currentUserId == null || currentUserId.isBlank()) {
+        if (scope == null  || currentUserId == null) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
         RoleName roleName = RoleName.valueOf(scope.toUpperCase());

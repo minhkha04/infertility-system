@@ -75,10 +75,10 @@ public enum ErrorCode {
     UNSUPPORTED_OAUTH_PROVIDER(1068, "Nhà cung cấp OAuth không được hỗ trợ", HttpStatus.BAD_REQUEST),
     INVALID_EMAIL_TYPE(1069, "Loại email không hợp lệ", HttpStatus.INTERNAL_SERVER_ERROR),
     TEMPLATE_NOT_FOUND(1070, "Không tìm thấy mẫu email", HttpStatus.INTERNAL_SERVER_ERROR),
-    APPOINTMENT_EXISTED(1071, "Đã có lịch hẹn cho bước điều trị này", HttpStatus.BAD_REQUEST),
     DOCTOR_DONT_WORK_ON_THIS_DATE(1072, "Bác sĩ không có lịch làm việc vào thời gian này", HttpStatus.BAD_REQUEST),
     TREATMENT_STAGE_NOT_FOUND(1073, "Không tìm thấy giai đoạn điều trị", HttpStatus.NOT_FOUND),
     CAN_UPDATE_TREATMENT_RECORD(1074, "Không thể cập nhật hồ sơ điều trị này", HttpStatus.BAD_REQUEST),
+    CAN_NOT_CHANGE_SERVICE_IN_TREATMENT_RECORD(1075, "Không thể thay đổi dịch vụ vì đã trong tiến trình", HttpStatus.BAD_REQUEST),
     ;
 
     int code;

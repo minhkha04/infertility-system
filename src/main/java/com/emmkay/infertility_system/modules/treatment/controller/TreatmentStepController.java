@@ -37,4 +37,11 @@ public class TreatmentStepController {
                 .build();
     }
 
+    @GetMapping("/{stepId}")
+    public ApiResponse<TreatmentStepResponse> getTreatmentStepById(@PathVariable Long stepId) {
+        return ApiResponse.<TreatmentStepResponse>builder()
+                .result(treatmentStepService.getStepsById(stepId))
+                .build();
+    }
+
 }

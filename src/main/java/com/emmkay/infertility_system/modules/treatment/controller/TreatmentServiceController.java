@@ -24,7 +24,6 @@ import java.util.List;
 @RequestMapping("/api/v1/treatment-services")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@PreAuthorize("hasRole('MANAGER')")
 public class TreatmentServiceController {
 
     TreatmentServiceService treatmentServiceService;

@@ -3,6 +3,7 @@ package com.emmkay.infertility_system.modules.treatment.controller;
 import com.emmkay.infertility_system.modules.treatment.dto.request.TreatmentStageUpdateRequest;
 import com.emmkay.infertility_system.modules.shared.dto.response.ApiResponse;
 import com.emmkay.infertility_system.modules.treatment.dto.response.TreatmentStageResponse;
+import com.emmkay.infertility_system.modules.treatment.projection.TreatmentStageSelectProjection;
 import com.emmkay.infertility_system.modules.treatment.service.TreatmentStageService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +17,6 @@ import java.util.List;
 @RequestMapping("/api/v1/treatment-stages")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@PreAuthorize("hasRole('MANAGER')")
 public class TreatmentStageController {
 
     TreatmentStageService treatmentStageService;
@@ -32,6 +32,13 @@ public class TreatmentStageController {
     public ApiResponse<TreatmentStageResponse> updateTreatmentStage(@PathVariable Long id, @RequestBody TreatmentStageUpdateRequest request) {
         return ApiResponse.<TreatmentStageResponse>builder()
                 .result(treatmentStageService.updateTreatmentStage(id, request))
+                .build();
+    }
+
+    @GetMapping("/{serviceId}/select")
+    public ApiResponse<List<TreatmentStageSelectProjection>> getStageSelect(@PathVariable Long serviceId) {
+        return ApiResponse.<List<TreatmentStageSelectProjection>>builder()
+                .result(treatmentStageService.getTreatmentStageSelect(serviceId))
                 .build();
     }
 

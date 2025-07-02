@@ -8,6 +8,7 @@ import com.emmkay.infertility_system.modules.treatment.entity.TreatmentStage;
 import com.emmkay.infertility_system.modules.shared.exception.AppException;
 import com.emmkay.infertility_system.modules.shared.exception.ErrorCode;
 import com.emmkay.infertility_system.modules.treatment.mapper.TreatmentStageMapper;
+import com.emmkay.infertility_system.modules.treatment.projection.TreatmentStageSelectProjection;
 import com.emmkay.infertility_system.modules.treatment.repository.TreatmentServiceRepository;
 import com.emmkay.infertility_system.modules.treatment.repository.TreatmentStageRepository;
 import lombok.AccessLevel;
@@ -68,9 +69,10 @@ public class TreatmentStageService {
 
     }
 
-//    public void deleteTreatmentStage(Long id) {
-//        treatmentStageRepository.findById(id)
-//                .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_STAGE_NOT_EXISTED));
-//        treatmentStageRepository.deleteById(id);
-//    }
+    public List<TreatmentStageSelectProjection> getTreatmentStageSelect(Long serviceId) {
+        return treatmentStageRepository.getTreatmentStageSelect(serviceId)
+                .stream()
+                .toList();
+    }
+
 }

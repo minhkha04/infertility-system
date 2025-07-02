@@ -15,9 +15,6 @@ import java.util.Optional;
 @Repository
 public interface TreatmentStepRepository extends JpaRepository<TreatmentStep, Long> {
 
-    List<TreatmentStep> findByRecordIdOrderByIdAsc(Long recordId);
-
-    Optional<TreatmentStep> findByRecord_IdAndStageOrderIndex(Long recordId, Integer stageOrderIndex);
-
+    @Query("SELECT ts FROM TreatmentStep AS ts WHERE ts.record.id = :recordId ORDER BY ts.stage.orderIndex ASC")
     List<TreatmentStep> getAllByRecordId(Long recordId);
 }

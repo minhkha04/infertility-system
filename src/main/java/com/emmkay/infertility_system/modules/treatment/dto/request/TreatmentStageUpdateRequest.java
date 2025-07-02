@@ -19,7 +19,7 @@ import lombok.experimental.SuperBuilder;
 public class TreatmentStageUpdateRequest {
 
     @NotBlank(message = "{validation.required}")
-    Long serviceId;
+    long serviceId;
 
     @NotBlank(message = "{validation.required}")
     @Size(max = 255, message = "{validation.size}")

@@ -3,6 +3,8 @@ package com.emmkay.infertility_system.modules.treatment.service;
 import com.emmkay.infertility_system.modules.appointment.entity.Appointment;
 import com.emmkay.infertility_system.modules.appointment.enums.AppointmentStatus;
 import com.emmkay.infertility_system.modules.appointment.service.AppointmentService;
+import com.emmkay.infertility_system.modules.shared.enums.RoleName;
+import com.emmkay.infertility_system.modules.shared.security.CurrentUserUtils;
 import com.emmkay.infertility_system.modules.treatment.dto.request.TreatmentStepCreateRequest;
 import com.emmkay.infertility_system.modules.treatment.dto.request.TreatmentStepUpdateRequest;
 import com.emmkay.infertility_system.modules.treatment.dto.response.TreatmentStepResponse;
@@ -26,7 +28,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -42,21 +43,42 @@ public class TreatmentStepService {
     TreatmentRecordRepository treatmentRecordRepository;
     AppointmentService appointmentService;
 
+    private void canChange(String doctorId) {
+        String scope = CurrentUserUtils.getCurrentScope();
+        String currentUserId = CurrentUserUtils.getCurrentUserId();
+        if (scope == null || currentUserId == null) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+        RoleName roleName = RoleName.formString(scope);
+        switch (roleName) {
+            case MANAGER:
+                break;
+            case DOCTOR:
+                if (!doctorId.equals(currentUserId)) {
+                    throw new AppException(ErrorCode.UNAUTHORIZED);
+                }
+                break;
+            default:
+                throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+    }
+
     @Transactional
     public void cancelStepsByRecordId(Long recordId) {
         List<TreatmentStep> treatmentStepList = treatmentStepRepository.getAllByRecordId(recordId);
         treatmentStepList.forEach(x -> {
-            log.info("Cancel treatment step: {}", x.getId());
             x.setStatus(TreatmentStepStatus.CANCELLED);
-            Appointment appointment = appointmentRepository.getAppointmentsByTreatmentStep(x);
-            reminderRepository.deleteByAppointment(appointment);
+            List<Appointment> appointmentList = appointmentRepository.getAppointmentsByTreatmentStep(x);
+            appointmentList.forEach(
+                    reminderRepository::deleteByAppointment
+            );
             appointmentRepository.deleteByTreatmentStep(x);
         });
         treatmentStepRepository.saveAll(treatmentStepList);
     }
 
     public List<TreatmentStepResponse> getStepsByRecordId(Long recordId) {
-        return treatmentStepRepository.findByRecordIdOrderByIdAsc(recordId)
+        return treatmentStepRepository.getAllByRecordId(recordId)
                 .stream()
                 .map(treatmentStepMapper::toTreatmentStepResponse)
                 .toList();
@@ -65,25 +87,26 @@ public class TreatmentStepService {
     public TreatmentStepResponse updateTreatmentStepById(Long id, TreatmentStepUpdateRequest request) {
         TreatmentStep treatmentStep = treatmentStepRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_STEP_NOT_FOUND));
+        TreatmentRecord record = treatmentStep.getRecord();
+        canChange(record.getDoctor().getId());
         if (request.getStatus() == TreatmentStepStatus.COMPLETED) {
-            List<AppointmentStatus> appointmentStatuses = List.of(AppointmentStatus.CONFIRMED, AppointmentStatus.PENDING_CHANGE, AppointmentStatus.REJECTED);
-            boolean hasUnprocessedAppointments  = appointmentRepository.existsByStatusInAndTreatmentStep(appointmentStatuses, treatmentStep);
-            if (hasUnprocessedAppointments ) {
-                throw new AppException(ErrorCode.TREATMENT_CAN_NOT_DONE);
-            }
-            TreatmentStage stage = treatmentStep.getStage();
-
-            int currentOder = stage.getOrderIndex();
-            if (currentOder > 1) {
-                Optional<TreatmentStep> prevStepOpt = treatmentStepRepository.findByRecord_IdAndStageOrderIndex(treatmentStep.getRecord().getId(), currentOder - 1);
-                if (prevStepOpt.isPresent()) {
-                    TreatmentStepStatus prevStepStatus = prevStepOpt.get().getStatus();
-                    if (prevStepStatus != TreatmentStepStatus.COMPLETED && prevStepStatus != TreatmentStepStatus.CANCELLED) {
-                        throw new AppException(ErrorCode.TREATMENT_CAN_NOT_DONE);
-                    }
+            List<Appointment> appointmentList = appointmentRepository.getAppointmentsByTreatmentStep(treatmentStep);
+            if (!appointmentList.isEmpty()) {
+                List<AppointmentStatus> appointmentStatuses = List.of(AppointmentStatus.CONFIRMED, AppointmentStatus.PENDING_CHANGE, AppointmentStatus.REJECTED);
+                boolean hasUnprocessedAppointments = appointmentRepository.existsByStatusInAndTreatmentStep(appointmentStatuses, treatmentStep);
+                if (hasUnprocessedAppointments) {
+                    throw new AppException(ErrorCode.TREATMENT_CAN_NOT_DONE);
                 }
             }
+            List<TreatmentStep> treatmentStepList = treatmentStepRepository.getAllByRecordId(record.getId());
+            TreatmentStep prevStep = treatmentStepList.get(treatmentStepList.size() - 2);
+            if (prevStep.getStatus() != TreatmentStepStatus.COMPLETED) {
+                throw new AppException(ErrorCode.TREATMENT_CAN_NOT_DONE);
+            }
         }
+        TreatmentStage stage = treatmentStageRepository.findById(request.getStageId())
+                .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_STAGE_NOT_FOUND));
+        treatmentStep.setStage(stage);
         treatmentStepMapper.updateTreatmentStep(treatmentStep, request);
         return treatmentStepMapper.toTreatmentStepResponse(treatmentStepRepository.save(treatmentStep));
     }
@@ -97,6 +120,7 @@ public class TreatmentStepService {
         treatmentStep.setRecord(record);
         treatmentStep.setStage(stage);
         treatmentStep.setStepType(stage.getName());
+        treatmentStep.setStartDate(request.getStartDate());
         return treatmentStepRepository.save(treatmentStep);
     }
 
@@ -105,6 +129,7 @@ public class TreatmentStepService {
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_STAGE_NOT_FOUND));
         TreatmentRecord record = treatmentRecordRepository.findById(request.getTreatmentRecordId())
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
+        canChange(record.getDoctor().getId());
         TreatmentStep treatmentStep = treatmentStepMapper.toTreatmentStep(request);
         treatmentStep.setRecord(record);
         treatmentStep.setStage(stage);
@@ -114,5 +139,12 @@ public class TreatmentStepService {
             appointmentService.createInitialAppointment(record.getCustomer(), record.getDoctor(), request.getStartDate(), request.getShift(), finalTreatmentStep, false, request.getPurpose());
         }
         return treatmentStepMapper.toTreatmentStepResponse(finalTreatmentStep);
+    }
+
+    public TreatmentStepResponse getStepsById(long id) {
+        TreatmentStep treatmentStep = treatmentStepRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_STEP_NOT_FOUND));
+        canChange(treatmentStep.getRecord().getDoctor().getId());
+        return treatmentStepMapper.toTreatmentStepResponse(treatmentStep);
     }
 }

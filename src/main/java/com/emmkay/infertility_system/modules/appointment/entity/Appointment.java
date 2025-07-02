@@ -56,7 +56,6 @@ public class Appointment {
     @Column(name = "requested_date")
     private LocalDate requestedDate;
 
-    @Size(max = 20)
     @Column(name = "requested_shift", length = 20)
     @Enumerated(EnumType.STRING)
     private Shift requestedShift;

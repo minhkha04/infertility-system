@@ -16,6 +16,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
 
 @Repository
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
@@ -66,5 +67,5 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     void deleteByTreatmentStep(TreatmentStep treatmentStep);
 
-    Appointment getAppointmentsByTreatmentStep(TreatmentStep treatmentStep);
+    List<Appointment> getAppointmentsByTreatmentStep(TreatmentStep treatmentStep);
 }

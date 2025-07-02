@@ -14,9 +14,10 @@ import java.time.LocalDate;
 public class TreatmentStepResponse {
     long id;
     String name;
-    LocalDate scheduledDate;
-    LocalDate actualDate;
+    LocalDate startDate;
+    LocalDate endDate;
     String notes;
     TreatmentStepStatus status;
     int orderIndex;
+    long treatmentStageId;
 }

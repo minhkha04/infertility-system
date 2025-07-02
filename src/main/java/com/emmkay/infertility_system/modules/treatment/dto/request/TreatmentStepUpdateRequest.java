@@ -14,6 +14,8 @@ import java.time.LocalDate;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class TreatmentStepUpdateRequest {
 
+    @NotBlank
+    long stageId;
     @NotBlank(message = "{validation.required}")
     LocalDate startDate;
     @NotBlank(message = "{validation.required}")

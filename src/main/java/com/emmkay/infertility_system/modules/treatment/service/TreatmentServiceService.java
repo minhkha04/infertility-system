@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,11 +40,13 @@ public class TreatmentServiceService {
     UserRepository userRepository;
     TreatmentStageService treatmentStageService;
 
+    @PreAuthorize("hasRole('MANAGER')")
     public Page<TreatmentServiceBasicProjection> searchTreatmentServices(String name, Boolean isRemoved, int page, int size) {
         Pageable pageable = Pageable.ofSize(size).withPage(page);
         return treatmentServiceRepository.searchTreatmentServices(name, isRemoved, pageable);
     }
 
+    @PreAuthorize("hasRole('MANAGER') or hasRole('DOCTOR')")
     @Transactional
     public TreatmentServiceResponse createTreatmentService(TreatmentServiceCreateRequest request) {
 
@@ -70,12 +73,14 @@ public class TreatmentServiceService {
                         .save(treatmentService));
     }
 
+    @PreAuthorize("hasRole('MANAGER') or hasRole('DOCTOR')")
     public TreatmentServiceResponse findById(Long id) {
         TreatmentService treatmentService = treatmentServiceRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_SERVICE_NOT_EXISTED));
         return treatmentServiceMapper.toTreatmentServiceResponse(treatmentService);
     }
 
+    @PreAuthorize("hasRole('MANAGER')")
     public TreatmentServiceResponse updateTreatmentService(Long id, TreatmentServiceUpdateRequest request) {
         TreatmentService treatmentService = treatmentServiceRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_SERVICE_NOT_EXISTED));
@@ -88,6 +93,7 @@ public class TreatmentServiceService {
 
     }
 
+    @PreAuthorize("hasRole('MANAGER')")
     public TreatmentServiceResponse removeTreatmentService(Long id) {
         TreatmentService treatmentService = treatmentServiceRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_SERVICE_NOT_EXISTED));
@@ -95,6 +101,7 @@ public class TreatmentServiceService {
         return treatmentServiceMapper.toTreatmentServiceResponse(treatmentServiceRepository.save(treatmentService));
     }
 
+    @PreAuthorize("hasRole('MANAGER')")
     public TreatmentServiceResponse restoreTreatmentService(Long id) {
         TreatmentService treatmentService = treatmentServiceRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_SERVICE_NOT_EXISTED));
@@ -102,6 +109,7 @@ public class TreatmentServiceService {
         return treatmentServiceMapper.toTreatmentServiceResponse(treatmentServiceRepository.save(treatmentService));
     }
 
+    @PreAuthorize("hasRole('MANAGER')")
     public TreatmentServiceResponse uploadImage(Long id, String imageUrl) {
         TreatmentService treatmentService = treatmentServiceRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_SERVICE_NOT_EXISTED));
@@ -109,7 +117,7 @@ public class TreatmentServiceService {
         return treatmentServiceMapper.toTreatmentServiceResponse(treatmentServiceRepository.save(treatmentService));
     }
 
-
+    @PreAuthorize("hasRole('MANAGER') or hasRole('DOCTOR')")
     public List<TreatmentServiceSelectProjection> getTreatmentServiceSelect () {
         return treatmentServiceRepository.getTreatmentServiceSelect();
     }

@@ -9,6 +9,7 @@ import com.emmkay.infertility_system.modules.treatment.dto.request.TreatmentStep
 import com.emmkay.infertility_system.modules.treatment.dto.response.TreatmentRecordResponse;
 import com.emmkay.infertility_system.modules.shared.exception.AppException;
 import com.emmkay.infertility_system.modules.shared.exception.ErrorCode;
+import com.emmkay.infertility_system.modules.treatment.entity.TreatmentStage;
 import com.emmkay.infertility_system.modules.treatment.enums.TreatmentRecordStatus;
 import com.emmkay.infertility_system.modules.treatment.enums.TreatmentStepStatus;
 import com.emmkay.infertility_system.modules.treatment.mapper.TreatmentRecordMapper;
@@ -22,6 +23,7 @@ import com.emmkay.infertility_system.modules.treatment.entity.TreatmentStep;
 import com.emmkay.infertility_system.modules.treatment.projection.TreatmentRecordBasicProjection;
 import com.emmkay.infertility_system.modules.treatment.repository.TreatmentRecordRepository;
 import com.emmkay.infertility_system.modules.treatment.repository.TreatmentServiceRepository;
+import com.emmkay.infertility_system.modules.treatment.repository.TreatmentStageRepository;
 import com.emmkay.infertility_system.modules.user.entity.User;
 import com.emmkay.infertility_system.modules.user.repository.UserRepository;
 import lombok.AccessLevel;
@@ -36,7 +38,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @Slf4j
 @Service
@@ -53,11 +54,12 @@ public class TreatmentRecordService {
     DoctorService doctorService;
     PaymentTransactionService paymentTransactionService;
     TreatmentServiceRepository treatmentServiceRepository;
+    TreatmentStageRepository treatmentStageRepository;
 
     private void canChange(TreatmentRecord treatmentRecord) {
         String currentUserId = CurrentUserUtils.getCurrentUserId();
         String scope = CurrentUserUtils.getCurrentScope();
-        if (scope == null || scope.isBlank() || currentUserId == null || currentUserId.isBlank()) {
+        if (scope == null || currentUserId == null) {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
         RoleName roleName = RoleName.formString(scope);
@@ -85,7 +87,7 @@ public class TreatmentRecordService {
         String currentUserId = CurrentUserUtils.getCurrentUserId();
         String scope = CurrentUserUtils.getCurrentScope();
 
-        if (scope == null || scope.isBlank() || currentUserId == null || currentUserId.isBlank()) {
+        if (scope == null || currentUserId == null) {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
         RoleName roleName = RoleName.formString(scope);
@@ -117,7 +119,7 @@ public class TreatmentRecordService {
     public TreatmentRecordResponse getTreatmentRecordById(Long treatmentRecordId) {
         String currentUserId = CurrentUserUtils.getCurrentUserId();
         String scope = CurrentUserUtils.getCurrentScope();
-        if (scope == null || scope.isBlank() || currentUserId == null || currentUserId.isBlank()) {
+        if (scope == null || currentUserId == null) {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
 
@@ -163,7 +165,7 @@ public class TreatmentRecordService {
             throw new AppException(ErrorCode.INVALID_START_DATE);
         }
         String currentUserId = CurrentUserUtils.getCurrentUserId();
-        if (currentUserId == null || currentUserId.isBlank()) {
+        if (currentUserId == null) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
         Doctor doctor;
@@ -189,13 +191,14 @@ public class TreatmentRecordService {
                 .cd1Date(request.getCd1Date())
                 .build();
         TreatmentRecord saveTreatmentRecord = treatmentRecordRepository.save(treatmentRecord);
+        TreatmentStage treatmentStage = treatmentStageRepository.findByOrderIndexAndServiceId(0, treatmentService.getId())
+                .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_STAGE_NOT_EXISTED));
         TreatmentStep treatmentStep = treatmentStepService.createFirstStepInit(TreatmentStepCreateRequest.builder()
                 .treatmentRecordId(saveTreatmentRecord.getId())
-                .stageId(0L)
+                .stageId(treatmentStage.getId())
                 .startDate(request.getStartDate())
                 .status(TreatmentStepStatus.CONFIRMED)
                 .build());
-        log.info("Created treatment step: {}", treatmentStep.getId());
         appointmentService.createInitialAppointment(customer, doctor, request.getStartDate(), request.getShift(), treatmentStep, true, null);
     }
 
@@ -207,7 +210,6 @@ public class TreatmentRecordService {
 
         if (treatmentRecord.getStatus() == TreatmentRecordStatus.COMPLETED
                 || treatmentRecord.getStatus() == TreatmentRecordStatus.CANCELLED) {
-            log.info("Treatment record {} is already completed or cancelled", recordId);
             throw new AppException(ErrorCode.CANNOT_CANCEL_TREATMENT);
         }
 
@@ -230,6 +232,13 @@ public class TreatmentRecordService {
                 || treatmentRecord.getStatus() == TreatmentRecordStatus.CANCELLED) {
             throw new AppException(ErrorCode.CAN_UPDATE_TREATMENT_RECORD);
         }
+
+        if (treatmentRecord.getTreatmentSteps().size() >= 2) {
+            if (request.getServiceId() != treatmentRecord.getService().getId()) {
+                throw new AppException(ErrorCode.CAN_NOT_CHANGE_SERVICE_IN_TREATMENT_RECORD);
+            }
+        }
+
         TreatmentService treatmentService = treatmentServiceRepository.findById(request.getServiceId())
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_SERVICE_NOT_EXISTED));
         treatmentRecordMapper.updateTreatmentRecord(treatmentRecord, request);
