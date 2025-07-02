@@ -5,21 +5,18 @@ import com.emmkay.infertility_system.modules.authentication.dto.response.Authent
 import com.emmkay.infertility_system.modules.authentication.dto.response.IntrospectResponse;
 import com.emmkay.infertility_system.modules.authentication.enums.OAuthProvider;
 import com.emmkay.infertility_system.modules.authentication.utils.OtpGenerateUtils;
-import com.emmkay.infertility_system.modules.authentication.utils.OtpValidatorUtils;
 import com.emmkay.infertility_system.modules.authentication.utils.UserValidationUtils;
 import com.emmkay.infertility_system.modules.email.dto.request.EmailRequest;
 import com.emmkay.infertility_system.modules.email.enums.EmailType;
 import com.emmkay.infertility_system.modules.email.service.EmailService;
 import com.emmkay.infertility_system.modules.user.dto.request.UserCreateRequest;
 import com.emmkay.infertility_system.modules.user.dto.response.UserResponse;
-import com.emmkay.infertility_system.modules.authentication.entity.EmailOtp;
 import com.emmkay.infertility_system.modules.user.entity.Role;
 import com.emmkay.infertility_system.modules.user.entity.User;
 import com.emmkay.infertility_system.modules.shared.exception.AppException;
 import com.emmkay.infertility_system.modules.shared.exception.ErrorCode;
 import com.emmkay.infertility_system.modules.shared.security.JwtProvider;
 import com.emmkay.infertility_system.modules.user.mapper.UserMapper;
-import com.emmkay.infertility_system.modules.authentication.repository.EmailOtpRepository;
 import com.emmkay.infertility_system.modules.user.repository.RoleRepository;
 import com.emmkay.infertility_system.modules.user.repository.UserRepository;
 import com.nimbusds.jwt.SignedJWT;
@@ -29,6 +26,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.text.ParseException;
 import java.util.*;
@@ -42,11 +40,11 @@ public class AuthenticationService {
     UserRepository userRepository;
     RoleRepository roleRepository;
     UserMapper userMapper;
-    EmailOtpRepository emailOtpRepository;
     PasswordEncoder passwordEncoder;
     JwtProvider jwtProvider;
     OAuthLoginService oAuthLoginService;
     EmailService emailService;
+    EmailOptService emailOptService;
 
     public AuthenticationResponse loginWithOAuth(String accessToken, OAuthProvider provider) {
         return oAuthLoginService.login(provider, accessToken);
@@ -66,6 +64,7 @@ public class AuthenticationService {
                 .build();
     }
 
+    @Transactional
     public UserResponse register(UserCreateRequest request) {
         Optional<User> userOptional = userRepository.findByUsername(request.getUsername());
         if (userOptional.isPresent()) {
@@ -87,12 +86,15 @@ public class AuthenticationService {
         String otp = OtpGenerateUtils.generate(6);
         EmailRequest emailRequest = EmailRequest.builder()
                 .emailType(EmailType.OTP_VERIFICATION)
+                .subject("Đăng ký tài khoản")
                 .toEmail(request.getEmail())
                 .params(Map.of(
                         "action", "đăng ký tài khoản",
                         "otp", otp
                 ))
                 .build();
+
+        emailOptService.create(request.getEmail(), otp);
         emailService.sendMail(emailRequest);
         return userMapper.toUserResponse(user);
     }
@@ -111,14 +113,11 @@ public class AuthenticationService {
     }
 
     public void verifyOtp(VerifyOtpRequest request) {
-        EmailOtp emailOtp = emailOtpRepository.findById(request.getEmail())
-                .orElseThrow(() -> new AppException(ErrorCode.OTP_NOT_FOUND));
-        OtpValidatorUtils.verify(emailOtp, request.getOtp());
+       emailOptService.verifyOtp(request.getEmail(), request.getOtp());
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         user.setIsVerified(true);
         userRepository.save(user);
-        emailOtpRepository.deleteById(request.getEmail());
     }
 
     public void resendOtp(String email) {
@@ -134,6 +133,7 @@ public class AuthenticationService {
                         "otp", otp
                 ))
                 .build();
+        emailOptService.create(email, otp);
         emailService.sendMail(emailRequest);
     }
 
@@ -151,19 +151,17 @@ public class AuthenticationService {
                         "otp", otp
                 ))
                 .build();
+        emailOptService.create(request.getEmail(), otp);
         emailService.sendMail(emailRequest);
     }
 
     public void resetPassword(ResetPasswordRequest request) {
-        EmailOtp emailOtp = emailOtpRepository.findById(request.getEmail())
-                .orElseThrow(() -> new AppException(ErrorCode.OTP_NOT_FOUND));
-        OtpValidatorUtils.verify(emailOtp, request.getOtp());
+        emailOptService.verifyOtp(request.getEmail(), request.getOtp());
 
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         userRepository.save(user);
-        emailOtpRepository.deleteById(request.getEmail());
     }
 
     public void changePassword(ChangePasswordOtpRequest request) {
@@ -180,6 +178,7 @@ public class AuthenticationService {
                         "otp", otp
                 ))
                 .build();
+        emailOptService.create(request.getEmail(), otp);
         emailService.sendMail(emailRequest);
     }
 
@@ -197,4 +196,3 @@ public class AuthenticationService {
         }
     }
 }
-

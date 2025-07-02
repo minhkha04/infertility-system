@@ -111,7 +111,7 @@ public class TreatmentStepService {
         treatmentStep.setStepType(stage.getName());
         TreatmentStep finalTreatmentStep = treatmentStepRepository.save(treatmentStep);
         if (request.isAuto()) {
-            appointmentService.createInitialAppointment(record.getCustomer(), record.getDoctor(), request.getScheduledDate(), request.getShift(), finalTreatmentStep, false, request.getPurpose());
+            appointmentService.createInitialAppointment(record.getCustomer(), record.getDoctor(), request.getStartDate(), request.getShift(), finalTreatmentStep, false, request.getPurpose());
         }
         return treatmentStepMapper.toTreatmentStepResponse(finalTreatmentStep);
     }

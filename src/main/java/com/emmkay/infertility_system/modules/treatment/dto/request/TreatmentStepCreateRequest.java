@@ -18,7 +18,7 @@ public class TreatmentStepCreateRequest {
     @NotBlank(message = "{validation.required}")
     Long stageId;
     @NotBlank(message = "{validation.required}")
-    LocalDate scheduledDate;
+    LocalDate startDate;
     @NotBlank(message = "{validation.required}")
     TreatmentStepStatus status;
     @NotBlank(message = "{validation.required}")

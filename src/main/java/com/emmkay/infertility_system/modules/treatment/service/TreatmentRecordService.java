@@ -192,7 +192,7 @@ public class TreatmentRecordService {
         TreatmentStep treatmentStep = treatmentStepService.createFirstStepInit(TreatmentStepCreateRequest.builder()
                 .treatmentRecordId(saveTreatmentRecord.getId())
                 .stageId(0L)
-                .scheduledDate(request.getStartDate())
+                .startDate(request.getStartDate())
                 .status(TreatmentStepStatus.CONFIRMED)
                 .build());
         log.info("Created treatment step: {}", treatmentStep.getId());

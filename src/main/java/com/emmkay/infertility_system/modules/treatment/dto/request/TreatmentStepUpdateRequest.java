@@ -15,9 +15,9 @@ import java.time.LocalDate;
 public class TreatmentStepUpdateRequest {
 
     @NotBlank(message = "{validation.required}")
-    LocalDate scheduledDate;
+    LocalDate startDate;
     @NotBlank(message = "{validation.required}")
-    LocalDate actualDate;
+    LocalDate endDate;
     @NotBlank(message = "{validation.required}")
     TreatmentStepStatus status;
     String notes;

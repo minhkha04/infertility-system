@@ -1,5 +1,7 @@
 package com.emmkay.infertility_system.modules.email.service;
 
+import com.emmkay.infertility_system.modules.authentication.entity.EmailOtp;
+import com.emmkay.infertility_system.modules.authentication.repository.EmailOtpRepository;
 import com.emmkay.infertility_system.modules.email.dto.request.EmailRequest;
 import com.emmkay.infertility_system.modules.email.helper.TemplateRenderer;
 import com.emmkay.infertility_system.modules.shared.exception.AppException;
