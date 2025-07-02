@@ -4,4 +4,5 @@ public enum EmailType {
 
     OTP_VERIFICATION,
     REMINDER_APPOINTMENT,
+    REGISTER_SERVICE,
 }

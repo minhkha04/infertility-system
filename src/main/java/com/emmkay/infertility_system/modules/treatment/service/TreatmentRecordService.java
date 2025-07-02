@@ -1,5 +1,8 @@
 package com.emmkay.infertility_system.modules.treatment.service;
 
+import com.emmkay.infertility_system.modules.email.dto.request.EmailRequest;
+import com.emmkay.infertility_system.modules.email.enums.EmailType;
+import com.emmkay.infertility_system.modules.email.service.EmailService;
 import com.emmkay.infertility_system.modules.payment.service.PaymentTransactionService;
 import com.emmkay.infertility_system.modules.shared.enums.RoleName;
 import com.emmkay.infertility_system.modules.shared.security.CurrentUserUtils;
@@ -37,7 +40,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.NumberFormat;
 import java.time.LocalDate;
+import java.util.Locale;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -55,6 +61,7 @@ public class TreatmentRecordService {
     PaymentTransactionService paymentTransactionService;
     TreatmentServiceRepository treatmentServiceRepository;
     TreatmentStageRepository treatmentStageRepository;
+    EmailService emailService;
 
     private void canChange(TreatmentRecord treatmentRecord) {
         String currentUserId = CurrentUserUtils.getCurrentUserId();
@@ -158,19 +165,23 @@ public class TreatmentRecordService {
 //        )) {
 //            throw new AppException(ErrorCode.TREATMENT_ALREADY_IN_PROGRESS);
 //        }
+        String currentUserId = CurrentUserUtils.getCurrentUserId();
+        if (currentUserId == null) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+
         TreatmentService treatmentService = treatmentServiceRepository.findById(request.getTreatmentServiceId())
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_SERVICE_NOT_EXISTED));
 
         if (request.getStartDate().isBefore(LocalDate.now().plusDays(1))) {
             throw new AppException(ErrorCode.INVALID_START_DATE);
         }
-        String currentUserId = CurrentUserUtils.getCurrentUserId();
-        if (currentUserId == null) {
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
-        }
+
         Doctor doctor;
         User customer = userRepository.findById(currentUserId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        // set doctor, if doctor
         if (!request.getDoctorId().isEmpty()) {
             doctor = doctorRepository.findById(request.getDoctorId())
                     .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_NOT_EXISTED));
@@ -200,6 +211,19 @@ public class TreatmentRecordService {
                 .status(TreatmentStepStatus.CONFIRMED)
                 .build());
         appointmentService.createInitialAppointment(customer, doctor, request.getStartDate(), request.getShift(), treatmentStep, true, null);
+        emailService.sendMail(
+                EmailRequest.builder()
+                        .subject("Thông báo đăng ký dịch vụ")
+                        .emailType(EmailType.REGISTER_SERVICE)
+                        .toEmail(customer.getEmail())
+                        .params(Map.of(
+                                "serviceName", treatmentService.getName(),
+                                "doctorName", doctor.getUsers().getFullName(),
+                                "customerName", customer.getFullName(),
+                                "price", NumberFormat.getNumberInstance(new Locale("vi", "VN")).format(treatmentService.getPrice())
+                        ))
+                        .build()
+        );
     }
 
     @Transactional

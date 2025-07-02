@@ -34,6 +34,7 @@ public class EmailService {
         switch (request.getEmailType()) {
             case OTP_VERIFICATION -> html = templateRenderer.render("otp.html",request.getParams());
             case REMINDER_APPOINTMENT -> html = templateRenderer.render("reminder.html",request.getParams());
+            case REGISTER_SERVICE -> html = templateRenderer.render("registerServiceSuccess.html",request.getParams());
             default -> throw new AppException(ErrorCode.INVALID_EMAIL_TYPE);
         }
         return html;

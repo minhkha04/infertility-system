@@ -9,6 +9,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
+
 
 @Repository
 public interface TreatmentRecordRepository extends JpaRepository<TreatmentRecord, Long> {
@@ -44,4 +46,5 @@ public interface TreatmentRecordRepository extends JpaRepository<TreatmentRecord
             """)
     Page<TreatmentRecordBasicProjection> searchTreatmentRecords(String customerId, String doctorId, TreatmentRecordStatus status, Pageable pageable);
 
+    boolean existsByCustomerIdAndDoctorIdAndServiceIdAndStatusIn(String customerId, String doctorId, Long serviceId, Collection<TreatmentRecordStatus> statuses);
 }
