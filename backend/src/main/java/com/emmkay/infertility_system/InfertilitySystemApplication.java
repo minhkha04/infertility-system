@@ -10,8 +10,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableFeignClients(basePackages = "com.emmkay.infertility_system.modules.payment.client")
 public class InfertilitySystemApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(InfertilitySystemApplication.class, args);
-	}
-
+    public static void main(String[] args) {
+        SpringApplication.run(InfertilitySystemApplication.class, args);
+    }
 }
