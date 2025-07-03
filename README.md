@@ -126,3 +126,4 @@ This project is licensed under the MIT License. Feel free to use, modify, or con
 ## Author & Maintainer
 
 Built by **Minh Kha** – Backend Developer & Team Lead
+lenguyenminhkha1606@gmail.com
