@@ -24,7 +24,7 @@ public class MomoRequestBuilder {
     public MomoCreateRequest buildMomoRequest(PaymentTransaction tx, String requestId) {
         String orderId = tx.getTransactionCode();
         long amount = tx.getAmount().longValue();
-        String orderInfo = "Thanh toán đơn hàng: " + orderId;
+        String orderInfo = "Thanh toan don hang: " + orderId;
         String extraData = "";
 
         String rawSignature = String.format(
@@ -48,7 +48,7 @@ public class MomoRequestBuilder {
                 .amount(amount)
                 .signature(signature)
                 .lang("vi")
-                .autoCapture(false)
+                .autoCapture(false )
                 .build();
     }
 

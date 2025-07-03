@@ -7,13 +7,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/public/payments/callback")
-@FieldDefaults(level = AccessLevel.PRIVATE,makeFinal = true)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class PaymentCallbackController {
 
     PaymentService paymentService;
@@ -25,8 +26,8 @@ public class PaymentCallbackController {
     }
 
     @PostMapping("/momo")
-    public ResponseEntity<String> handleMomoIpn(@RequestBody MomoIpnRequest request) {
-        boolean success = paymentService.processReturnUrl(PaymentMethod.MOMO, request);
-        return ResponseEntity.ok(success ? "0" : "1");
+    public ResponseEntity handleMomoIpn(@RequestBody MomoIpnRequest request) {
+        paymentService.processReturnUrl(PaymentMethod.MOMO, request);
+        return ResponseEntity.status(HttpStatusCode.valueOf(204)).build();
     }
 }

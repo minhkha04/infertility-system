@@ -13,7 +13,7 @@ public class MomoCreateRequest {
     String requestType;
     String ipnUrl;
     String orderId;
-    long amount;
+    Long amount;
     String orderInfo;
     String requestId;
     String redirectUrl;
