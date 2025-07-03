@@ -1,0 +1,1 @@
+Thư mục template chứa các cấu trúc chung trong dự án 

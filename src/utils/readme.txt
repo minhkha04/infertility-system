@@ -1,0 +1,1 @@
+Thư mục utils đóng vai trò chứa các function được sử dụng trong dự án 
