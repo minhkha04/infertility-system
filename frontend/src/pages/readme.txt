@@ -1,0 +1,1 @@
+Thư mục pages chứa các file đại diện cho trang có trong dự án

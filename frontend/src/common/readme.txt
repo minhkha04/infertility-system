@@ -1,0 +1,1 @@
+Thư mục common chứa file setup một số giá trị tĩnh. vd: path đường dẫn, các câu validation
