@@ -35,6 +35,14 @@ public class EmailService {
             case OTP_VERIFICATION -> html = templateRenderer.render("otp.html",request.getParams());
             case REMINDER_APPOINTMENT -> html = templateRenderer.render("reminder.html",request.getParams());
             case REGISTER_SERVICE -> html = templateRenderer.render("registerServiceSuccess.html",request.getParams());
+            case RECORD_SUCCESS -> html = templateRenderer.render("recordSuccess.html",request.getParams());
+            case RECORD_CANCEL -> html = templateRenderer.render("recordCancel.html",request.getParams());
+            case APPOINTMENT_CHANGE_DOCTOR_MANAGER -> html = templateRenderer.render("appointmentChangeDoctorManager.html",request.getParams());
+            case APPOINTMENT_CHANGE_CUSTOMER -> html = templateRenderer.render("appointmentChangeCustomer.html",request.getParams());
+            case APPOINTMENT_CHANGE_SUCCESS -> html = templateRenderer.render("appointmentChangeSuccess.html",request.getParams());
+            case APPOINTMENT_CHANGE_FAIL -> html = templateRenderer.render("appointmentChangeFail.html",request.getParams());
+            case APPOINTMENT_AUTO_REVERT -> html = templateRenderer.render("appointmentAutoRevert.html",request.getParams());
+            case PAYMENT_SUCCESS -> html = templateRenderer.render("paymentSuccess.html",request.getParams());
             default -> throw new AppException(ErrorCode.INVALID_EMAIL_TYPE);
         }
         return html;

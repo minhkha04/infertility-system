@@ -82,4 +82,6 @@ public class Appointment {
     @OneToMany(mappedBy = "appointment")
     private Set<Reminder> reminders = new LinkedHashSet<>();
 
+    @Column(name = "rejected_date")
+    private LocalDate rejectedDate;
 }

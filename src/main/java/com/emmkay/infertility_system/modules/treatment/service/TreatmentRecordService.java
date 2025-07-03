@@ -42,6 +42,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.text.NumberFormat;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Locale;
 import java.util.Map;
 
@@ -62,6 +63,16 @@ public class TreatmentRecordService {
     TreatmentServiceRepository treatmentServiceRepository;
     TreatmentStageRepository treatmentStageRepository;
     EmailService emailService;
+
+    private void sendMail(String subject, EmailType emailType, String toEmail, Map<String, String> params) {
+        EmailRequest emailRequest = EmailRequest.builder()
+                .subject(subject)
+                .emailType(emailType)
+                .toEmail(toEmail)
+                .params(params)
+                .build();
+        emailService.sendMail(emailRequest);
+    }
 
     private void canChange(TreatmentRecord treatmentRecord) {
         String currentUserId = CurrentUserUtils.getCurrentUserId();
@@ -112,14 +123,24 @@ public class TreatmentRecordService {
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
 
         canChange(treatmentRecord);
-//        check the record is available for status change to completed
-//        if (!paymentTransactionService.isPaid(recordId) && status == TreatmentRecordStatus.COMPLETED) {
-//            throw new AppException(ErrorCode.TREATMENT_NOT_PAID);
-//        }
         if (treatmentRecord.getStatus() == TreatmentRecordStatus.CANCELLED) {
-            throw new AppException(ErrorCode.UNAUTHORIZED);
+            throw new AppException(ErrorCode.CAN_UPDATE_TREATMENT_RECORD);
         }
         treatmentRecord.setStatus(status);
+        if (treatmentRecord.getStatus() == TreatmentRecordStatus.COMPLETED) {
+//        check the record is available for status change to completed
+//            if (!paymentTransactionService.isPaid(recordId)) {
+//            throw new AppException(ErrorCode.TREATMENT_NOT_PAID);
+//        }
+            treatmentRecord.setEndDate(LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh")));
+            Map<String, String> params = Map.of(
+                    "customerName", treatmentRecord.getCustomer().getFullName(),
+                    "serviceName", treatmentRecord.getService().getName(),
+                    "doctorName", treatmentRecord.getDoctor().getUsers().getFullName(),
+                    "completedDate", treatmentRecord.getEndDate().toString()
+            );
+            sendMail("Thông báo hoàn thành điều trị", EmailType.RECORD_SUCCESS, treatmentRecord.getCustomer().getEmail(), params);
+        }
         return treatmentRecordMapper.toTreatmentRecordResponse(treatmentRecordRepository.save(treatmentRecord));
     }
 
@@ -211,19 +232,13 @@ public class TreatmentRecordService {
                 .status(TreatmentStepStatus.CONFIRMED)
                 .build());
         appointmentService.createInitialAppointment(customer, doctor, request.getStartDate(), request.getShift(), treatmentStep, true, null);
-        emailService.sendMail(
-                EmailRequest.builder()
-                        .subject("Thông báo đăng ký dịch vụ")
-                        .emailType(EmailType.REGISTER_SERVICE)
-                        .toEmail(customer.getEmail())
-                        .params(Map.of(
-                                "serviceName", treatmentService.getName(),
-                                "doctorName", doctor.getUsers().getFullName(),
-                                "customerName", customer.getFullName(),
-                                "price", NumberFormat.getNumberInstance(new Locale("vi", "VN")).format(treatmentService.getPrice())
-                        ))
-                        .build()
+        Map<String, String> params = Map.of(
+                "serviceName", treatmentService.getName(),
+                "doctorName", doctor.getUsers().getFullName(),
+                "customerName", customer.getFullName(),
+                "price", NumberFormat.getNumberInstance(new Locale("vi", "VN")).format(treatmentService.getPrice())
         );
+        sendMail("Thông báo đăng ký dịch vụ", EmailType.REGISTER_SERVICE, customer.getEmail(), params);
     }
 
     @Transactional
@@ -242,9 +257,14 @@ public class TreatmentRecordService {
         }
 
         treatmentRecord.setStatus(TreatmentRecordStatus.CANCELLED);
-        log.info("Cancel treatment record: {}", recordId);
         treatmentStepService.cancelStepsByRecordId(recordId);
         treatmentRecordRepository.save(treatmentRecord);
+        Map<String, String> params = Map.of(
+                "customerName", treatmentRecord.getCustomer().getFullName(),
+                "serviceName", treatmentRecord.getService().getName(),
+                "cancellationTime", LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh")).toString()
+        );
+        sendMail("Hủy dịch vụ", EmailType.RECORD_CANCEL, treatmentRecord.getCustomer().getEmail(), params);
     }
 
     @PreAuthorize("hasRole('DOCTOR')")

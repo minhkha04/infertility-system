@@ -8,6 +8,7 @@ import com.emmkay.infertility_system.modules.shared.enums.Shift;
 import com.emmkay.infertility_system.modules.treatment.entity.TreatmentStep;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
@@ -58,7 +60,8 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
                     a.id AS id,
                     a.customer.fullName AS customerName,
                     a.shift AS shift,
-                    a.status AS status
+                    a.status AS status,
+                    a.purpose AS purpose
                 FROM Appointment a
                 WHERE a.doctor.id = :doctorId
                   AND a.appointmentDate = CURRENT_DATE
@@ -68,4 +71,9 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     void deleteByTreatmentStep(TreatmentStep treatmentStep);
 
     List<Appointment> getAppointmentsByTreatmentStep(TreatmentStep treatmentStep);
+
+    @EntityGraph(attributePaths = {"customer", "doctor", "treatmentStep"})
+    List<Appointment> getAllByRejectedDate(LocalDate rejectedDate);
+
+    Optional<Appointment> getAppointmentsById(Long id);
 }

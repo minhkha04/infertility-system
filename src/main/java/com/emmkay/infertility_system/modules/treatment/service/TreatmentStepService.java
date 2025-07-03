@@ -98,10 +98,12 @@ public class TreatmentStepService {
                     throw new AppException(ErrorCode.TREATMENT_CAN_NOT_DONE);
                 }
             }
-            List<TreatmentStep> treatmentStepList = treatmentStepRepository.getAllByRecordId(record.getId());
-            TreatmentStep prevStep = treatmentStepList.get(treatmentStepList.size() - 2);
-            if (prevStep.getStatus() != TreatmentStepStatus.COMPLETED) {
-                throw new AppException(ErrorCode.TREATMENT_CAN_NOT_DONE);
+            if (treatmentStep.getStage().getOrderIndex() != 0) {
+                record.getTreatmentSteps().forEach(x -> log.info("Log 2 {}", x.getId()));
+                TreatmentStep prevStep = record.getTreatmentSteps().stream().toList().get(record.getTreatmentSteps().size() - 2);
+                if (prevStep.getStatus() == TreatmentStepStatus.CONFIRMED) {
+                    throw new AppException(ErrorCode.TREATMENT_STEP_PREV_IN_CONFIRMED);
+                }
             }
         }
         TreatmentStage stage = treatmentStageRepository.findById(request.getStageId())

@@ -33,7 +33,7 @@ public class DoctorDashboardService {
 
     public DoctorDashboardOverview getOverview() {
         String currentUserId = CurrentUserUtils.getCurrentUserId();
-        if (currentUserId == null || currentUserId.isBlank()) {
+        if (currentUserId == null) {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
         return doctorDashboardRepository.findById(currentUserId)
@@ -42,7 +42,7 @@ public class DoctorDashboardService {
 
     public Page<DoctorTodayAppointmentProjection> getTodayAppointments(int page, int size) {
         String currentUserId = CurrentUserUtils.getCurrentUserId();
-        if (currentUserId == null || currentUserId.isBlank()) {
+        if (currentUserId == null) {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
         Pageable pageable = PageRequest.of(page, size);
@@ -51,7 +51,7 @@ public class DoctorDashboardService {
 
     public List<WorkScheduleDateShiftProjection> getWorkScheduleByDoctorId(YearMonth yearMonth) {
         String currentUserId = CurrentUserUtils.getCurrentUserId();
-        if (currentUserId == null || currentUserId.isBlank()) {
+        if (currentUserId == null) {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
         LocalDate firstDayOfMonth = yearMonth.atDay(1);

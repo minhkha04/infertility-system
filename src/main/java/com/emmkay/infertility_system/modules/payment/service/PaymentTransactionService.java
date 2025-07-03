@@ -1,5 +1,8 @@
 package com.emmkay.infertility_system.modules.payment.service;
 
+import com.emmkay.infertility_system.modules.email.dto.request.EmailRequest;
+import com.emmkay.infertility_system.modules.email.enums.EmailType;
+import com.emmkay.infertility_system.modules.email.service.EmailService;
 import com.emmkay.infertility_system.modules.payment.entity.PaymentTransaction;
 import com.emmkay.infertility_system.modules.payment.enums.PaymentMethod;
 import com.emmkay.infertility_system.modules.payment.enums.PaymentStatus;
@@ -20,9 +23,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.text.NumberFormat;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +38,8 @@ public class PaymentTransactionService {
 
     PaymentTransactionRepository paymentTransactionRepository;
     PaymentUtil paymentUtil;
+    EmailService emailService;
+
 
     public PaymentTransaction createTransaction(TreatmentRecord treatmentRecord, PaymentMethod paymentMethod, long expirationMinutes) {
         ZoneId zoneId = ZoneId.of("Asia/Ho_Chi_Minh");
@@ -86,6 +94,22 @@ public class PaymentTransactionService {
 
     public void updateStatus(PaymentTransaction paymentTransaction, PaymentStatus status) {
         paymentTransaction.setStatus(status);
+        if (status == PaymentStatus.SUCCESS) {
+            EmailRequest emailRequest = EmailRequest.builder()
+                    .toEmail(paymentTransaction.getCustomer().getEmail())
+                    .emailType(EmailType.PAYMENT_SUCCESS)
+                    .subject("Xác nhận thanh toán")
+                    .params(Map.of(
+                            "customerName", paymentTransaction.getCustomer().getFullName(),
+                            "invoiceCode", paymentTransaction.getTransactionCode(),
+                            "paymentTime", paymentTransaction.getCreatedAt().toString(),
+                            "serviceName", paymentTransaction.getService().getName(),
+                            "paymentMethod", paymentTransaction.getPaymentMethod().toString(),
+                            "amount", NumberFormat.getNumberInstance(new Locale("vi", "VN")).format(paymentTransaction.getAmount())
+                    ))
+                    .build();
+            emailService.sendMail(emailRequest);
+        }
         paymentTransactionRepository.save(paymentTransaction);
     }
 

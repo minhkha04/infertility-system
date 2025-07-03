@@ -17,4 +17,6 @@ public interface TreatmentStepRepository extends JpaRepository<TreatmentStep, Lo
 
     @Query("SELECT ts FROM TreatmentStep AS ts WHERE ts.record.id = :recordId ORDER BY ts.stage.orderIndex ASC")
     List<TreatmentStep> getAllByRecordId(Long recordId);
+
+    TreatmentStep findByRecordIdAndStageOrderIndex(Long recordId, Integer stageOrderIndex);
 }

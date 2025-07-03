@@ -8,4 +8,5 @@ public interface DoctorTodayAppointmentProjection {
     String getCustomerName();
     AppointmentStatus getStatus();
     Shift getShift();
+    String getPurpose();
 }

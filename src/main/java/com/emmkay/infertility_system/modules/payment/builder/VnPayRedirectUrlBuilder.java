@@ -50,12 +50,6 @@ public class VnPayRedirectUrlBuilder {
             String vnp_CreateDate = now.format(formatter);
             String vnp_ExpireDate = expired.format(formatter);
 
-            System.out.println("CreateDate: " + vnp_CreateDate);
-            System.out.println("ExpireDate: " + vnp_ExpireDate);
-            System.out.println("Local time: " + now);
-
-
-
             Map<String, String> vnp_Params = new HashMap<>();
             vnp_Params.put("vnp_Version", vnp_Version);
             vnp_Params.put("vnp_Command", vnp_Command);
@@ -94,7 +88,6 @@ public class VnPayRedirectUrlBuilder {
                     }
                 }
             }
-            log.info("Hash data {}", hashData);
             String queryUrl = query.toString();
             String vnp_SecureHash = vnPaySignatureUtil.hmacSHA512(vnPayConfig.getHashSecret(), hashData.toString());
             queryUrl += "&vnp_SecureHash=" + vnp_SecureHash;

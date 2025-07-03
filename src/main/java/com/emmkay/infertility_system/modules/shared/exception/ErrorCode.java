@@ -51,7 +51,7 @@ public enum ErrorCode {
     BLOG_APPROVED_ERROR(1041, "Chỉ bài viết nháp hoặc bị từ chối mới được gửi duyệt", HttpStatus.BAD_REQUEST),
     INVALID_STATUS(1042, "Trạng thái không hợp lệ", HttpStatus.BAD_REQUEST),
     BLOG_NOT_IN_REVIEW(1043, "Bài viết chưa ở trạng thái chờ duyệt", HttpStatus.BAD_REQUEST),
-    INVALID_START_DATE(1044, "Ngày bắt đầu phải cách hiện tại ít nhất 2 ngày", HttpStatus.BAD_REQUEST),
+    INVALID_START_DATE(1044, "Ngày bắt đầu phải cách hiện tại ít nhất 1 ngày", HttpStatus.BAD_REQUEST),
     FEEDBACK_NOT_EXISTED(1046, "Không tìm thấy feedback", HttpStatus.BAD_REQUEST),
     CANNOT_PAY(1047, "Không thể thanh toán hồ sơ điều trị này", HttpStatus.BAD_REQUEST),
     VERIFY_PAYMENT_FAIL(1049, "Xác minh thanh toán thất bại", HttpStatus.UNAUTHORIZED),
@@ -79,6 +79,7 @@ public enum ErrorCode {
     TREATMENT_STAGE_NOT_FOUND(1073, "Không tìm thấy giai đoạn điều trị", HttpStatus.NOT_FOUND),
     CAN_UPDATE_TREATMENT_RECORD(1074, "Không thể cập nhật hồ sơ điều trị này", HttpStatus.BAD_REQUEST),
     CAN_NOT_CHANGE_SERVICE_IN_TREATMENT_RECORD(1075, "Không thể thay đổi dịch vụ vì đã trong tiến trình", HttpStatus.BAD_REQUEST),
+    TREATMENT_STEP_PREV_IN_CONFIRMED(1076, "Bước điều trị trước chưa được hoàn thành", HttpStatus.BAD_REQUEST),
     ;
 
     int code;

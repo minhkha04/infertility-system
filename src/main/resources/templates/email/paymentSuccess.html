@@ -1,0 +1,73 @@
+<html>
+<body style="margin: 0; padding: 20px; font-family: Arial, sans-serif; background-color: #f5f7fa;">
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); overflow: hidden;">
+    <tr>
+        <td style="padding: 30px;">
+            <h2 style="color: #28A745; margin-bottom: 20px;">Xác nhận thanh toán thành công</h2>
+
+            <p>Kính gửi <strong>{{customerName}}</strong>,</p>
+
+            <p>Hệ thống xin xác nhận Quý khách đã <strong>thanh toán thành công</strong> chi phí điều trị tại
+                <strong style="color:#FC6A40;">Trung tâm điều trị hiếm muộn New Life</strong>.</p>
+
+            <table style="width: 100%; margin: 20px 0; border-collapse: collapse;">
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #eee; font-weight: bold;">Mã hóa đơn</td>
+                    <td style="padding: 10px; border: 1px solid #eee;">{{invoiceCode}}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #eee; font-weight: bold;">Thời gian thanh toán</td>
+                    <td style="padding: 10px; border: 1px solid #eee;">{{paymentTime}}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #eee; font-weight: bold;">Khách hàng</td>
+                    <td style="padding: 10px; border: 1px solid #eee;">{{customerName}}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #eee; font-weight: bold;">Tên dịch vụ</td>
+                    <td style="padding: 10px; border: 1px solid #eee;">{{serviceName}}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #eee; font-weight: bold;">Hình thức thanh toán</td>
+                    <td style="padding: 10px; border: 1px solid #eee;">{{paymentMethod}}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #eee; font-weight: bold;">Số tiền đã thanh toán</td>
+                    <td style="padding: 10px; border: 1px solid #eee;">{{amount}} VND</td>
+                </tr>
+            </table>
+
+            <p style="margin-top: 20px;">Xin cảm ơn Quý khách đã tin tưởng và sử dụng dịch vụ của chúng tôi.</p>
+
+            <hr style="border: none; border-top: 1px solid #eee; margin: 40px 0;" />
+
+            <p style="font-size: 13px; color: #777; line-height: 1.5;">
+                Đây là email được gửi tự động từ hệ thống của
+                <strong style="color: #FC6A40;">Trung tâm điều trị hiếm muộn New Life</strong>.<br/>
+                Vui lòng không phản hồi lại email này.<br/>
+                Nếu Quý khách có bất kỳ thắc mắc nào, xin vui lòng liên hệ qua địa chỉ:
+                <a href="mailto:infertilitytreatmentmonitoring@gmail.com" style="color: #FC6A40; text-decoration: none;">
+                    infertilitytreatmentmonitoring@gmail.com
+                </a>
+            </p>
+
+            <table width="100%" style="margin-top: 30px;">
+                <tr>
+                    <td style="text-align: left;">
+                        <img src="https://res.cloudinary.com/di6hi1r0g/image/upload/v1748665959/icon_pch2gc.png"
+                             alt="New Life Logo" style="width: 80px; height: auto;" />
+                    </td>
+                    <td style="vertical-align: top; text-align: right;">
+                        <p style="font-size: 14px; color: #333;">
+                            Trân trọng,<br/>
+                            Đội ngũ chăm sóc khách hàng<br/>
+                            <strong style="color:#FC6A40;">Trung tâm điều trị hiếm muộn New Life</strong>
+                        </p>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>
