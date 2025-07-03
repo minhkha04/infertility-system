@@ -56,7 +56,7 @@ public class FeedbackService {
         Pageable pageable = PageRequest.of(page, size);
         String currentUserId = CurrentUserUtils.getCurrentUserId();
         String scope = CurrentUserUtils.getCurrentScope();
-        if (scope == null || scope.isBlank() || currentUserId == null || currentUserId.isBlank()) {
+        if (scope == null ||currentUserId == null) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
         RoleName roleName = RoleName.formString(scope);
@@ -70,7 +70,7 @@ public class FeedbackService {
 
     public FeedbackResponse updateFeedback(Long feedbackId, FeedbackUpdateRequest request) {
         String currentUserId = CurrentUserUtils.getCurrentUserId();
-        if (currentUserId == null || currentUserId.isBlank()) {
+        if (currentUserId == null) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
         Feedback feedback = feedbackRepository.findById(feedbackId)
@@ -89,7 +89,7 @@ public class FeedbackService {
     @PreAuthorize("hasRole('MANAGER')")
     public FeedbackResponse updateStatus(Long id, FeedbackUpdateStatusRequest request) {
         String currentUserId = CurrentUserUtils.getCurrentUserId();
-        if  (currentUserId == null || currentUserId.isBlank()) {
+        if  (currentUserId == null) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
         Feedback feedback = feedbackRepository.findById(id)
@@ -101,6 +101,7 @@ public class FeedbackService {
         feedback.setApprovedAt(LocalDate.now());
         feedback.setStatus(request.getStatus());
         feedback.setNote(request.getNote());
+        feedback.setApprovedAt(LocalDate.now(ZoneId.of( "Asia/Ho_Chi_Minh")) );
         return feedbackMapper.toResponse(feedbackRepository.save(feedback));
     }
 
