@@ -49,8 +49,8 @@ public class DoctorService {
         return doctorRepository.getPublicDoctors(pageable);
     }
 
-    public DoctorResponse getDoctorById(String id) {
-        Doctor doctor = doctorRepository.findByIdAndIsPublic(id, true)
+    public DoctorResponse getDoctorById(String id, Boolean isPublic) {
+        Doctor doctor = doctorRepository.findByIdAndIsPublic(id, isPublic)
                 .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_NOT_EXISTED));
         return doctorMapper.toDoctorResponse(doctor);
     }

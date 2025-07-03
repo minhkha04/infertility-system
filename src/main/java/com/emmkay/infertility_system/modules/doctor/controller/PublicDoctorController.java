@@ -31,9 +31,12 @@ public class PublicDoctorController {
     }
 
     @GetMapping("/{doctorId}")
-    public ApiResponse<DoctorResponse> getDetailDoctor(@PathVariable String doctorId) {
+    public ApiResponse<DoctorResponse> getDetailDoctor(
+            @PathVariable String doctorId,
+            @RequestParam (defaultValue = "true") Boolean isPublic
+    ) {
         return ApiResponse.<DoctorResponse>builder()
-                .result(doctorService.getDoctorById(doctorId))
+                .result(doctorService.getDoctorById(doctorId, isPublic))
                 .build();
     }
 }
