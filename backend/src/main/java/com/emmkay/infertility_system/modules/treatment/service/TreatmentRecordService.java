@@ -218,7 +218,7 @@ public class TreatmentRecordService {
                 .doctor(doctor)
                 .service(treatmentService)
                 .startDate(request.getStartDate())
-                .status(TreatmentRecordStatus.INPROGRESS)
+                .status(TreatmentRecordStatus.CONFIRMED)
                 .createdDate(LocalDate.now())
                 .cd1Date(request.getCd1Date())
                 .build();

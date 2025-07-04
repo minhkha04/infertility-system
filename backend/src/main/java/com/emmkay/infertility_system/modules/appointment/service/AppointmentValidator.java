@@ -8,11 +8,16 @@ import com.emmkay.infertility_system.modules.shared.enums.Shift;
 import com.emmkay.infertility_system.modules.shared.exception.AppException;
 import com.emmkay.infertility_system.modules.shared.exception.ErrorCode;
 import com.emmkay.infertility_system.modules.shared.security.CurrentUserUtils;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 
 @Component
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@RequiredArgsConstructor
 public class AppointmentValidator {
 
     DoctorService doctorService;
