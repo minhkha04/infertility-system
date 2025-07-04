@@ -20,11 +20,11 @@ import org.springframework.stereotype.Service;
 public class PaymentService {
 
     PaymentStrategyFactory paymentStrategyFactory;
-    PaymentEligibilityService paymentEligibilityService;
+    PaymentValidator paymentValidator;
 
     public String createPayment(PaymentMethod paymentMethod, Object request, Long recordId) {
         String currentUserId = CurrentUserUtils.getCurrentUserId();
-        TreatmentRecord treatmentRecord = paymentEligibilityService.isAvailable(recordId, false);
+        TreatmentRecord treatmentRecord = paymentValidator.isAvailable(recordId, false);
         if (currentUserId == null || currentUserId.isBlank() || !treatmentRecord.getCustomer().getId().equalsIgnoreCase(currentUserId)) {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
@@ -40,7 +40,7 @@ public class PaymentService {
     public String reloadPayment(PaymentMethod paymentMethod, Object request, Long recordId) {
         String currentUserId = CurrentUserUtils.getCurrentUserId();
         PaymentStrategy strategy = paymentStrategyFactory.getStrategy(paymentMethod);
-        TreatmentRecord treatmentRecord = paymentEligibilityService.isAvailable(recordId, true);
+        TreatmentRecord treatmentRecord = paymentValidator.isAvailable(recordId, true);
         if (currentUserId == null || currentUserId.isBlank() || !treatmentRecord.getCustomer().getId().equalsIgnoreCase(currentUserId)) {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
