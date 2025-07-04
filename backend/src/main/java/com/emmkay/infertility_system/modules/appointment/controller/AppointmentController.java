@@ -28,7 +28,6 @@ public class AppointmentController {
 
     @GetMapping()
     public ApiResponse<PageResponse<AppointmentBasicProjection>> searchAppointments(
-            @RequestParam(required = false) Long stepId,
             @RequestParam(required = false) String customerId,
             @RequestParam(required = false) String doctorId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
@@ -36,7 +35,7 @@ public class AppointmentController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        Page<AppointmentBasicProjection> result = appointmentService.searchAppointments(stepId, customerId, doctorId, date, status, page, size);
+        Page<AppointmentBasicProjection> result = appointmentService.searchAppointments(customerId, doctorId, date, status, page, size);
         return ApiResponse.<PageResponse<AppointmentBasicProjection>>builder()
                 .result(PageResponse.from(result))
                 .build();

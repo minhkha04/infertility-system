@@ -21,12 +21,10 @@ public class AppointmentResponse {
     Shift requestedShift;
     LocalDate requestedDate;
     LocalDate createdAt;
-
     String customerName;
     String customerEmail;
-
     String doctorName;
     String doctorEmail;
-
     String purpose;
+    String step;
 }

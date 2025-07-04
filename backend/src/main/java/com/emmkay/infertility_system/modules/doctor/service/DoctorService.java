@@ -43,7 +43,6 @@ public class DoctorService {
     DoctorRepository doctorRepository;
     UserRepository userRepository;
     WorkScheduleRepository workScheduleRepository;
-    AppointmentService appointmentService;
     AppointmentRepository appointmentRepository;
 
     public Page<DoctorBasicProjection> getPublicDoctors(int page, int size) {

@@ -51,10 +51,9 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
                        AND (:doctorId IS NULL OR a.doctor.id = :doctorId)
                        AND (:date IS NULL OR a.appointmentDate = :date)
                        AND (:status IS NULL OR a.status = :status)
-                       AND (:stepId IS NULL OR a.treatmentStep.id = :stepId)
                 ORDER BY a.appointmentDate DESC
             """)
-    Page<AppointmentBasicProjection> searchAppointments(Long stepId, String customerId, String doctorId, LocalDate date, AppointmentStatus status, Pageable pageable);
+    Page<AppointmentBasicProjection> searchAppointments(String customerId, String doctorId, LocalDate date, AppointmentStatus status, Pageable pageable);
 
     @Query("""
                 SELECT
@@ -78,5 +77,5 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     Optional<Appointment> getAppointmentsById(Long id);
 
-    List<AppointmentResponse> getAppointmentsByTreatmentStepId(Long treatmentStepId);
+    List<Appointment> getAppointmentsByTreatmentStepId(Long treatmentStepId);
 }

@@ -210,7 +210,7 @@ public class TreatmentRecordService {
             doctor = doctorService.findBestDoctor(request.getStartDate(), request.getShift())
                     .orElseThrow(() -> new AppException(ErrorCode.USERNAME_EXISTED));
         }
-        if (!appointmentService.isDoctorAvailable(doctor.getId(), request.getStartDate(), request.getShift())) {
+        if (!doctorService.isDoctorAvailable(doctor.getId(), request.getStartDate(), request.getShift())) {
             throw new AppException(ErrorCode.DOCTOR_NOT_AVAILABLE);
         }
         TreatmentRecord treatmentRecord = TreatmentRecord.builder()
