@@ -1,6 +1,7 @@
 package com.emmkay.infertility_system.modules.appointment.enums;
 
 public enum AppointmentStatus {
+    PLANED,
     CONFIRMED,
     COMPLETED,
     CANCELLED,

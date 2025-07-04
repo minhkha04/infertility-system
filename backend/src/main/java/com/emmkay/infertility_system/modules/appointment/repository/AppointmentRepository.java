@@ -1,5 +1,6 @@
 package com.emmkay.infertility_system.modules.appointment.repository;
 
+import com.emmkay.infertility_system.modules.appointment.dto.response.AppointmentResponse;
 import com.emmkay.infertility_system.modules.appointment.enums.AppointmentStatus;
 import com.emmkay.infertility_system.modules.appointment.projection.AppointmentBasicProjection;
 import com.emmkay.infertility_system.modules.appointment.entity.Appointment;
@@ -76,4 +77,6 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     List<Appointment> getAllByRejectedDate(LocalDate rejectedDate);
 
     Optional<Appointment> getAppointmentsById(Long id);
+
+    List<AppointmentResponse> getAppointmentsByTreatmentStepId(Long treatmentStepId);
 }

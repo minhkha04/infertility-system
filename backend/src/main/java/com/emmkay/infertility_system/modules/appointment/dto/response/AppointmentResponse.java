@@ -27,4 +27,6 @@ public class AppointmentResponse {
 
     String doctorName;
     String doctorEmail;
+
+    String purpose;
 }

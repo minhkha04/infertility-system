@@ -16,6 +16,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/appointments")
@@ -87,6 +88,13 @@ public class AppointmentController {
             @RequestBody @Valid AppointmentUpdateRequest request) {
         return ApiResponse.<AppointmentResponse>builder()
                 .result(appointmentService.updateAppointment(request, appointmentId))
+                .build();
+    }
+
+    @GetMapping("/get-by-step/{stepId}")
+    public ApiResponse<List<AppointmentResponse>> getAppointmentByStepId(@PathVariable long stepId) {
+        return ApiResponse.<List<AppointmentResponse>>builder()
+                .result(appointmentService.getAppointmentsByStepId(stepId))
                 .build();
     }
 

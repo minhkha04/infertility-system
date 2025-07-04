@@ -66,6 +66,7 @@ public class AppointmentService {
     TreatmentRecordRepository treatmentRecordRepository;
     EmailService emailService;
 
+//    authorize
     private void validateCanChangeAppointment(Appointment appointment) {
         String scope = CurrentUserUtils.getCurrentScope();
         String currentUserId = CurrentUserUtils.getCurrentUserId();
@@ -91,14 +92,15 @@ public class AppointmentService {
         }
     }
 
+//    check work date doctor and status appointment
     private void validateAppointmentAvailableForChange(Appointment appointment, LocalDate dateChange, Shift shiftChange) {
-        // Chỉ cho đổi trong 14 ngày tới
-        LocalDate today = LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh"));
-        if (dateChange.isBefore(today) || dateChange.isAfter(today.plusDays(14))) {
-            throw new AppException(ErrorCode.DATE_OUT_OF_RANGE);
-        }
+//         Chỉ cho đổi trong 14 ngày tới
+//        LocalDate today = LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh"));
+//        if (dateChange.isBefore(today) || dateChange.isAfter(today.plusDays(14))) {
+//            throw new AppException(ErrorCode.DATE_OUT_OF_RANGE);
+//        }
 
-        // Kiểm tra ca đó có nằm trong lịch làm việc rảnh không
+//         Kiểm tra ca đó có nằm trong lịch làm việc rảnh không
         String doctorId = appointment.getDoctor().getId();
         boolean isAvailable = isDoctorAvailable(doctorId, dateChange, shiftChange);
 
@@ -109,11 +111,6 @@ public class AppointmentService {
                 || appointment.getStatus() == AppointmentStatus.CANCELLED) {
             throw new AppException(ErrorCode.CAN_NOT_BE_UPDATED_STATUS);
         }
-    }
-
-    private void checkDoctorHasWorkSchedule(String doctorId, LocalDate date, List<Shift> shift) {
-        workScheduleRepository.findByDoctorIdAndWorkDateAndShiftIn(doctorId, date, shift)
-                .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_DONT_WORK_ON_THIS_DATE));
     }
 
     private void sendMail(String subject, EmailType emailType, String toEmail, Map<String, String> params) {
@@ -209,6 +206,40 @@ public class AppointmentService {
         return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
     }
 
+    private AppointmentResponse confirmAppointmentByCustomer(Appointment appointment, AppointmentStatusUpdateRequest request) {
+        appointment.setStatus(request.getStatus());
+        appointment.setNotes(request.getNote());
+        return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
+    }
+
+    public boolean isDoctorAvailable(String doctorId, LocalDate date, Shift shift) {
+        Optional<Doctor> doctor = doctorRepository.findById(doctorId);
+
+        if (doctor.isEmpty()) return false;
+        Doctor doctorFinal = doctor.get();
+
+        if (doctorFinal.getUsers().getIsRemoved() || !doctorFinal.getIsPublic()) {
+            return false;
+        }
+        Optional<WorkSchedule> workScheduleOpt = workScheduleRepository
+                .findByDoctorIdAndWorkDate(doctorId, date);
+
+
+        if (workScheduleOpt.isEmpty()) return false;
+        Shift actualShift = workScheduleOpt.get().getShift();
+
+        // a doctor doesn't work in shift or doctor not work fullday
+        if (actualShift != shift && actualShift != Shift.FULL_DAY) {
+            return false;
+        }
+
+        // count appointment (morning hoặc afternoon)
+        int shiftAppointmentCount = appointmentRepository
+                .countActiveByDoctorIdAndDateAndShift(doctorId, date, shift);
+
+        return shiftAppointmentCount < 10;
+    }
+
     @Scheduled(cron = "0 0 8 * * *", zone = "Asia/Ho_Chi_Minh")
     public void changeAppointmentInit() {
         LocalDate today = LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh"));
@@ -282,7 +313,6 @@ public class AppointmentService {
     }
 
     @Transactional
-    @PreAuthorize("hasRole('DOCTOR') or hasRole('MANAGER')")
     public AppointmentResponse updateStatus(Long appointmentId, AppointmentStatusUpdateRequest request) {
         Appointment appointment = appointmentRepository.getAppointmentsById(appointmentId)
                 .orElseThrow(() -> new AppException(ErrorCode.APPOINTMENT_NOT_FOUND));
@@ -290,6 +320,7 @@ public class AppointmentService {
                 || appointment.getStatus() == AppointmentStatus.CANCELLED) {
             throw new AppException(ErrorCode.APPOINTMENT_IS_COMPLETED);
         }
+        validateCanChangeAppointment(appointment);
         switch (request.getStatus()) {
             case CANCELLED -> {
                 return cancelAppointment(appointment, request);
@@ -299,6 +330,9 @@ public class AppointmentService {
             }
             case COMPLETED -> {
                 return changeAppointmentWithStatusCompleted(appointment, request);
+            }
+            case PLANED -> {
+                return confirmAppointmentByCustomer(appointment, request);
             }
             default -> throw new AppException(ErrorCode.STATUS_IS_INVALID);
         }
@@ -312,7 +346,7 @@ public class AppointmentService {
                 .appointmentDate(date)
                 .shift(shift)
                 .treatmentStep(treatmentStep)
-                .status(AppointmentStatus.CONFIRMED)
+                .status(AppointmentStatus.PLANED)
                 .createdAt(LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh")))
                 .purpose(isFirstStep ? treatmentStep.getStepType() : purpose)
                 .build());
@@ -323,7 +357,6 @@ public class AppointmentService {
     @Transactional
     public AppointmentResponse createAppointment(AppointmentCreateRequest req) {
         boolean isAvailable = isDoctorAvailable(req.getDoctorId(), req.getAppointmentDate(), req.getShift());
-        checkDoctorHasWorkSchedule(req.getDoctorId(), req.getAppointmentDate(), List.of(req.getShift(), Shift.FULL_DAY));
         if (!isAvailable) {
             throw new AppException(ErrorCode.DOCTOR_NOT_AVAILABLE);
         }
@@ -355,7 +388,7 @@ public class AppointmentService {
         Appointment appointment = appointmentMapper.toAppointment(req);
         appointment.setDoctor(doctor);
         appointment.setTreatmentStep(step);
-        appointment.setStatus(AppointmentStatus.CONFIRMED);
+        appointment.setStatus(AppointmentStatus.PLANED);
         appointment.setCreatedAt(LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh")));
         appointment.setCustomer(customer);
         appointment = appointmentRepository.save(appointment);
@@ -363,36 +396,10 @@ public class AppointmentService {
         return appointmentMapper.toAppointmentResponse(appointment);
     }
 
-    public boolean isDoctorAvailable(String doctorId, LocalDate date, Shift shift) {
-        Doctor doctor = doctorRepository.findById(doctorId)
-                .orElse(null);
-        if (doctor.getUsers().getIsRemoved() || !doctor.getIsPublic()) {
-            return false;
-        }
-        Optional<WorkSchedule> workScheduleOpt = workScheduleRepository
-                .findByDoctorIdAndWorkDate(doctorId, date);
-
-
-        if (workScheduleOpt.isEmpty()) return false;
-        Shift actualShift = workScheduleOpt.get().getShift();
-
-        // Nếu bác sĩ không làm ca đó (không phải ca tương ứng và cũng không phải full_day)
-        if (actualShift != shift && actualShift != Shift.FULL_DAY) {
-            return false;
-        }
-
-        // Đếm số lịch trong ca cụ thể (morning hoặc afternoon)
-        int shiftAppointmentCount = appointmentRepository
-                .countActiveByDoctorIdAndDateAndShift(doctorId, date, shift);
-
-        return shiftAppointmentCount < 10;
-    }
-
     @Transactional
     public AppointmentResponse changeAppointmentForCustomer(Long appointmentId, ChangeAppointmentByCustomerRequest request) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new AppException(ErrorCode.APPOINTMENT_NOT_FOUND));
-        checkDoctorHasWorkSchedule(appointment.getDoctor().getId(), request.getRequestedDate(), List.of(request.getRequestedShift(), Shift.FULL_DAY));
         validateAppointmentAvailableForChange(appointment, request.getRequestedDate(), request.getRequestedShift());
         validateCanChangeAppointment(appointment);
         Map<String, String> params = Map.of(
@@ -422,7 +429,6 @@ public class AppointmentService {
     public AppointmentResponse changeAppointmentForManagerOrDoctor(Long appointmentId, ChangeAppointmentByDoctorOrManagerRequest request) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new AppException(ErrorCode.APPOINTMENT_NOT_FOUND));
-        checkDoctorHasWorkSchedule(appointment.getDoctor().getId(), request.getAppointmentDate(), List.of(request.getShift(), Shift.FULL_DAY));
         validateCanChangeAppointment(appointment);
         validateAppointmentAvailableForChange(appointment, request.getAppointmentDate(), request.getShift());
 
@@ -468,5 +474,10 @@ public class AppointmentService {
         }
         appointment.setDoctor(doctor);
         return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
+    }
+
+
+    public List<AppointmentResponse> getAppointmentsByStepId(Long stepId) {
+        return appointmentRepository.getAppointmentsByTreatmentStepId(stepId);
     }
 }
