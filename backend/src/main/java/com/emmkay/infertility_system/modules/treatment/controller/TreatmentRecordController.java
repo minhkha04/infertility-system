@@ -8,6 +8,7 @@ import com.emmkay.infertility_system.modules.treatment.dto.request.TreatmentReco
 import com.emmkay.infertility_system.modules.treatment.dto.response.TreatmentRecordResponse;
 import com.emmkay.infertility_system.modules.treatment.enums.TreatmentRecordStatus;
 import com.emmkay.infertility_system.modules.treatment.projection.TreatmentRecordBasicProjection;
+import com.emmkay.infertility_system.modules.treatment.projection.TreatmentRecordDashboardProjection;
 import com.emmkay.infertility_system.modules.treatment.service.TreatmentRecordService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -77,6 +78,19 @@ public class TreatmentRecordController {
         treatmentRecordService.cancelTreatmentRecord(recordId);
         return ApiResponse.<String>builder()
                 .result("Hủy dịch vụ thành công")
+                .build();
+    }
+
+    @GetMapping("/dashboard")
+    public ApiResponse<PageResponse<TreatmentRecordDashboardProjection>> getTreatmentRecordDashboard(
+            @RequestParam(required = false) String customerId,
+            @RequestParam(required = false) String doctorId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Page<TreatmentRecordDashboardProjection> result = treatmentRecordService.getTreatmentRecordDashboard(customerId, doctorId, page, size);
+        return ApiResponse.<PageResponse<TreatmentRecordDashboardProjection>>builder()
+                .result(PageResponse.from(result))
                 .build();
     }
 }

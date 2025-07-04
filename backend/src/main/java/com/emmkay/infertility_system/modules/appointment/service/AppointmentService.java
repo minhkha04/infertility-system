@@ -18,8 +18,6 @@ import com.emmkay.infertility_system.modules.appointment.repository.AppointmentR
 import com.emmkay.infertility_system.modules.doctor.entity.Doctor;
 import com.emmkay.infertility_system.modules.doctor.repository.DoctorRepository;
 import com.emmkay.infertility_system.modules.reminder.repository.ReminderRepository;
-import com.emmkay.infertility_system.modules.schedule.entity.WorkSchedule;
-import com.emmkay.infertility_system.modules.schedule.repository.WorkScheduleRepository;
 import com.emmkay.infertility_system.modules.shared.security.CurrentUserUtils;
 import com.emmkay.infertility_system.modules.treatment.entity.TreatmentRecord;
 import com.emmkay.infertility_system.modules.treatment.entity.TreatmentStep;
@@ -48,7 +46,6 @@ import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @Slf4j
 @Service

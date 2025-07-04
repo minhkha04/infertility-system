@@ -24,6 +24,7 @@ import com.emmkay.infertility_system.modules.treatment.entity.TreatmentRecord;
 import com.emmkay.infertility_system.modules.treatment.entity.TreatmentService;
 import com.emmkay.infertility_system.modules.treatment.entity.TreatmentStep;
 import com.emmkay.infertility_system.modules.treatment.projection.TreatmentRecordBasicProjection;
+import com.emmkay.infertility_system.modules.treatment.projection.TreatmentRecordDashboardProjection;
 import com.emmkay.infertility_system.modules.treatment.repository.TreatmentRecordRepository;
 import com.emmkay.infertility_system.modules.treatment.repository.TreatmentServiceRepository;
 import com.emmkay.infertility_system.modules.treatment.repository.TreatmentStageRepository;
@@ -113,6 +114,23 @@ public class TreatmentRecordService {
             case CUSTOMER -> treatmentRecordRepository.searchTreatmentRecords(customerId, null, status, pageable);
             case DOCTOR -> treatmentRecordRepository.searchTreatmentRecords(null, doctorId, status, pageable);
             case MANAGER -> treatmentRecordRepository.searchTreatmentRecords(customerId, doctorId, status, pageable);
+            default -> throw new AppException(ErrorCode.UNAUTHORIZED);
+        };
+    }
+
+    public Page<TreatmentRecordDashboardProjection> getTreatmentRecordDashboard(
+            String customerId, String doctorId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        String currentUserId = CurrentUserUtils.getCurrentUserId();
+        String scope = CurrentUserUtils.getCurrentScope();
+        if (scope == null || currentUserId == null) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+        RoleName roleName = RoleName.formString(scope);
+        return switch (roleName) {
+            case CUSTOMER -> treatmentRecordRepository.getTreatmentRecordDashboard(currentUserId, null, pageable);
+            case DOCTOR -> treatmentRecordRepository.getTreatmentRecordDashboard(null, currentUserId, pageable);
+            case MANAGER -> treatmentRecordRepository.getTreatmentRecordDashboard(customerId, doctorId, pageable);
             default -> throw new AppException(ErrorCode.UNAUTHORIZED);
         };
     }
