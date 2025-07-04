@@ -1,5 +1,6 @@
 package com.emmkay.infertility_system.modules.doctor.service;
 
+import com.emmkay.infertility_system.modules.appointment.repository.AppointmentRepository;
 import com.emmkay.infertility_system.modules.doctor.projection.DoctorBasicProjection;
 import com.emmkay.infertility_system.modules.doctor.dto.request.DoctorUpdateRequest;
 import com.emmkay.infertility_system.modules.doctor.dto.response.DoctorResponse;
@@ -43,6 +44,7 @@ public class DoctorService {
     UserRepository userRepository;
     WorkScheduleRepository workScheduleRepository;
     AppointmentService appointmentService;
+    AppointmentRepository appointmentRepository;
 
     public Page<DoctorBasicProjection> getPublicDoctors(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
@@ -94,7 +96,7 @@ public class DoctorService {
         List<Shift> shiftsToMatch = List.of(shift, Shift.FULL_DAY);
         List<DoctorSelectProjection> doctors = workScheduleRepository.getDoctorsForRegister(date, shiftsToMatch);
         return doctors.stream()
-                .filter(doctor -> appointmentService.isDoctorAvailable(doctor.getId(), date, shift))
+                .filter(doctor -> isDoctorAvailable(doctor.getId(), date, shift))
                 .toList();
     }
 
@@ -113,16 +115,16 @@ public class DoctorService {
 
             switch (ws.getShift()) {
                 case MORNING, AFTERNOON:
-                    if (appointmentService.isDoctorAvailable(doctorId, date, ws.getShift())) {
+                    if (isDoctorAvailable(doctorId, date, ws.getShift())) {
                         availableShifts.add(ws.getShift());
                     }
                     break;
                 case FULL_DAY:
                     // Kiểm tra từng ca riêng biệt
-                    if (appointmentService.isDoctorAvailable(doctorId, date, Shift.MORNING)) {
+                    if (isDoctorAvailable(doctorId, date, Shift.MORNING)) {
                         availableShifts.add(Shift.MORNING);
                     }
-                    if (appointmentService.isDoctorAvailable(doctorId, date, Shift.AFTERNOON)) {
+                    if (isDoctorAvailable(doctorId, date, Shift.AFTERNOON)) {
                         availableShifts.add(Shift.AFTERNOON);
                     }
                     break;
@@ -145,6 +147,34 @@ public class DoctorService {
                 .findAvailableDoctorByDateAndShift(date, shift, PageRequest.of(0, 1))
                 .stream()
                 .findFirst();
+    }
+
+    public boolean isDoctorAvailable(String doctorId, LocalDate date, Shift shift) {
+        Optional<Doctor> doctor = doctorRepository.findById(doctorId);
+
+        if (doctor.isEmpty()) return false;
+        Doctor doctorFinal = doctor.get();
+
+        if (doctorFinal.getUsers().getIsRemoved() || !doctorFinal.getIsPublic()) {
+            return false;
+        }
+        Optional<WorkSchedule> workScheduleOpt = workScheduleRepository
+                .findByDoctorIdAndWorkDate(doctorId, date);
+
+
+        if (workScheduleOpt.isEmpty()) return false;
+        Shift actualShift = workScheduleOpt.get().getShift();
+
+        // a doctor doesn't work in shift or doctor not work fullday
+        if (actualShift != shift && actualShift != Shift.FULL_DAY) {
+            return false;
+        }
+
+        // count appointment (morning hoặc afternoon)
+        int shiftAppointmentCount = appointmentRepository
+                .countActiveByDoctorIdAndDateAndShift(doctorId, date, shift);
+
+        return shiftAppointmentCount < 10;
     }
 
 }
