@@ -43,19 +43,19 @@ public interface TreatmentRecordRepository extends JpaRepository<TreatmentRecord
                 WHERE (:customerId IS NULL OR tr.customer.id = :customerId)
                     AND (:doctorId IS NULL OR tr.doctor.id = :doctorId)
                     AND (:status IS NULL OR tr.status = :status)
-                GROUP BY tr.customer
             """)
     Page<TreatmentRecordBasicProjection> searchTreatmentRecords(String customerId, String doctorId, TreatmentRecordStatus status, Pageable pageable);
 
 
     @Query("""
                 SELECT
+                    tr.customer.id AS customerId,
                     tr.customer.fullName AS customerName,
                     COUNT(tr) AS totalRecord
                 FROM TreatmentRecord AS tr
                 WHERE (:customerId IS NULL OR tr.customer.id = :customerId)
                     AND (:doctorId IS NULL OR tr.doctor.id = :doctorId)
-                GROUP BY tr.customer.fullName
+                GROUP BY tr.customer.fullName, tr.customer.id
             """)
     Page<TreatmentRecordDashboardProjection> getTreatmentRecordDashboard(String customerId, String doctorId, Pageable pageable);
 
