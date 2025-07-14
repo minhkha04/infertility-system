@@ -44,7 +44,8 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
                        a.shift AS shift,
                        a.status AS status,
                        a.treatmentStep.stepType AS step,
-                       a.treatmentStep.record.id AS recordId
+                       a.treatmentStep.record.id AS recordId,
+                       a.purpose AS purpose
                 FROM Appointment a
                 WHERE
                        (:customerId IS NULL OR a.customer.id = :customerId)

@@ -80,6 +80,7 @@ public enum ErrorCode {
     CAN_UPDATE_TREATMENT_RECORD(1074, "Không thể cập nhật hồ sơ điều trị này", HttpStatus.BAD_REQUEST),
     CAN_NOT_CHANGE_SERVICE_IN_TREATMENT_RECORD(1075, "Không thể thay đổi dịch vụ vì đã trong tiến trình", HttpStatus.BAD_REQUEST),
     TREATMENT_STEP_PREV_IN_CONFIRMED(1076, "Bước điều trị trước chưa được hoàn thành", HttpStatus.BAD_REQUEST),
+    TREATMENT_STEP_ALREADY_EXISTS(1077, "Bước điều trị đã tồn tại", HttpStatus.BAD_REQUEST),
     ;
 
     int code;

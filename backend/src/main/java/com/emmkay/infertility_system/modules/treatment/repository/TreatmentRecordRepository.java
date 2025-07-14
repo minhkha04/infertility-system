@@ -59,4 +59,5 @@ public interface TreatmentRecordRepository extends JpaRepository<TreatmentRecord
             """)
     Page<TreatmentRecordDashboardProjection> getTreatmentRecordDashboard(String customerId, String doctorId, Pageable pageable);
 
+    boolean existsByCustomerIdAndDoctorIdAndServiceIdAndStatusIn(String customerId, String doctorId, Long serviceId, Collection<TreatmentRecordStatus> statuses);
 }

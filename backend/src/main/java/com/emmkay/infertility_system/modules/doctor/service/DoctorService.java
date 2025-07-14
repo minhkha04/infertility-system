@@ -141,9 +141,9 @@ public class DoctorService {
                 .build();
     }
 
-    public Optional<Doctor> findBestDoctor(LocalDate date, Shift shift) {
+    public Optional<Doctor> findBestDoctor(LocalDate date, Shift shift, String customerId, long serviceId) {
         return doctorRepository
-                .findAvailableDoctorByDateAndShift(date, shift, PageRequest.of(0, 1))
+                .findAvailableDoctorByDateAndShift(date, shift, customerId, serviceId, PageRequest.of(0, 1))
                 .stream()
                 .findFirst();
     }

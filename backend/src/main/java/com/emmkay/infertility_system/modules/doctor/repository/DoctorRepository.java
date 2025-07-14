@@ -56,13 +56,23 @@ public interface DoctorRepository extends JpaRepository<Doctor, String> {
                     ws.workDate = :inputDate
                     AND (ws.shift = :shift OR ws.shift = 'FULL_DAY')
                     AND (d.isPublic = true)
+                    AND NOT EXISTS (
+                        SELECT 1 FROM TreatmentRecord tr
+                        WHERE tr.doctor = d
+                            AND tr.customer.id = :customerId
+                            AND tr.service.id = :serviceId
+                            AND tr.status IN ('INPROGRESS', 'CONFIRMED')
+                    )
                 GROUP BY d
                 HAVING COUNT(a.id) < 10
                 ORDER BY COUNT(a.id)
             """)
     List<Doctor> findAvailableDoctorByDateAndShift(@Param("inputDate") LocalDate inputDate,
                                                    @Param("shift") Shift shift,
+                                                   @Param("customerId") String customerId,
+                                                   @Param("serviceId") long serviceId,
                                                    Pageable pageable);
+
     @Query(value = """
                 SELECT
                     d.id AS id,

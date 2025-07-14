@@ -129,6 +129,9 @@ public class TreatmentStepService {
     public TreatmentStepResponse createTreatmentStep(TreatmentStepCreateRequest request) {
         TreatmentStage stage = treatmentStageRepository.findById(request.getStageId())
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_STAGE_NOT_FOUND));
+        if (treatmentStepRepository.existsTreatmentStepByStageIdAndStatusIn(request.getStageId(), List.of(TreatmentStepStatus.CONFIRMED, TreatmentStepStatus.COMPLETED))) {
+            throw new AppException(ErrorCode.TREATMENT_STEP_ALREADY_EXISTS);
+        }
         TreatmentRecord record = treatmentRecordRepository.findById(request.getTreatmentRecordId())
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
         canChange(record.getDoctor().getId());

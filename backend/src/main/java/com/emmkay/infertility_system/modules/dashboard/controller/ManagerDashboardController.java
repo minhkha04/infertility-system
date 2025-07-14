@@ -25,7 +25,6 @@ import java.util.List;
 @PreAuthorize("hasRole('MANAGER')")
 public class ManagerDashboardController {
 
-    TreatmentServiceService treatmentServiceService;
     ManagerDashboardService managerDashboardService;
 
 

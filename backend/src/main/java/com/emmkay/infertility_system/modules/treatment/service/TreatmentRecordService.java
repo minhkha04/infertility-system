@@ -7,7 +7,6 @@ import com.emmkay.infertility_system.modules.payment.service.PaymentTransactionS
 import com.emmkay.infertility_system.modules.shared.enums.RoleName;
 import com.emmkay.infertility_system.modules.shared.security.CurrentUserUtils;
 import com.emmkay.infertility_system.modules.treatment.dto.request.RegisterServiceRequest;
-import com.emmkay.infertility_system.modules.treatment.dto.request.TreatmentRecordUpdateRequest;
 import com.emmkay.infertility_system.modules.treatment.dto.request.TreatmentStepCreateRequest;
 import com.emmkay.infertility_system.modules.treatment.dto.response.TreatmentRecordResponse;
 import com.emmkay.infertility_system.modules.shared.exception.AppException;
@@ -44,6 +43,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -112,7 +112,7 @@ public class TreatmentRecordService {
         RoleName roleName = RoleName.formString(scope);
         return switch (roleName) {
             case CUSTOMER -> treatmentRecordRepository.searchTreatmentRecords(customerId, null, status, pageable);
-            case DOCTOR -> treatmentRecordRepository.searchTreatmentRecords(null, doctorId, status, pageable);
+            case DOCTOR -> treatmentRecordRepository.searchTreatmentRecords(customerId, doctorId, status, pageable);
             case MANAGER -> treatmentRecordRepository.searchTreatmentRecords(customerId, doctorId, status, pageable);
             default -> throw new AppException(ErrorCode.UNAUTHORIZED);
         };
@@ -146,7 +146,7 @@ public class TreatmentRecordService {
         }
         treatmentRecord.setStatus(status);
         if (treatmentRecord.getStatus() == TreatmentRecordStatus.COMPLETED) {
-//        check the record is available for status change to completed
+//        check the record is available for status change to complete
 //            if (!paymentTransactionService.isPaid(recordId)) {
 //            throw new AppException(ErrorCode.TREATMENT_NOT_PAID);
 //        }
@@ -204,6 +204,8 @@ public class TreatmentRecordService {
 //        )) {
 //            throw new AppException(ErrorCode.TREATMENT_ALREADY_IN_PROGRESS);
 //        }
+
+
         String currentUserId = CurrentUserUtils.getCurrentUserId();
         if (currentUserId == null) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
@@ -220,16 +222,19 @@ public class TreatmentRecordService {
         User customer = userRepository.findById(currentUserId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-        // set doctor, if doctor
-        if (!request.getDoctorId().isEmpty()) {
+        log.info(request.getDoctorId());
+        if (request.getDoctorId() != null) {
+            if (treatmentRecordRepository.existsByCustomerIdAndDoctorIdAndServiceIdAndStatusIn(currentUserId, request.getDoctorId(), request.getTreatmentServiceId(), List.of(TreatmentRecordStatus.INPROGRESS, TreatmentRecordStatus.CONFIRMED))) {
+                throw new AppException(ErrorCode.TREATMENT_ALREADY_IN_PROGRESS);
+            }
             doctor = doctorRepository.findById(request.getDoctorId())
                     .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_NOT_EXISTED));
+            if (!doctorService.isDoctorAvailable(doctor.getId(), request.getStartDate(), request.getShift())) {
+                throw new AppException(ErrorCode.DOCTOR_NOT_AVAILABLE);
+            }
         } else {
-            doctor = doctorService.findBestDoctor(request.getStartDate(), request.getShift())
+            doctor = doctorService.findBestDoctor(request.getStartDate(), request.getShift(), currentUserId, request.getTreatmentServiceId())
                     .orElseThrow(() -> new AppException(ErrorCode.USERNAME_EXISTED));
-        }
-        if (!doctorService.isDoctorAvailable(doctor.getId(), request.getStartDate(), request.getShift())) {
-            throw new AppException(ErrorCode.DOCTOR_NOT_AVAILABLE);
         }
         TreatmentRecord treatmentRecord = TreatmentRecord.builder()
                 .customer(customer)
@@ -284,28 +289,4 @@ public class TreatmentRecordService {
         );
         sendMail("Hủy dịch vụ", EmailType.RECORD_CANCEL, treatmentRecord.getCustomer().getEmail(), params);
     }
-
-    @PreAuthorize("hasRole('DOCTOR')")
-    public TreatmentRecordResponse updateTreatmentRecord(TreatmentRecordUpdateRequest request, Long recordId) {
-        TreatmentRecord treatmentRecord = treatmentRecordRepository.findById(recordId)
-                .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
-        canChange(treatmentRecord);
-        if (treatmentRecord.getStatus() == TreatmentRecordStatus.COMPLETED
-                || treatmentRecord.getStatus() == TreatmentRecordStatus.CANCELLED) {
-            throw new AppException(ErrorCode.CAN_UPDATE_TREATMENT_RECORD);
-        }
-
-        if (treatmentRecord.getTreatmentSteps().size() >= 2) {
-            if (request.getServiceId() != treatmentRecord.getService().getId()) {
-                throw new AppException(ErrorCode.CAN_NOT_CHANGE_SERVICE_IN_TREATMENT_RECORD);
-            }
-        }
-
-        TreatmentService treatmentService = treatmentServiceRepository.findById(request.getServiceId())
-                .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_SERVICE_NOT_EXISTED));
-        treatmentRecordMapper.updateTreatmentRecord(treatmentRecord, request);
-        treatmentRecord.setService(treatmentService);
-        return treatmentRecordMapper.toTreatmentRecordResponse(treatmentRecordRepository.save(treatmentRecord));
-    }
-
 }

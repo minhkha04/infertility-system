@@ -4,7 +4,6 @@ package com.emmkay.infertility_system.modules.treatment.controller;
 import com.emmkay.infertility_system.modules.shared.dto.response.ApiResponse;
 import com.emmkay.infertility_system.modules.shared.dto.response.PageResponse;
 import com.emmkay.infertility_system.modules.treatment.dto.request.RegisterServiceRequest;
-import com.emmkay.infertility_system.modules.treatment.dto.request.TreatmentRecordUpdateRequest;
 import com.emmkay.infertility_system.modules.treatment.dto.response.TreatmentRecordResponse;
 import com.emmkay.infertility_system.modules.treatment.enums.TreatmentRecordStatus;
 import com.emmkay.infertility_system.modules.treatment.projection.TreatmentRecordBasicProjection;
@@ -16,8 +15,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/v1/treatment-records")
@@ -53,13 +50,6 @@ public class TreatmentRecordController {
     public ApiResponse<TreatmentRecordResponse> updateStatusTreatmentRecord(@PathVariable Long recordId, @RequestParam TreatmentRecordStatus status) {
         return ApiResponse.<TreatmentRecordResponse>builder()
                 .result(treatmentRecordService.updateStatusTreatmentRecord(recordId, status))
-                .build();
-    }
-
-    @PutMapping("/{recordId}")
-    public ApiResponse<TreatmentRecordResponse> updateTreatmentRecord(@RequestBody @Valid TreatmentRecordUpdateRequest request, @PathVariable Long recordId) {
-        return ApiResponse.<TreatmentRecordResponse>builder()
-                .result(treatmentRecordService.updateTreatmentRecord(request, recordId))
                 .build();
     }
 
