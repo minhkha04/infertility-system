@@ -43,7 +43,7 @@ public interface TreatmentRecordRepository extends JpaRepository<TreatmentRecord
                 WHERE (:customerId IS NULL OR tr.customer.id = :customerId)
                     AND (:doctorId IS NULL OR tr.doctor.id = :doctorId)
                     AND (:status IS NULL OR tr.status = :status)
-                ORDER BY tr.createdDate DESC
+                ORDER BY tr.startDate DESC
             """)
     Page<TreatmentRecordBasicProjection> searchTreatmentRecords(String customerId, String doctorId, TreatmentRecordStatus status, Pageable pageable);
 

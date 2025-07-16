@@ -85,6 +85,7 @@ public class TreatmentStepService {
                 .toList();
     }
 
+    @Transactional
     public TreatmentStepResponse updateTreatmentStepById(Long id, TreatmentStepUpdateRequest request) {
         TreatmentStep treatmentStep = treatmentStepRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_STEP_NOT_FOUND));
@@ -100,8 +101,9 @@ public class TreatmentStepService {
                 }
             }
             if (treatmentStep.getStage().getOrderIndex() != 0) {
-                record.getTreatmentSteps().forEach(x -> log.info("Log 2 {}", x.getId()));
-                TreatmentStep prevStep = record.getTreatmentSteps().stream().toList().get(record.getTreatmentSteps().size() - 2);
+                List<TreatmentStep> steps = treatmentStepRepository.getAllByRecordId(record.getId());
+                steps.forEach(x -> log.info("Log 2 {}", x.getStatus()));
+                TreatmentStep prevStep = steps.stream().toList().get(steps.size() - 2);
                 if (prevStep.getStatus() == TreatmentStepStatus.CONFIRMED) {
                     throw new AppException(ErrorCode.TREATMENT_STEP_PREV_IN_CONFIRMED);
                 }

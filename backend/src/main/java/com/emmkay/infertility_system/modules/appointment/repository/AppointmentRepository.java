@@ -62,13 +62,14 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
                     a.customer.fullName AS customerName,
                     a.shift AS shift,
                     a.status AS status,
-                    a.purpose AS purpose
+                    a.purpose AS purpose,
+                    a.treatmentStep.record.id AS recordId
                 FROM Appointment a
                 WHERE a.doctor.id = :doctorId
-                  AND a.appointmentDate = CURRENT_DATE
+                  AND a.appointmentDate = :today
                   AND a.status NOT IN ('PLANED', 'CANCELLED')
             """)
-    Page<DoctorTodayAppointmentProjection> findTodayAppointmentsByDoctorId(String doctorId, Pageable pageable);
+    Page<DoctorTodayAppointmentProjection> findTodayAppointmentsByDoctorId(String doctorId, LocalDate today, Pageable pageable);
 
     void deleteByTreatmentStep(TreatmentStep treatmentStep);
 

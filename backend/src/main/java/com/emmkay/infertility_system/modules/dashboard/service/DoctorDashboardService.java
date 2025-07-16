@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.time.ZoneId;
 import java.util.List;
 
 @Service
@@ -46,7 +47,8 @@ public class DoctorDashboardService {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
         Pageable pageable = PageRequest.of(page, size);
-        return appointmentRepository.findTodayAppointmentsByDoctorId(currentUserId,pageable);
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh"));
+        return appointmentRepository.findTodayAppointmentsByDoctorId(currentUserId, today, pageable);
     }
 
     public List<WorkScheduleDateShiftProjection> getWorkScheduleByDoctorId(YearMonth yearMonth) {

@@ -9,4 +9,5 @@ public interface DoctorTodayAppointmentProjection {
     AppointmentStatus getStatus();
     Shift getShift();
     String getPurpose();
+    Long getRecordId();
 }
