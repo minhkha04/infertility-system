@@ -1,5 +1,6 @@
 package com.emmkay.infertility_system.modules.treatment.projection;
 
+import com.emmkay.infertility_system.modules.treatment.enums.TreatmentRecordResult;
 import com.emmkay.infertility_system.modules.treatment.enums.TreatmentRecordStatus;
 
 import java.time.LocalDate;
@@ -14,4 +15,5 @@ public interface TreatmentRecordBasicProjection {
     LocalDate getStartDate();
     String getServiceName();
     boolean getIsPaid();
+    TreatmentRecordResult getResult();
 }

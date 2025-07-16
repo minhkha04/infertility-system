@@ -1,5 +1,6 @@
 package com.emmkay.infertility_system.modules.treatment.dto.response;
 
+import com.emmkay.infertility_system.modules.treatment.enums.TreatmentRecordResult;
 import com.emmkay.infertility_system.modules.treatment.enums.TreatmentRecordStatus;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -25,4 +26,5 @@ public class TreatmentRecordResponse {
     boolean isPaid;
     long treatmentServiceId;
     List<TreatmentStepResponse> treatmentSteps;
+    TreatmentRecordResult result;
 }

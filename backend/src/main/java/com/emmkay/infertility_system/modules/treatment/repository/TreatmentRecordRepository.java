@@ -30,7 +30,7 @@ public interface TreatmentRecordRepository extends JpaRepository<TreatmentRecord
                 ) AS completedSteps,
                 tr.status AS status,
                 tr.service.name AS serviceName,
-                (   CASE
+                (CASE
                     WHEN EXISTS (
                         SELECT 1
                             FROM PaymentTransaction pt
@@ -38,7 +38,8 @@ public interface TreatmentRecordRepository extends JpaRepository<TreatmentRecord
                     )   THEN true
                         ELSE false
                     END
-                    ) AS isPaid
+                ) AS isPaid,
+                tr.result AS result
                 FROM TreatmentRecord tr
                 WHERE (:customerId IS NULL OR tr.customer.id = :customerId)
                     AND (:doctorId IS NULL OR tr.doctor.id = :doctorId)

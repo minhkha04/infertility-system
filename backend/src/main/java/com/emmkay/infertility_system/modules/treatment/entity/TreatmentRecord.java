@@ -1,10 +1,12 @@
 package com.emmkay.infertility_system.modules.treatment.entity;
 
+import com.emmkay.infertility_system.modules.treatment.enums.TreatmentRecordResult;
 import com.emmkay.infertility_system.modules.treatment.enums.TreatmentRecordStatus;
 import com.emmkay.infertility_system.modules.user.entity.User;
 import com.emmkay.infertility_system.modules.doctor.entity.Doctor;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
@@ -63,4 +65,8 @@ public class TreatmentRecord {
 
     @Column(name = "cd1_date")
     private LocalDate cd1Date;
+
+    @Column(name = "result")
+    @Enumerated(EnumType.STRING)
+    private TreatmentRecordResult result;
 }

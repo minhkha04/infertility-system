@@ -12,6 +12,7 @@ import com.emmkay.infertility_system.modules.treatment.dto.response.TreatmentRec
 import com.emmkay.infertility_system.modules.shared.exception.AppException;
 import com.emmkay.infertility_system.modules.shared.exception.ErrorCode;
 import com.emmkay.infertility_system.modules.treatment.entity.TreatmentStage;
+import com.emmkay.infertility_system.modules.treatment.enums.TreatmentRecordResult;
 import com.emmkay.infertility_system.modules.treatment.enums.TreatmentRecordStatus;
 import com.emmkay.infertility_system.modules.treatment.enums.TreatmentStepStatus;
 import com.emmkay.infertility_system.modules.treatment.mapper.TreatmentRecordMapper;
@@ -137,7 +138,7 @@ public class TreatmentRecordService {
 
     @PreAuthorize("hasRole('MANAGER') or hasRole('DOCTOR')")
     @Transactional
-    public TreatmentRecordResponse updateStatusTreatmentRecord(Long recordId, TreatmentRecordStatus status) {
+    public TreatmentRecordResponse updateStatusTreatmentRecord(Long recordId, TreatmentRecordStatus status, TreatmentRecordResult result) {
         TreatmentRecord treatmentRecord = treatmentRecordRepository.findById(recordId)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
 
@@ -165,6 +166,7 @@ public class TreatmentRecordService {
                     "completedDate", treatmentRecord.getEndDate().toString()
             );
             sendMail("Thông báo hoàn thành điều trị", EmailType.RECORD_SUCCESS, treatmentRecord.getCustomer().getEmail(), params);
+            treatmentRecord.setResult(result);
         } else if (treatmentRecord.getStatus() == TreatmentRecordStatus.CANCELLED) {
             cancelTreatmentRecord(recordId);
         }
@@ -253,6 +255,7 @@ public class TreatmentRecordService {
                 .status(TreatmentRecordStatus.CONFIRMED)
                 .createdDate(LocalDate.now())
                 .cd1Date(request.getCd1Date())
+                .result(TreatmentRecordResult.UNDETERMINED)
                 .build();
         TreatmentRecord saveTreatmentRecord = treatmentRecordRepository.save(treatmentRecord);
         TreatmentStage treatmentStage = treatmentStageRepository.findByOrderIndexAndServiceId(0, treatmentService.getId())
