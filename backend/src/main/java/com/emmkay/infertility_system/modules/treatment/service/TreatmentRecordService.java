@@ -46,6 +46,7 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -112,8 +113,7 @@ public class TreatmentRecordService {
         RoleName roleName = RoleName.formString(scope);
         return switch (roleName) {
             case CUSTOMER -> treatmentRecordRepository.searchTreatmentRecords(customerId, null, status, pageable);
-            case DOCTOR -> treatmentRecordRepository.searchTreatmentRecords(customerId, doctorId, status, pageable);
-            case MANAGER -> treatmentRecordRepository.searchTreatmentRecords(customerId, doctorId, status, pageable);
+            case DOCTOR, MANAGER -> treatmentRecordRepository.searchTreatmentRecords(customerId, doctorId, status, pageable);
             default -> throw new AppException(ErrorCode.UNAUTHORIZED);
         };
     }
@@ -136,6 +136,7 @@ public class TreatmentRecordService {
     }
 
     @PreAuthorize("hasRole('MANAGER') or hasRole('DOCTOR')")
+    @Transactional
     public TreatmentRecordResponse updateStatusTreatmentRecord(Long recordId, TreatmentRecordStatus status) {
         TreatmentRecord treatmentRecord = treatmentRecordRepository.findById(recordId)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
@@ -150,6 +151,12 @@ public class TreatmentRecordService {
 //            if (!paymentTransactionService.isPaid(recordId)) {
 //            throw new AppException(ErrorCode.TREATMENT_NOT_PAID);
 //        }
+            Set<TreatmentStep> treatmentSteps = treatmentRecord.getTreatmentSteps();
+            treatmentSteps.forEach(treatmentStep -> {
+               if (treatmentStep.getStatus() == TreatmentStepStatus.CONFIRMED) {
+                   throw new AppException(ErrorCode.TREATMENT_STEP_NOT_COMPLETED);
+               }
+            });
             treatmentRecord.setEndDate(LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh")));
             Map<String, String> params = Map.of(
                     "customerName", treatmentRecord.getCustomer().getFullName(),
@@ -158,6 +165,8 @@ public class TreatmentRecordService {
                     "completedDate", treatmentRecord.getEndDate().toString()
             );
             sendMail("Thông báo hoàn thành điều trị", EmailType.RECORD_SUCCESS, treatmentRecord.getCustomer().getEmail(), params);
+        } else if (treatmentRecord.getStatus() == TreatmentRecordStatus.CANCELLED) {
+            cancelTreatmentRecord(recordId);
         }
         return treatmentRecordMapper.toTreatmentRecordResponse(treatmentRecordRepository.save(treatmentRecord));
     }
@@ -214,9 +223,9 @@ public class TreatmentRecordService {
         TreatmentService treatmentService = treatmentServiceRepository.findById(request.getTreatmentServiceId())
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_SERVICE_NOT_EXISTED));
 
-        if (request.getStartDate().isBefore(LocalDate.now().plusDays(1))) {
-            throw new AppException(ErrorCode.INVALID_START_DATE);
-        }
+//        if (request.getStartDate().isBefore(LocalDate.now().plusDays(1))) {
+//            throw new AppException(ErrorCode.INVALID_START_DATE);
+//        }
 
         Doctor doctor;
         User customer = userRepository.findById(currentUserId)
@@ -264,7 +273,6 @@ public class TreatmentRecordService {
         sendMail("Thông báo đăng ký dịch vụ", EmailType.REGISTER_SERVICE, customer.getEmail(), params);
     }
 
-    @Transactional
     public void cancelTreatmentRecord(Long recordId) {
         TreatmentRecord treatmentRecord = treatmentRecordRepository.findById(recordId)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));

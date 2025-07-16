@@ -58,7 +58,7 @@ public enum ErrorCode {
     TREATMENT_STAGE_DUPLICATE(1051, "Trùng giai đoạn điều trị", HttpStatus.BAD_REQUEST),
     EMAIL_SEND_FAILED(1052, "Không thể gửi mail", HttpStatus.INTERNAL_SERVER_ERROR),
     TREATMENT_RECORD_IS_PAID(1053, "Bạn không thể hủy dịch vụ này vì đã thanh toán, vui lòng gửi mail cho bệnh viện nếu muốn hủy", HttpStatus.BAD_REQUEST),
-    TREATMENT_RECORD_IS_COMPLETED_OR_CANCELLED(1054, "Bạn không thể đặt lịch hẹn vì hồ sơ này đã hoàn thành hoặc đã bị hủy", HttpStatus.BAD_REQUEST),
+    TREATMENT_RECORD_IS_COMPLETED_OR_CANCELLED(1054, "Hồ sơ này đã hoàn thành hoặc đã bị hủy", HttpStatus.BAD_REQUEST),
     PAYMENT_METHOD_NOT_SUPPORTED(1055, "Phương thức thanh toán không được hỗ trợ", HttpStatus.BAD_REQUEST),
     GENERATE_QR_FAILED(1056, "Tạo Qr thanh toán thất bại", HttpStatus.INTERNAL_SERVER_ERROR),
     CONVERT_TO_BASE64_FAILED(1057, "Convert to base 64 failed", HttpStatus.INTERNAL_SERVER_ERROR),
@@ -81,6 +81,7 @@ public enum ErrorCode {
     CAN_NOT_CHANGE_SERVICE_IN_TREATMENT_RECORD(1075, "Không thể thay đổi dịch vụ vì đã trong tiến trình", HttpStatus.BAD_REQUEST),
     TREATMENT_STEP_PREV_IN_CONFIRMED(1076, "Bước điều trị trước chưa được hoàn thành", HttpStatus.BAD_REQUEST),
     TREATMENT_STEP_ALREADY_EXISTS(1077, "Bước điều trị đã tồn tại", HttpStatus.BAD_REQUEST),
+    TREATMENT_STEP_NOT_COMPLETED(1078, "Bước điều trị chưa hoàn thành", HttpStatus.BAD_REQUEST),
     ;
 
     int code;

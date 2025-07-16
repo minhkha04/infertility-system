@@ -66,6 +66,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
                 FROM Appointment a
                 WHERE a.doctor.id = :doctorId
                   AND a.appointmentDate = CURRENT_DATE
+                  AND a.status NOT IN ('PLANED', 'CANCELLED')
             """)
     Page<DoctorTodayAppointmentProjection> findTodayAppointmentsByDoctorId(String doctorId, Pageable pageable);
 

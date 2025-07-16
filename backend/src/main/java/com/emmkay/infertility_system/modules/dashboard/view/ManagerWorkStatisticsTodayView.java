@@ -1,10 +1,7 @@
 package com.emmkay.infertility_system.modules.dashboard.view;
 
 import com.google.errorprone.annotations.Immutable;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
@@ -15,6 +12,9 @@ import lombok.*;
 @AllArgsConstructor
 public class ManagerWorkStatisticsTodayView {
     @Id
+    @Column(name = "id")
+    private Integer id;
+
     @Column(name = "total_doctors_today")
     private Integer totalDoctorsToday;
 

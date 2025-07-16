@@ -5,10 +5,10 @@ import com.emmkay.infertility_system.modules.dashboard.view.ManagerWorkStatistic
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface ManagerWorkStatisticsTodayRepository extends JpaRepository<ManagerWorkStatisticsTodayView, Integer> {
-
 
     @Query("""
                 SELECT
@@ -23,11 +23,13 @@ public interface ManagerWorkStatisticsTodayRepository extends JpaRepository<Mana
                 JOIN WorkSchedule ws ON ws.doctor.id = d.id
                 LEFT JOIN Appointment a
                             ON a.doctor.id = d.id
-                            AND a.appointmentDate = LOCAL_DATE
+                            AND a.appointmentDate = :today
                             AND a.status != 'CANCELLED'
-                WHERE ws.workDate = LOCAL_DATE
+                WHERE ws.workDate = :today
                 GROUP BY d.id, d.users.fullName, d.users.phoneNumber, ws.shift
                 ORDER BY d.users.fullName
             """)
-    List<ManagerWorkScheduleDoctorTodayProjection> getDoctorScheduleToday();
+    List<ManagerWorkScheduleDoctorTodayProjection> getDoctorScheduleToday(LocalDate today);
+
+    ManagerWorkStatisticsTodayView getManagerWorkStatisticsTodayViewById(Integer id);
 }

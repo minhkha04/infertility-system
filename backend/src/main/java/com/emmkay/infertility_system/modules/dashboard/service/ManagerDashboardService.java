@@ -10,26 +10,30 @@ import com.emmkay.infertility_system.modules.dashboard.view.ManagerRevenueOvervi
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Slf4j
 public class ManagerDashboardService {
 
     ManagerWorkStatisticsTodayRepository managerWorkStatisticsTodayRepository;
     ManagerRevenueRepository managerRevenueRepository;
 
     public ManagerWorkStatisticsTodayView getWorkStatisticsToday() {
-        return managerWorkStatisticsTodayRepository.findAll().getFirst();
+        return managerWorkStatisticsTodayRepository.getManagerWorkStatisticsTodayViewById(1);
     }
 
     public List<ManagerWorkScheduleDoctorTodayProjection> getWorkSchedulesForManagerDashboard() {
-        return managerWorkStatisticsTodayRepository.getDoctorScheduleToday();
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh"));
+        return managerWorkStatisticsTodayRepository.getDoctorScheduleToday(today);
     }
 
     public ManagerRevenueOverview getRevenueOverview() {

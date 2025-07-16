@@ -18,4 +18,8 @@ public interface TreatmentStepRepository extends JpaRepository<TreatmentStep, Lo
     boolean existsTreatmentStepByStageIdAndStatus(Long stageId, TreatmentStepStatus status);
 
     boolean existsTreatmentStepByStageIdAndStatusIn(Long stageId, Collection<TreatmentStepStatus> statuses);
+
+    List<TreatmentStep> getAllByStageIdAndStatusIn(Long stageId, Collection<TreatmentStepStatus> statuses);
+
+    boolean existsTreatmentStepByStageIdAndRecordIdAndStatusIn(Long stageId, Long recordId, Collection<TreatmentStepStatus> statuses);
 }

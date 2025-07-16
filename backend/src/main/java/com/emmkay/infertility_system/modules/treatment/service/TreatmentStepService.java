@@ -13,6 +13,7 @@ import com.emmkay.infertility_system.modules.treatment.entity.TreatmentStage;
 import com.emmkay.infertility_system.modules.treatment.entity.TreatmentStep;
 import com.emmkay.infertility_system.modules.shared.exception.AppException;
 import com.emmkay.infertility_system.modules.shared.exception.ErrorCode;
+import com.emmkay.infertility_system.modules.treatment.enums.TreatmentRecordStatus;
 import com.emmkay.infertility_system.modules.treatment.enums.TreatmentStepStatus;
 import com.emmkay.infertility_system.modules.treatment.mapper.TreatmentStepMapper;
 import com.emmkay.infertility_system.modules.appointment.repository.AppointmentRepository;
@@ -129,11 +130,14 @@ public class TreatmentStepService {
     public TreatmentStepResponse createTreatmentStep(TreatmentStepCreateRequest request) {
         TreatmentStage stage = treatmentStageRepository.findById(request.getStageId())
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_STAGE_NOT_FOUND));
-        if (treatmentStepRepository.existsTreatmentStepByStageIdAndStatusIn(request.getStageId(), List.of(TreatmentStepStatus.CONFIRMED, TreatmentStepStatus.COMPLETED))) {
+        if (treatmentStepRepository.existsTreatmentStepByStageIdAndRecordIdAndStatusIn(request.getStageId(), request.getTreatmentRecordId(), List.of(TreatmentStepStatus.CONFIRMED, TreatmentStepStatus.COMPLETED))) {
             throw new AppException(ErrorCode.TREATMENT_STEP_ALREADY_EXISTS);
         }
         TreatmentRecord record = treatmentRecordRepository.findById(request.getTreatmentRecordId())
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
+        if (record.getStatus() == TreatmentRecordStatus.CANCELLED) {
+            throw new AppException(ErrorCode.TREATMENT_RECORD_IS_COMPLETED_OR_CANCELLED);
+        }
         canChange(record.getDoctor().getId());
         TreatmentStep treatmentStep = treatmentStepMapper.toTreatmentStep(request);
         treatmentStep.setRecord(record);
