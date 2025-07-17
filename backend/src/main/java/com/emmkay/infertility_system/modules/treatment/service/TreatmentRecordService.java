@@ -143,15 +143,19 @@ public class TreatmentRecordService {
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
 
         canChange(treatmentRecord);
-        if (treatmentRecord.getStatus() == TreatmentRecordStatus.CANCELLED) {
+        if (treatmentRecord.getStatus() == TreatmentRecordStatus.CANCELLED || treatmentRecord.getStatus() == TreatmentRecordStatus.COMPLETED) {
             throw new AppException(ErrorCode.CAN_UPDATE_TREATMENT_RECORD);
         }
-        treatmentRecord.setStatus(status);
-        if (treatmentRecord.getStatus() == TreatmentRecordStatus.COMPLETED) {
-//        check the record is available for status change to complete
-//            if (!paymentTransactionService.isPaid(recordId)) {
-//            throw new AppException(ErrorCode.TREATMENT_NOT_PAID);
-//        }
+
+        if (status == TreatmentRecordStatus.COMPLETED) {
+//            check the record is available for the status change to complete
+            if (!paymentTransactionService.isPaid(recordId)) {
+            throw new AppException(ErrorCode.TREATMENT_NOT_PAID);
+        }
+//            check if the record is in progress
+            if (treatmentRecord.getStatus() != TreatmentRecordStatus.INPROGRESS) {
+                throw new AppException(ErrorCode.CAN_UPDATE_TREATMENT_RECORD);
+            }
             Set<TreatmentStep> treatmentSteps = treatmentRecord.getTreatmentSteps();
             treatmentSteps.forEach(treatmentStep -> {
                if (treatmentStep.getStatus() == TreatmentStepStatus.CONFIRMED) {
@@ -167,9 +171,10 @@ public class TreatmentRecordService {
             );
             sendMail("Thông báo hoàn thành điều trị", EmailType.RECORD_SUCCESS, treatmentRecord.getCustomer().getEmail(), params);
             treatmentRecord.setResult(result);
-        } else if (treatmentRecord.getStatus() == TreatmentRecordStatus.CANCELLED) {
+        } else if (status == TreatmentRecordStatus.CANCELLED) {
             cancelTreatmentRecord(recordId);
         }
+        treatmentRecord.setStatus(status);
         return treatmentRecordMapper.toTreatmentRecordResponse(treatmentRecordRepository.save(treatmentRecord));
     }
 
@@ -224,16 +229,14 @@ public class TreatmentRecordService {
 
         TreatmentService treatmentService = treatmentServiceRepository.findById(request.getTreatmentServiceId())
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_SERVICE_NOT_EXISTED));
-
-//        if (request.getStartDate().isBefore(LocalDate.now().plusDays(1))) {
-//            throw new AppException(ErrorCode.INVALID_START_DATE);
-//        }
+//        check start date
+        if (request.getStartDate().isBefore(LocalDate.now().plusDays(1))) {
+            throw new AppException(ErrorCode.INVALID_START_DATE);
+        }
 
         Doctor doctor;
         User customer = userRepository.findById(currentUserId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-
-        log.info(request.getDoctorId());
         if (request.getDoctorId() != null) {
             if (treatmentRecordRepository.existsByCustomerIdAndDoctorIdAndServiceIdAndStatusIn(currentUserId, request.getDoctorId(), request.getTreatmentServiceId(), List.of(TreatmentRecordStatus.INPROGRESS, TreatmentRecordStatus.CONFIRMED))) {
                 throw new AppException(ErrorCode.TREATMENT_ALREADY_IN_PROGRESS);

@@ -91,7 +91,20 @@ public class TreatmentStepService {
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_STEP_NOT_FOUND));
         TreatmentRecord record = treatmentStep.getRecord();
         canChange(record.getDoctor().getId());
+//        check a status treatment record
+        if (record.getStatus() == TreatmentRecordStatus.CANCELLED || record.getStatus() == TreatmentRecordStatus.COMPLETED) {
+            throw new AppException(ErrorCode.TREATMENT_RECORD_IS_COMPLETED_OR_CANCELLED);
+        }
+//        check a status treatment step
+        if (treatmentStep.getStatus() == TreatmentStepStatus.COMPLETED || treatmentStep.getStatus() ==TreatmentStepStatus.CANCELLED) {
+            throw new AppException(ErrorCode.TREATMENT_STEP_ALREADY_COMPLETED_OR_CANCELLED);
+        }
+
         if (request.getStatus() == TreatmentStepStatus.COMPLETED) {
+//            check if a step can be completed
+            if (treatmentStep.getStatus() != TreatmentStepStatus.INPROGRESS) {
+                throw new AppException(ErrorCode.TREATMENT_STEP_CAN_NOT_DONE);
+            }
             List<Appointment> appointmentList = appointmentRepository.getAppointmentsByTreatmentStep(treatmentStep);
             if (!appointmentList.isEmpty()) {
                 List<AppointmentStatus> appointmentStatuses = List.of(AppointmentStatus.CONFIRMED, AppointmentStatus.PENDING_CHANGE, AppointmentStatus.REJECTED);
@@ -102,7 +115,6 @@ public class TreatmentStepService {
             }
             if (treatmentStep.getStage().getOrderIndex() != 0) {
                 List<TreatmentStep> steps = treatmentStepRepository.getAllByRecordId(record.getId());
-                steps.forEach(x -> log.info("Log 2 {}", x.getStatus()));
                 TreatmentStep prevStep = steps.stream().toList().get(steps.size() - 2);
                 if (prevStep.getStatus() == TreatmentStepStatus.CONFIRMED) {
                     throw new AppException(ErrorCode.TREATMENT_STEP_PREV_IN_CONFIRMED);

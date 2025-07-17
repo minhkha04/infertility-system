@@ -82,6 +82,8 @@ public enum ErrorCode {
     TREATMENT_STEP_PREV_IN_CONFIRMED(1076, "Bước điều trị trước chưa được hoàn thành", HttpStatus.BAD_REQUEST),
     TREATMENT_STEP_ALREADY_EXISTS(1077, "Bước điều trị đã tồn tại", HttpStatus.BAD_REQUEST),
     TREATMENT_STEP_NOT_COMPLETED(1078, "Bước điều trị chưa hoàn thành", HttpStatus.BAD_REQUEST),
+    TREATMENT_STEP_ALREADY_COMPLETED_OR_CANCELLED(1079, "Bước điều trị đã hoàn thành hoặc bị hủy", HttpStatus.BAD_REQUEST),
+    TREATMENT_STEP_CAN_NOT_DONE(1080, "Bước điều trị không thể hoàn thành", HttpStatus.BAD_REQUEST),
     ;
 
     int code;
