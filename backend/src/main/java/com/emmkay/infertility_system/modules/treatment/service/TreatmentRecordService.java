@@ -154,9 +154,9 @@ public class TreatmentRecordService {
 //        }
             Set<TreatmentStep> treatmentSteps = treatmentRecord.getTreatmentSteps();
             treatmentSteps.forEach(treatmentStep -> {
-               if (treatmentStep.getStatus() == TreatmentStepStatus.CONFIRMED) {
-                   throw new AppException(ErrorCode.TREATMENT_STEP_NOT_COMPLETED);
-               }
+                if (treatmentStep.getStatus() == TreatmentStepStatus.CONFIRMED) {
+                    throw new AppException(ErrorCode.TREATMENT_STEP_NOT_COMPLETED);
+                }
             });
             treatmentRecord.setEndDate(LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh")));
             Map<String, String> params = Map.of(
@@ -167,8 +167,6 @@ public class TreatmentRecordService {
             );
             sendMail("Thông báo hoàn thành điều trị", EmailType.RECORD_SUCCESS, treatmentRecord.getCustomer().getEmail(), params);
             treatmentRecord.setResult(result);
-        } else if (treatmentRecord.getStatus() == TreatmentRecordStatus.CANCELLED) {
-            cancelTreatmentRecord(recordId);
         }
         return treatmentRecordMapper.toTreatmentRecordResponse(treatmentRecordRepository.save(treatmentRecord));
     }
@@ -276,7 +274,7 @@ public class TreatmentRecordService {
         sendMail("Thông báo đăng ký dịch vụ", EmailType.REGISTER_SERVICE, customer.getEmail(), params);
     }
 
-    public void cancelTreatmentRecord(Long recordId) {
+    public void cancelTreatmentRecord(Long recordId, String notes) {
         TreatmentRecord treatmentRecord = treatmentRecordRepository.findById(recordId)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
         canChange(treatmentRecord);
@@ -290,6 +288,7 @@ public class TreatmentRecordService {
             throw new AppException(ErrorCode.TREATMENT_RECORD_IS_PAID);
         }
 
+        treatmentRecord.setNotes(notes);
         treatmentRecord.setStatus(TreatmentRecordStatus.CANCELLED);
         treatmentStepService.cancelStepsByRecordId(recordId);
         treatmentRecordRepository.save(treatmentRecord);

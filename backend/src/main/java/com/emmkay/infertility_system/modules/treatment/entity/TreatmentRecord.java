@@ -6,7 +6,6 @@ import com.emmkay.infertility_system.modules.user.entity.User;
 import com.emmkay.infertility_system.modules.doctor.entity.Doctor;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
@@ -69,4 +68,7 @@ public class TreatmentRecord {
     @Column(name = "result")
     @Enumerated(EnumType.STRING)
     private TreatmentRecordResult result;
+
+    @Column(name = "notes")
+    private String notes;
 }

@@ -68,8 +68,8 @@ public class TreatmentRecordController {
     }
 
     @DeleteMapping("/{recordId}/cancel")
-    public ApiResponse<String> cancelTreatmentRecord(@PathVariable Long recordId) {
-        treatmentRecordService.cancelTreatmentRecord(recordId);
+    public ApiResponse<String> cancelTreatmentRecord(@PathVariable Long recordId, @RequestParam(required = false) String notes) {
+        treatmentRecordService.cancelTreatmentRecord(recordId, notes);
         return ApiResponse.<String>builder()
                 .result("Hủy dịch vụ thành công")
                 .build();

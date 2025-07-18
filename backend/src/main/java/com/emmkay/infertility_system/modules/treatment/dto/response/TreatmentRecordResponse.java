@@ -27,4 +27,5 @@ public class TreatmentRecordResponse {
     long treatmentServiceId;
     List<TreatmentStepResponse> treatmentSteps;
     TreatmentRecordResult result;
+    String notes;
 }
