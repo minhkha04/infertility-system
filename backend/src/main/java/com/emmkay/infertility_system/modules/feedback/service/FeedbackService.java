@@ -114,7 +114,7 @@ public class FeedbackService {
         TreatmentRecord treatmentRecord = treatmentRecordRepository.findById(request.getRecordId())
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
 
-        if (!(treatmentRecord.getStatus() == TreatmentRecordStatus.COMPLETED)) {
+        if (treatmentRecord.getStatus() != TreatmentRecordStatus.COMPLETED) {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
 

@@ -28,4 +28,5 @@ public class TreatmentRecordResponse {
     List<TreatmentStepResponse> treatmentSteps;
     TreatmentRecordResult result;
     String notes;
+    LocalDate cd1Date;
 }

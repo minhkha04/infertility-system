@@ -21,7 +21,6 @@ import com.emmkay.infertility_system.modules.reminder.repository.ReminderReposit
 import com.emmkay.infertility_system.modules.shared.security.CurrentUserUtils;
 import com.emmkay.infertility_system.modules.treatment.entity.TreatmentRecord;
 import com.emmkay.infertility_system.modules.treatment.entity.TreatmentStep;
-import com.emmkay.infertility_system.modules.treatment.enums.TreatmentRecordStatus;
 import com.emmkay.infertility_system.modules.treatment.enums.TreatmentStepStatus;
 import com.emmkay.infertility_system.modules.treatment.repository.TreatmentRecordRepository;
 import com.emmkay.infertility_system.modules.treatment.repository.TreatmentStepRepository;
@@ -150,6 +149,9 @@ public class AppointmentService {
 //        if (!appointment.getAppointmentDate().equals(today)) {
 //            throw new AppException(ErrorCode.CAN_NOT_BE_UPDATED_STATUS);
 //        }
+        if (appointment.getStatus() != AppointmentStatus.CONFIRMED) {
+            throw new AppException(ErrorCode.CAN_NOT_BE_UPDATED_STATUS);
+        }
         appointment.setStatus(request.getStatus());
         appointment.setNotes(request.getNote());
         return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
@@ -239,7 +241,7 @@ public class AppointmentService {
                 .orElseThrow(() -> new AppException(ErrorCode.APPOINTMENT_NOT_FOUND));
         if (appointment.getStatus() == AppointmentStatus.COMPLETED
                 || appointment.getStatus() == AppointmentStatus.CANCELLED) {
-            throw new AppException(ErrorCode.APPOINTMENT_IS_COMPLETED);
+            throw new AppException(ErrorCode.CAN_NOT_BE_UPDATED_STATUS);
         }
         appointmentValidator.validateCanChangeAppointment(appointment);
         switch (request.getStatus()) {
@@ -294,11 +296,6 @@ public class AppointmentService {
 
         TreatmentRecord treatmentRecord = treatmentRecordRepository.findById(step.getRecord().getId())
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
-
-        if (treatmentRecord.getStatus() == TreatmentRecordStatus.COMPLETED
-                || treatmentRecord.getStatus() == TreatmentRecordStatus.CANCELLED) {
-            throw new AppException(ErrorCode.TREATMENT_RECORD_IS_COMPLETED_OR_CANCELLED);
-        }
 
         if (step.getStatus() == TreatmentStepStatus.COMPLETED
                 || step.getStatus() == TreatmentStepStatus.CANCELLED) {

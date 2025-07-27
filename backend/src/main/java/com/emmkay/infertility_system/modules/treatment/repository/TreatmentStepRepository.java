@@ -15,11 +15,15 @@ public interface TreatmentStepRepository extends JpaRepository<TreatmentStep, Lo
     @Query("SELECT ts FROM TreatmentStep AS ts WHERE ts.record.id = :recordId ORDER BY ts.stage.orderIndex ASC")
     List<TreatmentStep> getAllByRecordId(Long recordId);
 
-    boolean existsTreatmentStepByStageIdAndStatus(Long stageId, TreatmentStepStatus status);
-
-    boolean existsTreatmentStepByStageIdAndStatusIn(Long stageId, Collection<TreatmentStepStatus> statuses);
-
-    List<TreatmentStep> getAllByStageIdAndStatusIn(Long stageId, Collection<TreatmentStepStatus> statuses);
-
     boolean existsTreatmentStepByStageIdAndRecordIdAndStatusIn(Long stageId, Long recordId, Collection<TreatmentStepStatus> statuses);
+
+    @Query("""
+        SELECT
+            ts
+        FROM TreatmentStep AS ts
+        WHERE
+            ts.stage.orderIndex = :orderIndex
+            AND ts.record.id = :recordId
+    """)
+    TreatmentStep getPreviousStep(Long recordId, int orderIndex);
 }

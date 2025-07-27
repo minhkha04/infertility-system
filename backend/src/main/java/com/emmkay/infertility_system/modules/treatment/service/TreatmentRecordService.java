@@ -223,9 +223,9 @@ public class TreatmentRecordService {
         TreatmentService treatmentService = treatmentServiceRepository.findById(request.getTreatmentServiceId())
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_SERVICE_NOT_EXISTED));
 
-//        if (request.getStartDate().isBefore(LocalDate.now().plusDays(1))) {
-//            throw new AppException(ErrorCode.INVALID_START_DATE);
-//        }
+        if (request.getStartDate().isBefore(LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh")).plusDays(1))) {
+            throw new AppException(ErrorCode.INVALID_START_DATE);
+        }
 
         Doctor doctor;
         User customer = userRepository.findById(currentUserId)
@@ -239,6 +239,7 @@ public class TreatmentRecordService {
             doctor = doctorRepository.findById(request.getDoctorId())
                     .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_NOT_EXISTED));
             if (!doctorService.isDoctorAvailable(doctor.getId(), request.getStartDate(), request.getShift())) {
+                log.info("Check 1");
                 throw new AppException(ErrorCode.DOCTOR_NOT_AVAILABLE);
             }
         } else {

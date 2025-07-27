@@ -18,10 +18,10 @@ public class FeedbackResponse {
     String doctorName;
     int rating;
     String comment;
-    LocalDate submitDate;
-    boolean isApproved;
+    LocalDate approvedAt;
     FeedbackStatus status;
     String note;
     String approvedBy;
     String recordId;
+    LocalDate createdAt;
 }
