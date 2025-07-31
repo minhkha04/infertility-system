@@ -231,7 +231,6 @@ public class TreatmentRecordService {
         User customer = userRepository.findById(currentUserId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-        log.info(request.getDoctorId());
         if (request.getDoctorId() != null) {
             if (treatmentRecordRepository.existsByCustomerIdAndDoctorIdAndServiceIdAndStatusIn(currentUserId, request.getDoctorId(), request.getTreatmentServiceId(), List.of(TreatmentRecordStatus.INPROGRESS, TreatmentRecordStatus.CONFIRMED))) {
                 throw new AppException(ErrorCode.TREATMENT_ALREADY_IN_PROGRESS);
@@ -239,7 +238,6 @@ public class TreatmentRecordService {
             doctor = doctorRepository.findById(request.getDoctorId())
                     .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_NOT_EXISTED));
             if (!doctorService.isDoctorAvailable(doctor.getId(), request.getStartDate(), request.getShift())) {
-                log.info("Check 1");
                 throw new AppException(ErrorCode.DOCTOR_NOT_AVAILABLE);
             }
         } else {

@@ -279,8 +279,13 @@ public class AppointmentService {
         TreatmentStep step = treatmentStepRepository.findById(req.getTreatmentStepId())
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_TYPE_NOT_EXISTED));
 
+//        check appointment date is not in pass and not today
         if (req.getAppointmentDate().isBefore(LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh")).plusDays(1))) {
             throw new AppException(ErrorCode.INVALID_DATE_RANGE);
+        }
+
+        if (req.getAppointmentDate().isBefore(step.getStartDate())) {
+            throw new AppException(ErrorCode.APPOINTMENT_DATE_BEFORE_STEP_START_DATE);
         }
 
         if (step.getStatus() == TreatmentStepStatus.COMPLETED
@@ -349,7 +354,7 @@ public class AppointmentService {
             throw new AppException(ErrorCode.STEP_IS_COMPLETE_OR_CANCEL);
         }
         if (request.getAppointmentDate().isBefore(LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh")).plusDays(1))) {
-            throw new AppException(ErrorCode.INVALID_START_DATE);
+            throw new AppException(ErrorCode.INVALID_DATE_RANGE);
         }
 
         Map<String, String> params = Map.of(

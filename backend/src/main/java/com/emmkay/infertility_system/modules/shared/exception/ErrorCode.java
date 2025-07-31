@@ -50,7 +50,7 @@ public enum ErrorCode {
     BLOG_APPROVED_ERROR(1041, "Chỉ bài viết nháp hoặc bị từ chối mới được gửi duyệt", HttpStatus.BAD_REQUEST),
     INVALID_STATUS(1042, "Trạng thái không hợp lệ", HttpStatus.BAD_REQUEST),
     BLOG_NOT_IN_REVIEW(1043, "Bài viết chưa ở trạng thái chờ duyệt", HttpStatus.BAD_REQUEST),
-    INVALID_START_DATE(1044, "Ngày bắt đầu phải cách hiện tại ít nhất 1 ngày", HttpStatus.BAD_REQUEST),
+    INVALID_START_DATE(1044, "Ngày bắt đầu phải từ ngày mai trở đi", HttpStatus.BAD_REQUEST),
     FEEDBACK_NOT_EXISTED(1046, "Không tìm thấy feedback", HttpStatus.BAD_REQUEST),
     CANNOT_PAY(1047, "Không thể thanh toán hồ sơ điều trị này", HttpStatus.BAD_REQUEST),
     VERIFY_PAYMENT_FAIL(1049, "Xác minh thanh toán thất bại", HttpStatus.UNAUTHORIZED),
@@ -83,6 +83,12 @@ public enum ErrorCode {
     TREATMENT_STEP_NOT_COMPLETED(1078, "Có bước điều trị chưa hoàn thành", HttpStatus.BAD_REQUEST),
     APPOINTMENT_DATE_NOT_CHANGED(1079, "Ngày hẹn không được thay đổi", HttpStatus.BAD_REQUEST),
     INVALID_DATE_RANGE(1080, "Ngày chọn phải từ ngày mai trở đi", HttpStatus.BAD_REQUEST),
+    END_DATE_BEFORE_START_DATE(1081, "Ngày kết thúc không được trước ngày bắt đầu", HttpStatus.BAD_REQUEST),
+    END_DATE_REQUIRED(1082, "Ngày kết thúc không được để trống", HttpStatus.BAD_REQUEST),
+    TREATMENT_STEP_COMPLETED_OR_CANCELLED(1083, "Bước điều trị đã hoàn thành hoặc bị hủy", HttpStatus.BAD_REQUEST),
+    APPOINTMENT_DATE_BEFORE_STEP_START_DATE(1084, "Ngày hẹn không được trước ngày bắt đầu bước điều trị", HttpStatus.BAD_REQUEST),
+    END_DATE_BEFORE_LAST_APPOINTMENT(1085, "Ngày kết thúc không được trước ngày hẹn cuối cùng của bước điều trị", HttpStatus.BAD_REQUEST),
+    PREVIOUS_TREATMENT_STEP_NOT_FOUND(1086, "Bước điều trị trước không tồn tại", HttpStatus.NOT_FOUND),
     ;
 
     int code;

@@ -64,15 +64,53 @@ public class TreatmentStepService {
         }
     }
 
+    private void completeStep(TreatmentStepUpdateRequest request, TreatmentStep treatmentStep, TreatmentRecord record) {
+        if (request.getEndDate() == null) {
+            throw new AppException(ErrorCode.END_DATE_REQUIRED);
+        }
+        List<Appointment> appointmentList = appointmentRepository.getAppointmentsByTreatmentStep(treatmentStep);
+        Appointment lastAppointmentInStep = appointmentRepository.findTopByTreatmentStepOrderByAppointmentDateDesc(treatmentStep);
+        if (lastAppointmentInStep != null && request.getEndDate().isBefore(lastAppointmentInStep.getAppointmentDate())) {
+            throw new AppException(ErrorCode.END_DATE_BEFORE_LAST_APPOINTMENT);
+        }
+        if (!appointmentList.isEmpty()) {
+            List<AppointmentStatus> appointmentStatuses = List.of(AppointmentStatus.CONFIRMED, AppointmentStatus.PENDING_CHANGE, AppointmentStatus.REJECTED, AppointmentStatus.PLANED);
+            boolean hasUnprocessedAppointments = appointmentRepository.existsByStatusInAndTreatmentStep(appointmentStatuses, treatmentStep);
+            if (hasUnprocessedAppointments) {
+                throw new AppException(ErrorCode.TREATMENT_CAN_NOT_DONE);
+            }
+        }
+        if (treatmentStep.getStage().getOrderIndex() != 0) {
+            TreatmentStep prevStep = treatmentStepRepository.findClosestPreviousStep(record.getId(), treatmentStep.getStage().getOrderIndex());
+            if (prevStep.getStatus() == TreatmentStepStatus.CONFIRMED || prevStep.getStatus() == TreatmentStepStatus.INPROGRESS) {
+                throw new AppException(ErrorCode.TREATMENT_STEP_PREV_IN_CONFIRMED);
+            }
+        }
+    }
+
+    private void cancelStep(TreatmentStep treatmentStep) {
+        List<Appointment> appointmentList = appointmentRepository.getAppointmentsByTreatmentStep(treatmentStep);
+        appointmentList.forEach(reminderRepository::deleteByAppointment);
+        appointmentRepository.deleteByTreatmentStep(treatmentStep);
+    }
+
+    private void inProgressStep(TreatmentStep treatmentStep, TreatmentRecord record) {
+        if (treatmentStep.getStage().getOrderIndex() != 0) {
+            TreatmentStep prevStep = treatmentStepRepository.findByRecordAndStageOrderIndex(record, treatmentStep.getStage().getOrderIndex() - 1)
+                    .orElseThrow(() -> new AppException(ErrorCode.PREVIOUS_TREATMENT_STEP_NOT_FOUND));
+            if (prevStep.getStatus() == TreatmentStepStatus.CONFIRMED || prevStep.getStatus() == TreatmentStepStatus.INPROGRESS) {
+                throw new AppException(ErrorCode.TREATMENT_STEP_PREV_IN_CONFIRMED);
+            }
+        }
+    }
+
     @Transactional
     public void cancelStepsByRecordId(Long recordId) {
         List<TreatmentStep> treatmentStepList = treatmentStepRepository.getAllByRecordId(recordId);
         treatmentStepList.forEach(x -> {
             x.setStatus(TreatmentStepStatus.CANCELLED);
             List<Appointment> appointmentList = appointmentRepository.getAppointmentsByTreatmentStep(x);
-            appointmentList.forEach(
-                    reminderRepository::deleteByAppointment
-            );
+            appointmentList.forEach(reminderRepository::deleteByAppointment);
             appointmentRepository.deleteByTreatmentStep(x);
         });
         treatmentStepRepository.saveAll(treatmentStepList);
@@ -90,27 +128,24 @@ public class TreatmentStepService {
         TreatmentStep treatmentStep = treatmentStepRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_STEP_NOT_FOUND));
         TreatmentRecord record = treatmentStep.getRecord();
-        if (record.getStatus() == TreatmentRecordStatus.COMPLETED
-                || record.getStatus() == TreatmentRecordStatus.CANCELLED) {
-            throw new AppException(ErrorCode.TREATMENT_RECORD_IS_COMPLETED_OR_CANCELLED);
+        if (treatmentStep.getStatus() == TreatmentStepStatus.CANCELLED || treatmentStep.getStatus() == TreatmentStepStatus.COMPLETED) {
+            throw new AppException(ErrorCode.TREATMENT_STEP_COMPLETED_OR_CANCELLED);
         }
         canChange(record.getDoctor().getId());
-        if (request.getStatus() == TreatmentStepStatus.COMPLETED) {
-            List<Appointment> appointmentList = appointmentRepository.getAppointmentsByTreatmentStep(treatmentStep);
-            if (!appointmentList.isEmpty()) {
-                List<AppointmentStatus> appointmentStatuses = List.of(AppointmentStatus.CONFIRMED, AppointmentStatus.PENDING_CHANGE, AppointmentStatus.REJECTED);
-                boolean hasUnprocessedAppointments = appointmentRepository.existsByStatusInAndTreatmentStep(appointmentStatuses, treatmentStep);
-                if (hasUnprocessedAppointments) {
-                    throw new AppException(ErrorCode.TREATMENT_CAN_NOT_DONE);
-                }
-            }
-            if (treatmentStep.getStage().getOrderIndex() != 0) {
-                TreatmentStep prevStep = treatmentStepRepository.getPreviousStep(record.getId(), treatmentStep.getStage().getOrderIndex() - 1);
-                if (prevStep.getStatus() == TreatmentStepStatus.CONFIRMED) {
-                    log.info("{}", prevStep.getId());
-                    throw new AppException(ErrorCode.TREATMENT_STEP_PREV_IN_CONFIRMED);
-                }
-            }
+        switch (request.getStatus()) {
+            case COMPLETED:
+                completeStep(request, treatmentStep, record);
+                break;
+            case CANCELLED:
+                cancelStep(treatmentStep);
+                break;
+            case INPROGRESS:
+                inProgressStep(treatmentStep, record);
+                break;
+            case CONFIRMED:
+                break;
+            default:
+                throw new AppException(ErrorCode.STATUS_IS_INVALID);
         }
         TreatmentStage stage = treatmentStageRepository.findById(request.getStageId())
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_STAGE_NOT_FOUND));
@@ -144,6 +179,10 @@ public class TreatmentStepService {
             throw new AppException(ErrorCode.TREATMENT_RECORD_IS_COMPLETED_OR_CANCELLED);
         }
         canChange(record.getDoctor().getId());
+        if (stage.getOrderIndex() != 0) {
+            treatmentStepRepository.findByRecordAndStageOrderIndex(record, stage.getOrderIndex() - 1)
+                    .orElseThrow(() -> new AppException(ErrorCode.PREVIOUS_TREATMENT_STEP_NOT_FOUND));
+        }
         TreatmentStep treatmentStep = treatmentStepMapper.toTreatmentStep(request);
         treatmentStep.setRecord(record);
         treatmentStep.setStage(stage);
