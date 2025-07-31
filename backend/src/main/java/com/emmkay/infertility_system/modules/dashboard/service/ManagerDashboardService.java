@@ -46,7 +46,7 @@ public class ManagerDashboardService {
     }
 
     public List<ManagerRevenueChartProjection> getManagerRevenueChart() {
-        LocalDate now = LocalDate.now();
+        LocalDate now = LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh"));
         LocalDateTime fromDate = now.minusMonths(5).withDayOfMonth(1).atStartOfDay();
         LocalDateTime toDate = now.plusMonths(1).withDayOfMonth(1).atStartOfDay();
         return managerRevenueRepository.getManagerDashboardChartProject(fromDate, toDate);

@@ -114,7 +114,8 @@ public class TreatmentRecordService {
         RoleName roleName = RoleName.formString(scope);
         return switch (roleName) {
             case CUSTOMER -> treatmentRecordRepository.searchTreatmentRecords(customerId, null, status, pageable);
-            case DOCTOR, MANAGER -> treatmentRecordRepository.searchTreatmentRecords(customerId, doctorId, status, pageable);
+            case DOCTOR, MANAGER ->
+                    treatmentRecordRepository.searchTreatmentRecords(customerId, doctorId, status, pageable);
             default -> throw new AppException(ErrorCode.UNAUTHORIZED);
         };
     }
@@ -154,7 +155,8 @@ public class TreatmentRecordService {
 //        }
             Set<TreatmentStep> treatmentSteps = treatmentRecord.getTreatmentSteps();
             treatmentSteps.forEach(treatmentStep -> {
-                if (treatmentStep.getStatus() == TreatmentStepStatus.CONFIRMED) {
+                if (treatmentStep.getStatus() == TreatmentStepStatus.CONFIRMED
+                    || treatmentStep.getStatus() == TreatmentStepStatus.INPROGRESS) {
                     throw new AppException(ErrorCode.TREATMENT_STEP_NOT_COMPLETED);
                 }
             });
@@ -163,9 +165,10 @@ public class TreatmentRecordService {
                     "customerName", treatmentRecord.getCustomer().getFullName(),
                     "serviceName", treatmentRecord.getService().getName(),
                     "doctorName", treatmentRecord.getDoctor().getUsers().getFullName(),
-                    "completedDate", treatmentRecord.getEndDate().toString()
+                    "completedDate", treatmentRecord.getEndDate().toString(),
+                    "result", result == TreatmentRecordResult.SUCCESS ? "Thành công" : "Thất bại"
             );
-            sendMail("Thông báo hoàn thành điều trị", EmailType.RECORD_SUCCESS, treatmentRecord.getCustomer().getEmail(), params);
+            sendMail("Thông báo hoàn thành điều trị", result == TreatmentRecordResult.SUCCESS ? EmailType.RECORD_SUCCESS : EmailType.RECORD_FAIL, treatmentRecord.getCustomer().getEmail(), params);
             treatmentRecord.setResult(result);
         }
         return treatmentRecordMapper.toTreatmentRecordResponse(treatmentRecordRepository.save(treatmentRecord));

@@ -41,6 +41,7 @@ public class EmailService {
             case APPOINTMENT_CHANGE_FAIL -> html = templateRenderer.render("appointmentChangeFail.html",request.getParams());
             case APPOINTMENT_AUTO_REVERT -> html = templateRenderer.render("appointmentAutoRevert.html",request.getParams());
             case PAYMENT_SUCCESS -> html = templateRenderer.render("paymentSuccess.html",request.getParams());
+            case RECORD_FAIL -> html = templateRenderer.render("recordFail.html",request.getParams());
             default -> throw new AppException(ErrorCode.INVALID_EMAIL_TYPE);
         }
         return html;
