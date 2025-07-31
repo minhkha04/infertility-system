@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
+import java.util.List;
 
 
 @Repository
@@ -62,4 +63,8 @@ public interface TreatmentRecordRepository extends JpaRepository<TreatmentRecord
     Page<TreatmentRecordDashboardProjection> getTreatmentRecordDashboard(String customerId, String doctorId, Pageable pageable);
 
     boolean existsByCustomerIdAndDoctorIdAndServiceIdAndStatusIn(String customerId, String doctorId, Long serviceId, Collection<TreatmentRecordStatus> statuses);
+
+    List<TreatmentRecord> findByDoctorId(String doctorId);
+
+    List<TreatmentRecord> findByDoctorIdAndStatusIn(String doctorId, Collection<TreatmentRecordStatus> statuses);
 }

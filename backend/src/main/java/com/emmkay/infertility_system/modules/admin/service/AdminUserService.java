@@ -5,6 +5,9 @@ import com.emmkay.infertility_system.modules.admin.dto.request.AdminUserUpdatePa
 import com.emmkay.infertility_system.modules.admin.dto.request.AdminUserUpdateRequest;
 import com.emmkay.infertility_system.modules.admin.projection.AdminUserBasicProjection;
 import com.emmkay.infertility_system.modules.shared.enums.RoleName;
+import com.emmkay.infertility_system.modules.treatment.entity.TreatmentRecord;
+import com.emmkay.infertility_system.modules.treatment.enums.TreatmentRecordStatus;
+import com.emmkay.infertility_system.modules.treatment.repository.TreatmentRecordRepository;
 import com.emmkay.infertility_system.modules.user.dto.response.UserResponse;
 import com.emmkay.infertility_system.modules.doctor.entity.Doctor;
 import com.emmkay.infertility_system.modules.user.entity.Role;
@@ -24,6 +27,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -36,6 +40,7 @@ public class AdminUserService {
     RoleRepository roleRepository;
     PasswordEncoder passwordEncoder;
     DoctorRepository doctorRepository;
+    TreatmentRecordRepository treatmentRecordRepository;
 
     public Page<AdminUserBasicProjection> getUsers(boolean isRemoved, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
@@ -76,6 +81,12 @@ public class AdminUserService {
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         if (user.getIsRemoved()) {
             throw new AppException(ErrorCode.USER_NOT_ACTIVE);
+        }
+        if (RoleName.valueOf(user.getRoleName().getName()) == RoleName.DOCTOR) {
+            List<TreatmentRecord> treatmentRecords = treatmentRecordRepository.findByDoctorIdAndStatusIn(userId, List.of(TreatmentRecordStatus.INPROGRESS, TreatmentRecordStatus.CONFIRMED));
+            if (!treatmentRecords.isEmpty()) {
+                throw new AppException(ErrorCode.DOCTOR_HAS_TREATMENT_RECORD);
+            }
         }
         user.setIsRemoved(true);
         return userMapper.toUserResponse(userRepository.save(user));

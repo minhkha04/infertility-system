@@ -89,6 +89,7 @@ public enum ErrorCode {
     APPOINTMENT_DATE_BEFORE_STEP_START_DATE(1084, "Ngày hẹn không được trước ngày bắt đầu bước điều trị", HttpStatus.BAD_REQUEST),
     END_DATE_BEFORE_LAST_APPOINTMENT(1085, "Ngày kết thúc không được trước ngày hẹn cuối cùng của bước điều trị", HttpStatus.BAD_REQUEST),
     PREVIOUS_TREATMENT_STEP_NOT_FOUND(1086, "Bước điều trị trước không tồn tại", HttpStatus.NOT_FOUND),
+    DOCTOR_HAS_TREATMENT_RECORD(1087, "Bác sĩ đang có hồ sơ điều trị chưa hoàn thành", HttpStatus.BAD_REQUEST),
     ;
 
     int code;
