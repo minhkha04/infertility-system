@@ -8,9 +8,7 @@ import com.emmkay.infertility_system.modules.treatment.entity.TreatmentStep;
 import com.emmkay.infertility_system.modules.user.entity.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -84,4 +82,7 @@ public class Appointment {
 
     @Column(name = "rejected_date")
     private LocalDate rejectedDate;
+
+    @Column(name = "reason_change")
+    private String reasonChange;
 }

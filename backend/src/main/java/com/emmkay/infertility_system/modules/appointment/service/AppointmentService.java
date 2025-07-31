@@ -19,10 +19,8 @@ import com.emmkay.infertility_system.modules.doctor.entity.Doctor;
 import com.emmkay.infertility_system.modules.doctor.repository.DoctorRepository;
 import com.emmkay.infertility_system.modules.reminder.repository.ReminderRepository;
 import com.emmkay.infertility_system.modules.shared.security.CurrentUserUtils;
-import com.emmkay.infertility_system.modules.treatment.entity.TreatmentRecord;
 import com.emmkay.infertility_system.modules.treatment.entity.TreatmentStep;
 import com.emmkay.infertility_system.modules.treatment.enums.TreatmentStepStatus;
-import com.emmkay.infertility_system.modules.treatment.repository.TreatmentRecordRepository;
 import com.emmkay.infertility_system.modules.treatment.repository.TreatmentStepRepository;
 import com.emmkay.infertility_system.modules.user.entity.User;
 import com.emmkay.infertility_system.modules.user.repository.UserRepository;
@@ -59,7 +57,6 @@ public class AppointmentService {
     UserRepository userRepository;
     ReminderService reminderService;
     ReminderRepository reminderRepository;
-    TreatmentRecordRepository treatmentRecordRepository;
     EmailService emailService;
     AppointmentValidator appointmentValidator;
     DoctorService doctorService;
@@ -76,8 +73,8 @@ public class AppointmentService {
 
     private String generateShift(Shift shift) {
         return switch (shift) {
-            case MORNING -> "sáng";
-            case AFTERNOON -> "chiều";
+            case MORNING -> "Sáng";
+            case AFTERNOON -> "Chiều";
             default -> throw new AppException(ErrorCode.INVALID_SHIFT_VALUE);
         };
     }
@@ -93,7 +90,7 @@ public class AppointmentService {
                 "treatmentStepName", appointment.getTreatmentStep().getStepType()
         ));
         switch (request.getStatus()) {
-            case CONFIRMED:
+            case PLANED:
                 boolean isAvailable = doctorService.isDoctorAvailable(appointment.getDoctor().getId(), appointment.getRequestedDate(), appointment.getRequestedShift());
                 if (!isAvailable) {
                     throw new AppException(ErrorCode.DOCTOR_NOT_AVAILABLE);
@@ -102,8 +99,9 @@ public class AppointmentService {
                 emailType = EmailType.APPOINTMENT_CHANGE_SUCCESS;
                 params.putAll(Map.of(
                                 "confirmedDate", appointment.getRequestedDate().toString(),
-                                "confirmedShift", appointment.getRequestedShift().toString(),
-                                "doctorName", appointment.getDoctor().getUsers().getFullName()
+                                "confirmedShift", generateShift(appointment.getRequestedShift()),
+                                "doctorName", appointment.getDoctor().getUsers().getFullName(),
+                                "notes", request.getNote()
                         )
                 );
                 reminderRepository.deleteByAppointment_Id(appointment.getId());
@@ -114,12 +112,10 @@ public class AppointmentService {
             case REJECTED:
                 subject = "Xác nhận thay đổi lịch hẹn";
                 emailType = EmailType.APPOINTMENT_CHANGE_FAIL;
-                String reason = "Không phù hợp với tuyến trình";
-
                 params.putAll(Map.of(
-                                "rejectionReason", reason,
                                 "requestDate", appointment.getRequestedDate().toString(),
-                                "requestShift", appointment.getRequestedShift().toString()
+                                "requestShift", generateShift(appointment.getRequestedShift()),
+                                "notes", request.getNote()
                         )
                 );
                 appointment.setRejectedDate(LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh")));
@@ -131,7 +127,7 @@ public class AppointmentService {
         appointment.setRequestedDate(null);
         appointment.setRequestedShift(null);
         appointment.setStatus(request.getStatus());
-        appointment.setNotes(request.getNote());
+        appointment.setReasonChange(null);
         return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
     }
 
@@ -142,7 +138,7 @@ public class AppointmentService {
         return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
     }
 
-    private AppointmentResponse changeAppointmentWithStatusCompleted(Appointment appointment, AppointmentStatusUpdateRequest request) {
+    private AppointmentResponse completedAppointment(Appointment appointment, AppointmentStatusUpdateRequest request) {
         appointmentValidator.validateCanChangeAppointment(appointment);
 //        check today is appointment date
 //        LocalDate today = LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh"));
@@ -159,7 +155,6 @@ public class AppointmentService {
 
     private AppointmentResponse confirmAppointmentByCustomer(Appointment appointment, AppointmentStatusUpdateRequest request) {
         appointment.setStatus(request.getStatus());
-        appointment.setNotes(request.getNote());
         return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
     }
 
@@ -170,16 +165,16 @@ public class AppointmentService {
         List<Appointment> appointmentList = appointmentRepository.getAllByRejectedDate(targetDate);
         appointmentList.forEach(appointment -> {
             User doctor = userRepository.findById(appointment.getDoctor().getId())
-                            .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_NOT_EXISTED));
+                    .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_NOT_EXISTED));
             appointment.setRejectedDate(null);
             appointment.setRequestedDate(null);
             appointment.setRequestedShift(null);
-            appointment.setStatus(AppointmentStatus.CONFIRMED);
+            appointment.setStatus(AppointmentStatus.PLANED);
             sendMail("Yêu cầu đổi lịch hẹn đã hết hạn", EmailType.APPOINTMENT_AUTO_REVERT, appointment.getCustomer().getEmail(), Map.of(
                     "customerName", appointment.getCustomer().getFullName(),
                     "treatmentStepName", appointment.getTreatmentStep().getStepType(),
                     "originalDate", appointment.getAppointmentDate().toString(),
-                    "originalShift", appointment.getShift().toString(),
+                    "originalShift", generateShift(appointment.getShift()),
                     "doctorName", doctor.getFullName()
             ));
         });
@@ -195,12 +190,9 @@ public class AppointmentService {
         String currentUserId = CurrentUserUtils.getCurrentUserId();
         Pageable pageable = PageRequest.of(page, size, Sort.by("appointmentDate").ascending());
         return switch (roleName) {
-            case CUSTOMER ->
-                    appointmentRepository.searchAppointments(currentUserId, null, date, status, pageable);
-            case DOCTOR ->
-                    appointmentRepository.searchAppointments( null, currentUserId, date, status, pageable);
-            case MANAGER ->
-                    appointmentRepository.searchAppointments(customerId, doctorId, date, status, pageable);
+            case CUSTOMER -> appointmentRepository.searchAppointments(currentUserId, null, date, status, pageable);
+            case DOCTOR -> appointmentRepository.searchAppointments(null, currentUserId, date, status, pageable);
+            case MANAGER -> appointmentRepository.searchAppointments(customerId, doctorId, date, status, pageable);
             default -> throw new AppException(ErrorCode.ROLE_NOT_EXISTED);
         };
     }
@@ -248,20 +240,17 @@ public class AppointmentService {
             case CANCELLED -> {
                 return cancelAppointment(appointment, request);
             }
-            case CONFIRMED, REJECTED -> {
-                if (appointment.getStatus() == AppointmentStatus.PENDING_CHANGE) {
-                    return confirmChangeAppointment(appointment, request);
-                }
-                if (appointment.getStatus() == AppointmentStatus.PLANED) {
-                   return confirmAppointmentByCustomer(appointment, request);
-                }
+            case PLANED, REJECTED -> {
+                return confirmChangeAppointment(appointment, request);
             }
             case COMPLETED -> {
-                return changeAppointmentWithStatusCompleted(appointment, request);
+                return completedAppointment(appointment, request);
+            }
+            case CONFIRMED -> {
+                return confirmAppointmentByCustomer(appointment, request);
             }
             default -> throw new AppException(ErrorCode.STATUS_IS_INVALID);
         }
-        return null;
     }
 
     @Transactional
@@ -290,16 +279,13 @@ public class AppointmentService {
         TreatmentStep step = treatmentStepRepository.findById(req.getTreatmentStepId())
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_TYPE_NOT_EXISTED));
 
-        if (!req.getAppointmentDate().isAfter(LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh")))) {
-            throw new AppException(ErrorCode.INVALID_START_DATE);
+        if (req.getAppointmentDate().isBefore(LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh")).plusDays(1))) {
+            throw new AppException(ErrorCode.INVALID_DATE_RANGE);
         }
-
-        TreatmentRecord treatmentRecord = treatmentRecordRepository.findById(step.getRecord().getId())
-                .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_RECORD_NOT_FOUND));
 
         if (step.getStatus() == TreatmentStepStatus.COMPLETED
                 || step.getStatus() == TreatmentStepStatus.CANCELLED) {
-            throw new AppException(ErrorCode.APPOINTMENT_NOT_CHANGE);
+            throw new AppException(ErrorCode.STEP_IS_COMPLETE_OR_CANCEL);
         }
         Doctor doctor = doctorRepository.findById(req.getDoctorId())
                 .orElseThrow(() -> new AppException(ErrorCode.DOCTOR_NOT_EXISTED));
@@ -321,25 +307,30 @@ public class AppointmentService {
     public AppointmentResponse changeAppointmentForCustomer(Long appointmentId, ChangeAppointmentByCustomerRequest request) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new AppException(ErrorCode.APPOINTMENT_NOT_FOUND));
+        if (appointment.getAppointmentDate().equals(request.getRequestedDate()) && appointment.getShift() == request.getRequestedShift()) {
+            throw new AppException(ErrorCode.APPOINTMENT_DATE_NOT_CHANGED);
+        }
         appointmentValidator.validateAppointmentAvailableForChange(appointment, request.getRequestedDate(), request.getRequestedShift());
         appointmentValidator.validateCanChangeAppointment(appointment);
         Map<String, String> params = Map.of(
                 "customerName", appointment.getCustomer().getFullName(),
                 "requestDate", request.getRequestedDate().toString(),
                 "requestShift", generateShift(request.getRequestedShift()),
-                "treatmentStepName", appointment.getTreatmentStep().getStepType()
+                "treatmentStepName", appointment.getTreatmentStep().getStepType(),
+                "reason", request.getNotes()
         );
 
         if (appointment.getTreatmentStep().getStatus() == TreatmentStepStatus.COMPLETED
                 || appointment.getTreatmentStep().getStatus() == TreatmentStepStatus.CANCELLED) {
-            throw new AppException(ErrorCode.APPOINTMENT_NOT_CHANGE);
+            throw new AppException(ErrorCode.STEP_IS_COMPLETE_OR_CANCEL);
         }
 
         if (request.getRequestedDate().isBefore(LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh")).plusDays(1))) {
-            throw new AppException(ErrorCode.INVALID_START_DATE);
+            throw new AppException(ErrorCode.INVALID_DATE_RANGE);
         }
-
-        appointmentMapper.requestChangeAppointment(appointment, request);
+        appointment.setRequestedDate(request.getRequestedDate());
+        appointment.setRequestedShift(request.getRequestedShift());
+        appointment.setReasonChange(request.getNotes());
         appointment.setStatus(AppointmentStatus.PENDING_CHANGE);
         sendMail("Xác nhận yêu cầu đổi lịch hẹn", EmailType.APPOINTMENT_CHANGE_CUSTOMER, appointment.getCustomer().getEmail(), params);
         return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
@@ -355,7 +346,7 @@ public class AppointmentService {
 
         if (appointment.getTreatmentStep().getStatus() == TreatmentStepStatus.COMPLETED
                 || appointment.getTreatmentStep().getStatus() == TreatmentStepStatus.CANCELLED) {
-            throw new AppException(ErrorCode.APPOINTMENT_NOT_CHANGE);
+            throw new AppException(ErrorCode.STEP_IS_COMPLETE_OR_CANCEL);
         }
         if (request.getAppointmentDate().isBefore(LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh")).plusDays(1))) {
             throw new AppException(ErrorCode.INVALID_START_DATE);
@@ -396,7 +387,6 @@ public class AppointmentService {
         appointment.setDoctor(doctor);
         return appointmentMapper.toAppointmentResponse(appointmentRepository.save(appointment));
     }
-
 
     public List<AppointmentResponse> getAppointmentsByStepId(Long stepId) {
         return appointmentRepository.getAppointmentsByTreatmentStepId(stepId)

@@ -21,9 +21,6 @@ public interface AppointmentMapper {
     @Mapping(target = "step", source = "treatmentStep.stepType")
     AppointmentResponse toAppointmentResponse(Appointment appointment);
 
-
-    void requestChangeAppointment(@MappingTarget Appointment appointment, ChangeAppointmentByCustomerRequest request);
-
     Appointment toAppointment(AppointmentCreateRequest request);
 
     void updateAppointment(@MappingTarget Appointment appointment, AppointmentUpdateRequest request);

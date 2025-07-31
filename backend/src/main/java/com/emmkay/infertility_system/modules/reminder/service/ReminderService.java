@@ -15,6 +15,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 
@@ -40,7 +41,7 @@ public class ReminderService {
 
     @Scheduled(cron = "0 0/5 * * * *", zone = "Asia/Ho_Chi_Minh")
     public void sendReminders() {
-        LocalDate reminderDate = LocalDate.now().plusDays(1);
+        LocalDate reminderDate = LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh")).plusDays(1);
 
         List<Reminder> reminders = reminderRepository.findByReminderDateAndIsSentFalseWithCustomer(reminderDate);
         reminders.forEach(reminder -> {

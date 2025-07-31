@@ -61,7 +61,7 @@ public enum ErrorCode {
     PAYMENT_METHOD_NOT_SUPPORTED(1055, "Phương thức thanh toán không được hỗ trợ", HttpStatus.BAD_REQUEST),
     GENERATE_QR_FAILED(1056, "Tạo Qr thanh toán thất bại", HttpStatus.INTERNAL_SERVER_ERROR),
     CONVERT_TO_BASE64_FAILED(1057, "Convert to base 64 failed", HttpStatus.INTERNAL_SERVER_ERROR),
-    APPOINTMENT_NOT_CHANGE(1058, "Bước điều trị đã hoàn thành hoặc bị hủy", HttpStatus.BAD_REQUEST),
+    STEP_IS_COMPLETE_OR_CANCEL(1058, "Bước điều trị đã hoàn thành hoặc bị hủy", HttpStatus.BAD_REQUEST),
     FEEDBACK_IS_EXISTED(1059, "Bạn đã feedback dịch vụ này rồi", HttpStatus.BAD_REQUEST),
     STATUS_IS_INVALID(1060, "Trạng thái truyền vào sai", HttpStatus.BAD_REQUEST),
     PAYMENT_TRANSACTION_NOT_FOUND(1061, "Không tìm thấy hóa đơn", HttpStatus.BAD_REQUEST),
@@ -80,7 +80,9 @@ public enum ErrorCode {
     CAN_NOT_CHANGE_SERVICE_IN_TREATMENT_RECORD(1075, "Không thể thay đổi dịch vụ vì đã trong tiến trình", HttpStatus.BAD_REQUEST),
     TREATMENT_STEP_PREV_IN_CONFIRMED(1076, "Bước điều trị trước chưa được hoàn thành", HttpStatus.BAD_REQUEST),
     TREATMENT_STEP_ALREADY_EXISTS(1077, "Bước điều trị đã tồn tại", HttpStatus.BAD_REQUEST),
-    TREATMENT_STEP_NOT_COMPLETED(1078, "Bước điều trị chưa hoàn thành", HttpStatus.BAD_REQUEST),
+    TREATMENT_STEP_NOT_COMPLETED(1078, "Có bước điều trị chưa hoàn thành", HttpStatus.BAD_REQUEST),
+    APPOINTMENT_DATE_NOT_CHANGED(1079, "Ngày hẹn không được thay đổi", HttpStatus.BAD_REQUEST),
+    INVALID_DATE_RANGE(1080, "Ngày chọn phải từ ngày mai trở đi", HttpStatus.BAD_REQUEST),
     ;
 
     int code;

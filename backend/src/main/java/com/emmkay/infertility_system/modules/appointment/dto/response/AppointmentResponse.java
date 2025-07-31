@@ -27,4 +27,5 @@ public class AppointmentResponse {
     String doctorEmail;
     String purpose;
     String step;
+    String reasonChange;
 }
