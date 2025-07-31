@@ -11,7 +11,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -50,8 +49,4 @@ public interface WorkScheduleRepository extends JpaRepository<WorkSchedule, Long
                         AND (d.users.isRemoved = FALSE)
             """)
     List<DoctorSelectProjection> getDoctorsForRegister(LocalDate date, List<Shift> shifts);
-
-    Optional<Object> findByDoctorIdAndWorkDateAndShift(String doctorId, LocalDate workDate, Shift shift);
-
-    Optional<Object> findByDoctorIdAndWorkDateAndShiftIn(String doctorId, LocalDate workDate, Collection<Shift> shifts);
 }

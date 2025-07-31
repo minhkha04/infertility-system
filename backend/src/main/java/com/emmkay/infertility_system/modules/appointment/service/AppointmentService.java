@@ -159,6 +159,7 @@ public class AppointmentService {
     }
 
     @Scheduled(cron = "0 0 8 * * *", zone = "Asia/Ho_Chi_Minh")
+//    giây(0 - 59) phút(0 - 59)  giờ(0 - 23) ngày (1 - 31) tháng(1 - 12) thứ (0 - 7) (0 hoặc 7 = Chủ nhật)
     public void changeAppointmentInit() {
         LocalDate today = LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh"));
         LocalDate targetDate = today.minusDays(1);

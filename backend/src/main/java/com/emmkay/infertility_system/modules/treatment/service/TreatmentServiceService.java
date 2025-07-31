@@ -5,11 +5,8 @@ import com.emmkay.infertility_system.modules.treatment.dto.request.TreatmentServ
 import com.emmkay.infertility_system.modules.treatment.dto.request.TreatmentServiceUpdateRequest;
 import com.emmkay.infertility_system.modules.treatment.dto.response.TreatmentServiceResponse;
 import com.emmkay.infertility_system.modules.treatment.entity.TreatmentService;
-import com.emmkay.infertility_system.modules.treatment.entity.TreatmentStage;
-import com.emmkay.infertility_system.modules.treatment.mapper.TreatmentStageMapper;
 import com.emmkay.infertility_system.modules.treatment.projection.TreatmentServiceBasicProjection;
 import com.emmkay.infertility_system.modules.treatment.projection.TreatmentServiceSelectProjection;
-import com.emmkay.infertility_system.modules.treatment.repository.TreatmentStageRepository;
 import com.emmkay.infertility_system.modules.user.entity.User;
 import com.emmkay.infertility_system.modules.shared.exception.AppException;
 import com.emmkay.infertility_system.modules.shared.exception.ErrorCode;
@@ -25,10 +22,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor

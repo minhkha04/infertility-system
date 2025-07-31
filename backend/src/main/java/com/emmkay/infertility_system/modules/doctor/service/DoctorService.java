@@ -15,7 +15,6 @@ import com.emmkay.infertility_system.modules.shared.exception.AppException;
 import com.emmkay.infertility_system.modules.shared.exception.ErrorCode;
 import com.emmkay.infertility_system.modules.doctor.mapper.DoctorMapper;
 import com.emmkay.infertility_system.modules.user.mapper.UserMapper;
-import com.emmkay.infertility_system.modules.appointment.service.AppointmentService;
 import com.emmkay.infertility_system.modules.doctor.repository.DoctorRepository;
 import com.emmkay.infertility_system.modules.user.repository.UserRepository;
 import com.emmkay.infertility_system.modules.schedule.repository.WorkScheduleRepository;

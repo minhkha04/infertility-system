@@ -5,7 +5,6 @@ import com.cloudinary.utils.ObjectUtils;
 import com.emmkay.infertility_system.modules.shared.exception.AppException;
 import com.emmkay.infertility_system.modules.shared.exception.ErrorCode;
 import lombok.experimental.FieldDefaults;
-import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,9 +13,6 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.Map;
 
 @Service

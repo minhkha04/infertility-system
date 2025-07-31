@@ -64,7 +64,5 @@ public interface TreatmentRecordRepository extends JpaRepository<TreatmentRecord
 
     boolean existsByCustomerIdAndDoctorIdAndServiceIdAndStatusIn(String customerId, String doctorId, Long serviceId, Collection<TreatmentRecordStatus> statuses);
 
-    List<TreatmentRecord> findByDoctorId(String doctorId);
-
     List<TreatmentRecord> findByDoctorIdAndStatusIn(String doctorId, Collection<TreatmentRecordStatus> statuses);
 }

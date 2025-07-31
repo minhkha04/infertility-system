@@ -11,7 +11,6 @@ import org.mapstruct.MappingTarget;
 @Mapper(componentModel = "spring")
 public interface FeedbackMapper {
 
-
     Feedback toFeedback(FeedbackCreateRequest request);
 
     @Mapping(target = "customerName", source = "customer.fullName")
