@@ -172,7 +172,7 @@ public class DoctorService {
         int shiftAppointmentCount = appointmentRepository
                 .countActiveByDoctorIdAndDateAndShift(doctorId, date, shift);
 
-        return shiftAppointmentCount < 10;
+        return shiftAppointmentCount < 6;
     }
 
 }

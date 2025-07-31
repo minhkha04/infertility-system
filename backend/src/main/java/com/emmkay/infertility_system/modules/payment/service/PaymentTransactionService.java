@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import java.text.NumberFormat;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -95,6 +96,8 @@ public class PaymentTransactionService {
     public void updateStatus(PaymentTransaction paymentTransaction, PaymentStatus status) {
         paymentTransaction.setStatus(status);
         if (status == PaymentStatus.SUCCESS) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+            String formattedPaymentTime = paymentTransaction.getCreatedAt().format(formatter);
             EmailRequest emailRequest = EmailRequest.builder()
                     .toEmail(paymentTransaction.getCustomer().getEmail())
                     .emailType(EmailType.PAYMENT_SUCCESS)
@@ -102,7 +105,7 @@ public class PaymentTransactionService {
                     .params(Map.of(
                             "customerName", paymentTransaction.getCustomer().getFullName(),
                             "invoiceCode", paymentTransaction.getTransactionCode(),
-                            "paymentTime", paymentTransaction.getCreatedAt().toString(),
+                            "paymentTime", formattedPaymentTime,
                             "serviceName", paymentTransaction.getService().getName(),
                             "paymentMethod", paymentTransaction.getPaymentMethod().toString(),
                             "amount", NumberFormat.getNumberInstance(new Locale("vi", "VN")).format(paymentTransaction.getAmount())
