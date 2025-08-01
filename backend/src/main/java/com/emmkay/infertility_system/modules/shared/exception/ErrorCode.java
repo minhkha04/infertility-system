@@ -91,6 +91,7 @@ public enum ErrorCode {
     PREVIOUS_TREATMENT_STEP_NOT_FOUND(1086, "Bước điều trị trước không tồn tại", HttpStatus.NOT_FOUND),
     DOCTOR_HAS_TREATMENT_RECORD(1087, "Bác sĩ đang có hồ sơ điều trị chưa hoàn thành", HttpStatus.BAD_REQUEST),
     ADMIN_CANNOT_BE_REMOVED(1088, "Không thể xoá tài khoản quản trị viên", HttpStatus.BAD_REQUEST),
+    TREATMENT_STEP_LAB_TEST_NOT_FOUND(1089, "Không tìm thấy xét nghiệm của bước điều trị", HttpStatus.NOT_FOUND),
     ;
 
     int code;
