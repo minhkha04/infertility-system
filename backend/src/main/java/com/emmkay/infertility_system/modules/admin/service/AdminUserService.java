@@ -88,6 +88,9 @@ public class AdminUserService {
                 throw new AppException(ErrorCode.DOCTOR_HAS_TREATMENT_RECORD);
             }
         }
+        if (RoleName.valueOf(user.getRoleName().getName()) == RoleName.ADMIN) {
+            throw new AppException(ErrorCode.ADMIN_CANNOT_BE_REMOVED);
+        }
         user.setIsRemoved(true);
         return userMapper.toUserResponse(userRepository.save(user));
     }
