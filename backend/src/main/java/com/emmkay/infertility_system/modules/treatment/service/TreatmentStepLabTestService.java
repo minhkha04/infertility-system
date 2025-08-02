@@ -55,7 +55,7 @@ public class TreatmentStepLabTestService {
         TreatmentStepLabTest treatmentStepLabTest = treatmentStepLabTestRepository.findById(treatmentStepLabTestId)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_STEP_LAB_TEST_NOT_FOUND));
         if (treatmentStepLabTest.getTreatmentStep().getStatus() == TreatmentStepStatus.COMPLETED ||
-            treatmentStepLabTest.getTreatmentStep().getStatus() == TreatmentStepStatus.CANCELLED) {
+                treatmentStepLabTest.getTreatmentStep().getStatus() == TreatmentStepStatus.CANCELLED) {
             throw new AppException(ErrorCode.TREATMENT_STEP_COMPLETED_OR_CANCELLED);
         }
         treatmentStepLabTestMapper.updateTreatmentStepLabTest(treatmentStepLabTest, request);
@@ -66,5 +66,19 @@ public class TreatmentStepLabTestService {
     @PreAuthorize("hasRole('DOCTOR')")
     public void delete(Long treatmentStepLabTestId) {
         treatmentStepLabTestRepository.deleteById(treatmentStepLabTestId);
+    }
+
+    public List<String> getLabTests() {
+        return List.of(
+                "Nội tiết (FSH, LH, AMH, E2)",
+                "Tinh dịch đồ",
+                "Sàng lọc bệnh lây truyền",
+                "Siêu âm đầu dò",
+                "Đông máu (PT, aPTT)",
+                "NST đồ",
+                "Rubella IgG/IgM",
+                "Xét nghiệm Pap smear",
+                "Kháng thể bất đồng Rh"
+        );
     }
 }
