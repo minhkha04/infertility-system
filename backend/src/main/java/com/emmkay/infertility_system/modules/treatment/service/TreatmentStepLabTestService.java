@@ -15,6 +15,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,6 +30,7 @@ public class TreatmentStepLabTestService {
     TreatmentStepRepository treatmentStepRepository;
     TreatmentStepLabTestMapper treatmentStepLabTestMapper;
 
+    @PreAuthorize("hasRole('DOCTOR')")
     public TreatmentStepLabTestResponse save(TreatmentStepLabTestCreateRequest request) {
         TreatmentStep treatmentStep = treatmentStepRepository.findById(request.getTreatmentStepId())
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_STEP_NOT_FOUND));
@@ -48,8 +50,9 @@ public class TreatmentStepLabTestService {
         return labTests.stream().map(treatmentStepLabTestMapper::toTreatmentStepResponse).toList();
     }
 
-    public TreatmentStepLabTestResponse update(Long TreatmentStepLabTestId, TreatmentStepLabTestUpdateRequest request) {
-        TreatmentStepLabTest treatmentStepLabTest = treatmentStepLabTestRepository.findById(TreatmentStepLabTestId)
+    @PreAuthorize("hasRole('DOCTOR')")
+    public TreatmentStepLabTestResponse update(Long treatmentStepLabTestId, TreatmentStepLabTestUpdateRequest request) {
+        TreatmentStepLabTest treatmentStepLabTest = treatmentStepLabTestRepository.findById(treatmentStepLabTestId)
                 .orElseThrow(() -> new AppException(ErrorCode.TREATMENT_STEP_LAB_TEST_NOT_FOUND));
         if (treatmentStepLabTest.getTreatmentStep().getStatus() == TreatmentStepStatus.COMPLETED ||
             treatmentStepLabTest.getTreatmentStep().getStatus() == TreatmentStepStatus.CANCELLED) {
@@ -60,6 +63,7 @@ public class TreatmentStepLabTestService {
         return treatmentStepLabTestMapper.toTreatmentStepResponse(treatmentStepLabTest);
     }
 
+    @PreAuthorize("hasRole('DOCTOR')")
     public void delete(Long treatmentStepLabTestId) {
         treatmentStepLabTestRepository.deleteById(treatmentStepLabTestId);
     }

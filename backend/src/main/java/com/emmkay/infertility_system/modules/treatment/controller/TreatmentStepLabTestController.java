@@ -17,7 +17,6 @@ import java.util.List;
 @RequestMapping("/api/v1/treatment-test-labs")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@PreAuthorize("hasRole('DOCTOR')")
 public class TreatmentStepLabTestController {
 
     TreatmentStepLabTestService treatmentStepLabTestService;
