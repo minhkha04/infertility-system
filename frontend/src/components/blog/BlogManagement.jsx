@@ -1,3 +1,18 @@
+/**
+ * 🏢 BLOG MANAGEMENT COMPONENT - QUẢN LÝ TỔNG THỂ BLOG
+ *
+ * Chức năng chính:
+ * - Quản lý tất cả blog trong hệ thống (Admin/Manager)
+ * - Duyệt/từ chối bài viết từ các tác giả
+ * - Ẩn/hiện bài viết đã được duyệt
+ * - Tìm kiếm và lọc theo trạng thái
+ *
+ * Workflow:
+ * 1. Fetch tất cả blogs từ API
+ * 2. Filter theo status và search text
+ * 3. Approve/Reject với comment
+ * 4. Hide/Unhide bài viết đã duyệt
+ */
 import React, { useState, useEffect, useContext } from "react";
 import {
   Card,
@@ -36,6 +51,7 @@ const { Option = Select.Option } = Select;
 const { Search } = Input;
 const { TextArea } = Input;
 
+// MAPPING TRẠNG THÁI BLOG - ĐỊNH NGHĨA MÀU SẮC VÀ TEXT CHO TỪNG STATUS
 const statusMap = {
   PENDING_REVIEW: { color: "orange", text: "Chờ duyệt" },
   APPROVED: { color: "green", text: "Đã duyệt" },
@@ -46,30 +62,32 @@ const statusMap = {
 };
 
 const BlogManagement = () => {
-  const [blogs, setBlogs] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [actionLoading, setActionLoading] = useState(false);
-  const [filteredData, setFilteredData] = useState([]);
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [searchText, setSearchText] = useState("");
-  const [selectedBlog, setSelectedBlog] = useState(null);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [modalType, setModalType] = useState(""); // create, edit, view
-  const [form] = Form.useForm();
-  const token = useSelector((state) => state.authSlice);
-  const { showNotification } = useContext(NotificationContext);
-  const [currentUser, setCurrentUser] = useState(null);
-  const [isActionModalVisible, setIsActionModalVisible] = useState(false);
-  const [actionType, setActionType] = useState(""); // approve, reject
-  const navigate = useNavigate();
-  const [currentPage, setCurrentPage] = useState(0); // page từ 0
-  const [pageSize, setPageSize] = useState(10);
-  const [totalPages, setTotalPages] = useState(1);
+  //  STATE MANAGEMENT - QUẢN LÝ TRẠNG THÁI COMPONENT
+  const [blogs, setBlogs] = useState([]); // Danh sách tất cả blogs
+  const [loading, setLoading] = useState(false); // Loading state cho fetch data
+  const [actionLoading, setActionLoading] = useState(false); // Loading state cho actions (approve/reject/hide)
+  const [filteredData, setFilteredData] = useState([]); // Data đã được filter
+  const [statusFilter, setStatusFilter] = useState("all"); // Filter theo status
+  const [searchText, setSearchText] = useState(""); // Text tìm kiếm
+  const [selectedBlog, setSelectedBlog] = useState(null); // Blog được chọn để xem/edit
+  const [isModalVisible, setIsModalVisible] = useState(false); // Hiển thị modal xem/edit
+  const [modalType, setModalType] = useState(""); // Loại modal: create, edit, view
+  const [form] = Form.useForm(); // Form instance cho Ant Design
+  const token = useSelector((state) => state.authSlice); // Token từ Redux store
+  const { showNotification } = useContext(NotificationContext); // Context cho notifications
+  const [currentUser, setCurrentUser] = useState(null); // Thông tin user hiện tại
+  const [isActionModalVisible, setIsActionModalVisible] = useState(false); // Modal approve/reject
+  const [actionType, setActionType] = useState(""); // Loại action: approve, reject
+  const navigate = useNavigate(); // Hook navigation
+  const [currentPage, setCurrentPage] = useState(0); // Trang hiện tại (backend page = 0-based)
+  const [totalPages, setTotalPages] = useState(1); // Tổng số trang
 
+  // INITIAL LOAD - TẢI DỮ LIỆU BAN ĐẦU
   useEffect(() => {
-    fetchBlogs(currentPage, pageSize);
+    fetchBlogs();
   }, []);
 
+  // LOAD USER INFO - TẢI THÔNG TIN NGƯỜI DÙNG HIỆN TẠI
   useEffect(() => {
     const loadUserInfo = async () => {
       try {
@@ -84,21 +102,24 @@ const BlogManagement = () => {
     loadUserInfo();
   }, [token, showNotification]);
 
+  // FETCH BLOGS - LẤY DANH SÁCH BLOG TỪ API
   const fetchBlogs = async (page = 0) => {
     try {
       setLoading(true);
+      console.log("Fetching all blogs with page:", page);
 
       const response = await blogService.getAllBlogs({
         page: page,
-        size: 5,
+        size: 9,
       });
-
+      setCurrentPage(page);
+      setTotalPages(response.data.result.totalPages);
       console.log("getAllBlogs response:", response);
 
       if (response.data && response.data.result?.content) {
         const allBlogs = response.data.result.content;
 
-        // Lấy chi tiết cho từng blog để có thông tin đầy đủ
+        // LẤY CHI TIẾT CHO TỪNG BLOG - FETCH DETAILS FOR EACH BLOG
         const blogsWithDetails = await Promise.all(
           allBlogs.map(async (blog) => {
             try {
@@ -114,10 +135,6 @@ const BlogManagement = () => {
         );
 
         setBlogs(blogsWithDetails);
-        setCurrentPage(page);
-        setPageSize(size);
-        setTotalPages(response.data.result.totalPages);
-
         console.log("Loaded", blogsWithDetails.length, "blogs");
       } else {
         console.log("No blogs found or invalid response structure");
@@ -131,18 +148,25 @@ const BlogManagement = () => {
     }
   };
 
+  // FILTER DATA - LỌC DỮ LIỆU THEO STATUS VÀ SEARCH TEXT
   useEffect(() => {
     const filtered = blogs.filter((blog) => {
+      const isNotDraft = blog.status !== "DRAFT"; // Loại bỏ DRAFT blogs
+
       const matchesStatus =
-        statusFilter === "all" ? true : blog.status === statusFilter;
+        statusFilter === "all" ? true : blog.status === statusFilter; // Filter theo status
+
       const matchesSearch =
         blog.title.toLowerCase().includes(searchText.toLowerCase()) ||
-        blog.authorName.toLowerCase().includes(searchText.toLowerCase());
-      return matchesStatus && matchesSearch;
+        blog.authorName.toLowerCase().includes(searchText.toLowerCase()); // Filter theo search text
+
+      return isNotDraft && matchesStatus && matchesSearch;
     });
+
     setFilteredData(filtered);
   }, [blogs, statusFilter, searchText]);
 
+  // GET STATUS TAG - TẠO TAG HIỂN THỊ TRẠNG THÁI
   const getStatusTag = (status) => {
     const statusInfo = statusMap[status];
     if (statusInfo) {
@@ -156,35 +180,19 @@ const BlogManagement = () => {
     }
   };
 
-  const createBlog = () => {
-    setSelectedBlog(null);
-    setModalType("create");
-    form.resetFields();
-    setIsModalVisible(true);
-  };
-
-  const editBlog = (blog) => {
-    setSelectedBlog(blog);
-    setModalType("edit");
-    form.setFieldsValue({
-      title: blog.title,
-      content: blog.content,
-      sourceReference: blog.sourceReference,
-      featured: blog.featured || false,
-    });
-    setIsModalVisible(true);
-  };
-
+  // VIEW BLOG - XEM CHI TIẾT BLOG
   const viewBlog = (blog) => {
     setSelectedBlog(blog);
     setModalType("view");
     setIsModalVisible(true);
   };
 
+  // HANDLE SUBMIT - XỬ LÝ LƯU BLOG (DRAFT HOẶC UPDATE)
   const handleSubmit = async (values) => {
     setActionLoading(true);
     try {
       if (modalType === "create") {
+        // TẠO BLOG MỚI
         if (!currentUser || !currentUser.id) {
           showNotification(
             "Không thể lấy thông tin người dùng để tạo bài viết.",
@@ -205,6 +213,7 @@ const BlogManagement = () => {
           fetchBlogs();
         }
       } else if (modalType === "edit") {
+        // CẬP NHẬT BLOG
         if (!selectedBlog || !currentUser || !currentUser.id) {
           showNotification(
             "Không thể cập nhật bài viết. Thông tin không đầy đủ.",
@@ -229,6 +238,7 @@ const BlogManagement = () => {
     }
   };
 
+  // HANDLE SEND FOR REVIEW - GỬI BLOG ĐI DUYỆT
   const handleSendForReview = async (values, isNewBlog) => {
     setActionLoading(true);
     try {
@@ -240,6 +250,7 @@ const BlogManagement = () => {
         return;
       }
       if (isNewBlog) {
+        // TẠO BLOG MỚI VÀ GỬI DUYỆT
         const response = await blogService.createBlog({
           title: values.title,
           content: values.content,
@@ -256,6 +267,7 @@ const BlogManagement = () => {
           fetchBlogs();
         }
       } else {
+        // 📝 CẬP NHẬT BLOG VÀ GỬI DUYỆT
         if (!selectedBlog) {
           showNotification("Không tìm thấy bài viết để gửi duyệt.", "error");
           return;
@@ -278,22 +290,26 @@ const BlogManagement = () => {
     }
   };
 
+  // HANDLE APPROVE - XỬ LÝ DUYỆT BLOG
   const handleApprove = (blog) => {
     setSelectedBlog(blog);
     setActionType("approve");
     setIsActionModalVisible(true);
   };
 
+  // HANDLE REJECT - XỬ LÝ TỪ CHỐI BLOG
   const handleReject = (blog) => {
     setSelectedBlog(blog);
     setActionType("reject");
     setIsActionModalVisible(true);
   };
 
+  // HANDLE SEARCH - XỬ LÝ TÌM KIẾM
   const handleSearch = (value) => {
     setSearchText(value);
   };
 
+  // HANDLE ACTION MODAL CANCEL - HỦY MODAL ACTION
   const handleActionModalCancel = () => {
     setIsActionModalVisible(false);
     setSelectedBlog(null);
@@ -301,6 +317,7 @@ const BlogManagement = () => {
     form.resetFields();
   };
 
+  // HANDLE ACTION SUBMIT - XỬ LÝ DUYỆT/TỪ CHỐI VỚI COMMENT
   const handleActionSubmit = async (values) => {
     if (!selectedBlog) return;
 
@@ -332,6 +349,7 @@ const BlogManagement = () => {
     }
   };
 
+  // 🙈 HANDLE HIDE BLOG - ẨN BLOG ĐÃ DUYỆT
   const handleHideBlog = async (blogId) => {
     setActionLoading(true);
     try {
@@ -346,6 +364,7 @@ const BlogManagement = () => {
     }
   };
 
+  // HANDLE UNHIDE BLOG - HIỆN LẠI BLOG ĐÃ ẨN
   const handleUnhideBlog = async (blogId) => {
     setActionLoading(true);
     try {
@@ -364,6 +383,7 @@ const BlogManagement = () => {
     }
   };
 
+  // TABLE COLUMNS - ĐỊNH NGHĨA CÁC CỘT TRONG BẢNG
   const columns = [
     {
       title: "Hình ảnh",
@@ -396,10 +416,7 @@ const BlogManagement = () => {
       dataIndex: "authorName",
       key: "authorName",
       render: (authorName) => (
-        <div className="flex items-center">
-          <Avatar size="small" icon={<UserOutlined />} className="mr-2" />
-          {authorName}
-        </div>
+        <div className="flex items-center">{authorName}</div>
       ),
     },
     {
@@ -484,8 +501,10 @@ const BlogManagement = () => {
     },
   ];
 
+  // RENDER COMPONENT - HIỂN THỊ GIAO DIỆN
   return (
     <Card className="blog-management-card">
+      {/* 🔍 FILTER SECTION - PHẦN LỌC VÀ TÌM KIẾM */}
       <div className="flex justify-between items-center mb-4">
         <div className="flex gap-4">
           <Select
@@ -509,10 +528,25 @@ const BlogManagement = () => {
         </div>
       </div>
 
+      {/* 📊 TABLE SECTION - BẢNG HIỂN THỊ DANH SÁCH BLOG */}
+      <Table
+        columns={columns}
+        dataSource={filteredData}
+        rowKey="id"
+        loading={loading || actionLoading}
+        pagination={
+          // pageSize: 10,
+          // showSizeChanger: true,
+          // showTotal: (total) => `Tổng số ${total} bài viết`,
+          false
+        }
+      />
+      
+      {/* 📄 PAGINATION SECTION - PHÂN TRANG TỰ CUSTOM */}
       <div className="flex justify-end mt-4">
         <Button
           disabled={currentPage === 0}
-          onClick={() => fetchBlogs(currentPage - 1, pageSize)}
+          onClick={() => fetchBlogs(currentPage - 1)}
           className="mr-2"
         >
           Trang trước
@@ -522,13 +556,14 @@ const BlogManagement = () => {
         </span>
         <Button
           disabled={currentPage + 1 >= totalPages}
-          onClick={() => fetchBlogs(currentPage + 1, pageSize)}
+          onClick={() => fetchBlogs(currentPage + 1)}
           className="ml-2"
         >
           Trang tiếp
         </Button>
       </div>
 
+      {/* 📝 VIEW/EDIT MODAL - MODAL XEM VÀ CHỈNH SỬA BLOG */}
       <Modal
         title={
           modalType === "create"
@@ -590,6 +625,7 @@ const BlogManagement = () => {
         destroyOnHidden
       >
         {modalType === "view" ? (
+          // VIEW MODE - CHẾ ĐỘ XEM CHI TIẾT BLOG
           selectedBlog && (
             <div>
               <h2 className="text-xl font-bold mb-4">{selectedBlog.title}</h2>
@@ -624,6 +660,7 @@ const BlogManagement = () => {
             </div>
           )
         ) : (
+          // EDIT/CREATE MODE - CHẾ ĐỘ CHỈNH SỬA/TẠO BLOG
           <Form
             form={form}
             layout="vertical"
@@ -651,6 +688,7 @@ const BlogManagement = () => {
         )}
       </Modal>
 
+      {/* ✅❌ ACTION MODAL - MODAL DUYỆT/TỪ CHỐI BLOG */}
       <Modal
         title={actionType === "approve" ? "Duyệt bài viết" : "Từ chối bài viết"}
         open={isActionModalVisible}

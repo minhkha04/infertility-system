@@ -27,7 +27,7 @@ export const path = {
   managerPatients: "/manager/patients",
   managerReports: "/manager/reports",
   managerRenderCreateTreatmentService: "/manager/create-treatment-service",
-
+  managerProfile: "/manager/profile",
   // Doctor routes
   doctor: "/doctor-dashboard/",
   doctorDashboard: "/doctor-dashboard/dashboard",
@@ -39,7 +39,8 @@ export const path = {
   doctorWorkSchedule: "/doctor-dashboard/work-schedule",
   doctorTreatmentStages: "/doctor-dashboard/treatment-stages",
   doctorChangeRequests: "/doctor-dashboard/change-requests",
-
+  doctorBlogs: "/doctor-dashboard/my-blogs",
+  doctorChangeRequests: "/doctor-dashboard/change-requests",
   // Customer routes
   customer: "/customer-dashboard/",
   customerProfile: "/customer-dashboard/profile",

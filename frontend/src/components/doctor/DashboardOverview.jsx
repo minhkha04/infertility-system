@@ -4,38 +4,32 @@ import {
   Row,
   Col,
   Table,
-  Calendar,
-  Badge,
   Typography,
   Statistic,
   Tag,
   Avatar,
   Space,
-  Button,
-  Timeline,
-  Progress,
   DatePicker,
   Spin,
   message,
+  Button,
 } from "antd";
 import {
   CalendarOutlined,
   UserOutlined,
-  ClockCircleOutlined,
-  CheckCircleOutlined,
   MedicineBoxOutlined,
-  PhoneOutlined,
   StarFilled,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { managerService } from "../../service/manager.service";
-import { treatmentService } from "../../service/treatment.service";
-import { authService } from "../../service/auth.service";
 import { doctorService } from "../../service/doctor.service";
 import "dayjs/locale/vi";
+import { useInfiniteQuery } from "@tanstack/react-query";
+
 dayjs.locale("vi");
 
-const { Title, Text } = Typography;
+// ===== SHIFT MAPPING CONFIGURATION =====
+// Map để dịch shift codes thành text và màu sắc hiển thị
 const shiftMap = {
   MORNING: { color: "green", text: "Sáng" },
   AFTERNOON: { color: "orange", text: "Chiều" },
@@ -45,38 +39,43 @@ const shiftMap = {
   null: { color: "default", text: "Nghỉ" },
   "": { color: "default", text: "Nghỉ" },
 };
+
+// Tên các ngày trong tuần để hiển thị header calendar
 const weekdays = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "CN"];
+
+// Map màu background cho từng loại ca làm việc trong calendar
 const bgColorMap = {
-  MORNING: "#f6ffed",
-  AFTERNOON: "#fff7e6",
-  FULL_DAY: "#f9f0ff",
+  MORNING: "#f6ffed",       // Xanh lá nhạt cho ca sáng
+  AFTERNOON: "#fff7e6",     // Cam nhạt cho ca chiều
+  FULL_DAY: "#f9f0ff",      // Tím nhạt cho cả ngày
 };
 
 const DashboardOverview = () => {
-  // Lịch làm việc tháng này
-  const [selectedMonth, setSelectedMonth] = useState(dayjs().format("YYYY-MM"));
-  const [schedule, setSchedule] = useState({});
-  const [loadingSchedule, setLoadingSchedule] = useState(false);
-  const [doctorId, setDoctorId] = useState(null);
+  // ===== STATE MANAGEMENT =====
+  // State quản lý work schedule và calendar
+  const [selectedMonth, setSelectedMonth] = useState(dayjs().format("YYYY-MM"));  // Tháng được chọn trong calendar
+  const [schedule, setSchedule] = useState({});                                   // Object chứa lịch làm việc {date: shift}
+  const [loadingSchedule, setLoadingSchedule] = useState(false);                  // Loading state cho calendar
+  const [doctorId, setDoctorId] = useState(null);                                // ID của doctor hiện tại
 
-  // Lịch khám hôm nay
-  const [loadingToday, setLoadingToday] = useState(true);
-  const [todayAppointments, setTodayAppointments] = useState([]);
-
-  // Dashboard stats
+  // State quản lý dashboard statistics
   const [dashboardStats, setDashboardStats] = useState({
-    workShiftsThisMonth: 0,
-    patients: 0,
-    avgRating: 0,
+    workShiftsThisMonth: 0,         // Tổng ca làm việc tháng này
+    patients: 0,                    // Tổng số bệnh nhân
+    avgRating: 0,                   // Đánh giá trung bình
   });
 
-  // Lấy doctorId từ token
+  const [appointments, setAppointments] = useState([]);                           // Danh sách appointments hôm nay
+
+  // ===== USEEFFECT: DECODE TOKEN ĐỂ LẤY DOCTOR ID =====
+  // useEffect này decode JWT token để lấy doctor ID
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
       try {
-        const base64Url = token.split(".")[1];
-        const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+        // Decode JWT token manual để lấy sub (doctor ID)
+        const base64Url = token.split(".")[1];                         // Lấy payload part
+        const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");// Convert base64Url to base64
         const jsonPayload = decodeURIComponent(
           atob(base64)
             .split("")
@@ -85,42 +84,43 @@ const DashboardOverview = () => {
             })
             .join("")
         );
-        const decoded = JSON.parse(jsonPayload);
-        setDoctorId(decoded.sub);
+        const decoded = JSON.parse(jsonPayload);                       // Parse JSON payload
+        setDoctorId(decoded.sub);                                      // Set doctor ID từ sub claim
       } catch (error) {
         message.error("Không thể xác thực thông tin bác sĩ");
       }
     }
   }, []);
 
-  // Lấy lịch làm việc tháng
+  // ===== USEEFFECT: TẢI LỊCH LÀM VIỆC =====
+  // useEffect này gọi API lấy lịch làm việc khi có doctorId hoặc đổi tháng
   useEffect(() => {
-    if (!doctorId) return;
+    if (!doctorId) return;  // Cần có doctorId mới call API
     setLoadingSchedule(true);
 
-    // Thử API mới trước
+    // Thử API mới trước (new API pattern)
     doctorService
-      .getWorkScheduleByMonth(selectedMonth)
+      .getWorkScheduleByMonth(selectedMonth)                           // Gọi API mới
       .then((res) => {
         if (res.data && res.data.result) {
-          // Chuyển đổi format từ API mới sang format cũ
+          // Chuyển đổi format từ API mới sang format cũ để tương thích
           const schedules = {};
           res.data.result.forEach((item) => {
             schedules[item.workDate] = item.shift;
           });
-          setSchedule(schedules);
+          setSchedule(schedules);                                      // Set schedule từ API mới
         } else {
           setSchedule({});
         }
       })
       .catch((err) => {
         console.warn("API mới không hoạt động, thử API cũ:", err);
-        // Fallback to old API
+        // Fallback to old API nếu API mới fail
         managerService
-          .getWorkScheduleYear(selectedMonth, doctorId)
+          .getWorkScheduleYear(selectedMonth, doctorId)                // Gọi API cũ
           .then((res) => {
             if (res.data && res.data.result && res.data.result.schedules) {
-              setSchedule(res.data.result.schedules);
+              setSchedule(res.data.result.schedules);                  // Set schedule từ API cũ
             } else {
               setSchedule({});
             }
@@ -133,48 +133,31 @@ const DashboardOverview = () => {
       .finally(() => setLoadingSchedule(false));
   }, [doctorId, selectedMonth]);
 
-  // Lấy lịch khám hôm nay
-  useEffect(() => {
-    if (!doctorId) return;
-    setLoadingToday(true);
-
-    // Sử dụng API mới
-    doctorService
-      .getAppointmentsToday(0, 10)
-      .then((res) => {
-        const data = res?.data?.result?.content || [];
-        // Log dữ liệu để debug
-        console.log("[Lịch Khám Hôm Nay] todayAppointments:", data);
-        setTodayAppointments(data);
-      })
-      .catch(() => setTodayAppointments([]))
-      .finally(() => setLoadingToday(false));
-  }, [doctorId]);
-
-  // Lấy dashboard statics
+  // ===== USEEFFECT: TẢI DASHBOARD STATISTICS =====
+  // useEffect này gọi API lấy dashboard statistics khi có doctorId
   useEffect(() => {
     if (!doctorId) return;
 
-    // Thử API mới trước
+    // Thử API mới trước (new API pattern)
     doctorService
-      .getDashboardOverview()
+      .getDashboardOverview()                                          // Gọi API mới
       .then((res) => {
         if (res?.data?.result) {
-          setDashboardStats(res.data.result);
+          setDashboardStats(res.data.result);                         // Set stats từ API mới
         }
       })
       .catch((err) => {
         console.warn("API mới không hoạt động, thử API cũ:", err);
-        // Fallback to old API
+        // Fallback to old API nếu API mới fail
         doctorService
-          .getDashboardStatics(doctorId)
+          .getDashboardStatics(doctorId)                               // Gọi API cũ
           .then((res) => {
             if (res?.data?.result) {
-              setDashboardStats(res.data.result);
+              setDashboardStats(res.data.result);                     // Set stats từ API cũ
             }
           })
           .catch(() =>
-            setDashboardStats({
+            setDashboardStats({                                        // Fallback default values
               workShiftsThisMonth: 0,
               patients: 0,
               avgRating: 0,
@@ -183,21 +166,26 @@ const DashboardOverview = () => {
       });
   }, [doctorId]);
 
-  // Bảng lịch làm việc tháng (thu nhỏ)
+  // ===== UTILITY FUNCTION: TẠO CALENDAR GRID =====
+  // Hàm tạo cấu trúc calendar grid cho tháng được chọn (compact version)
   const getCalendarGrid = (monthStr) => {
-    const [year, month] = monthStr.split("-").map(Number);
-    const firstDate = new Date(year, month - 1, 1);
-    const totalDays = new Date(year, month, 0).getDate();
-    const firstDay = firstDate.getDay(); // 0=CN
-    const offset = firstDay === 0 ? 6 : firstDay - 1;
+    const [year, month] = monthStr.split("-").map(Number);            // Parse year và month
+    const firstDate = new Date(year, month - 1, 1);                  // Ngày đầu tháng
+    const totalDays = new Date(year, month, 0).getDate();            // Tổng số ngày trong tháng
+    const firstDay = firstDate.getDay();                             // Thứ mấy của ngày đầu (0=CN)
+    const offset = firstDay === 0 ? 6 : firstDay - 1;               // Offset để align với thứ 2 đầu tuần
+    
     const calendar = [];
     let day = 1;
+    
+    // Tạo calendar grid 6 tuần x 7 ngày
     for (let i = 0; i < 6 && day <= totalDays; i++) {
       const week = [];
       for (let j = 0; j < 7; j++) {
-        if ((i === 0 && j < offset) || day > totalDays) {
+        if ((i === 0 && j < offset) || day > totalDays) {            // Cells trống ở đầu/cuối
           week.push(null);
         } else {
+          // Format date string YYYY-MM-DD
           week.push(
             `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(
               2,
@@ -212,7 +200,8 @@ const DashboardOverview = () => {
     return calendar;
   };
 
-  // Bảng lịch khám hôm nay
+  // ===== TABLE COLUMNS CONFIGURATION =====
+  // Cấu hình các columns cho bảng appointments hôm nay
   const todayColumns = [
     {
       title: "Bệnh nhân",
@@ -225,7 +214,7 @@ const DashboardOverview = () => {
             icon={<UserOutlined />}
             style={{ marginRight: 8 }}
           />
-          <span>{name}</span>
+          <span>{name}</span>                                        {/* Tên bệnh nhân */}
         </div>
       ),
     },
@@ -253,11 +242,13 @@ const DashboardOverview = () => {
       render: (status) => {
         const statusMap = {
           CONFIRMED: { color: "blue", text: "Đã xác nhận" },
-          PLANNED: { color: "orange", text: "Chờ thực hiện" },
+          PLANED: { color: "gold", text: "Đã lên lịch" },
           COMPLETED: { color: "green", text: "Hoàn thành" },
           CANCELLED: { color: "red", text: "Đã hủy" },
           INPROGRESS: { color: "blue", text: "Đang thực hiện" },
           IN_PROGRESS: { color: "blue", text: "Đang thực hiện" },
+          PENDING_CHANGE: { color: "yellow", text: "Yêu cầu thay đổi" },
+          REJECTED: { color: "red", text: "Từ chối yêu cầu thay đổi" },
         };
         const s = statusMap[status] || { color: "default", text: status };
         return <Tag color={s.color}>{s.text}</Tag>;
@@ -267,16 +258,56 @@ const DashboardOverview = () => {
       title: "Mục đích",
       key: "purpose",
       render: (record) => {
-        // Lấy trường 'purpose' từ API thay vì 'step'
         return <Tag color="purple">{record.purpose || "Chưa có"}</Tag>;
       },
     },
   ];
 
+  // ===== REACT QUERY INFINITE QUERY =====
+  // Setup infinite query để load appointments hôm nay với pagination
+  const {
+    data: appointmentPages,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading: loading,
+  } = useInfiniteQuery({
+    queryKey: ["appointmentsToday", doctorId],                       // Query key với doctorId
+    queryFn: async ({ pageParam = 0 }) => {
+      const res = await doctorService.getAppointmentsToday(pageParam, 5);
+      const data = res?.data?.result;
+      setAppointments(data?.content || []);                          // Update appointments state
+
+      return {
+        list: data?.content || [],                                   // Danh sách appointments
+        hasNextPage: !data?.last,                                   // Còn page tiếp theo không
+      };
+    },
+    enabled: !!doctorId,                                             // Chỉ enabled khi có doctorId
+    getNextPageParam: (lastPage, pages) =>                          // Logic xác định next page param
+      lastPage.hasNextPage ? pages.length : undefined,
+
+    // Optimization settings để tránh refetch không cần thiết
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchInterval: false,
+    staleTime: Infinity,                                             // Cache permanently hoặc vài phút
+  });
+
+  // Flatten tất cả pages thành 1 mảng appointments
+  const todayAppointment = Array.isArray(appointmentPages?.pages)
+    ? appointmentPages.pages.flatMap((page) =>
+        Array.isArray(page.list) ? page.list : []
+      )
+    : [];
+
+  // ===== RENDER MAIN COMPONENT =====
   return (
-    <div>
-      {/* Statistics Cards */}
-      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+    <div className="flex flex-col gap-4">
+      {/* ===== STATISTICS CARDS SECTION ===== */}
+      {/* 3 cards hiển thị statistics tổng quan */}
+      <Row gutter={[16, 16]}>
+        {/* Tổng ca làm việc tháng này */}
         <Col xs={24} sm={12} lg={8}>
           <Card>
             <Statistic
@@ -287,6 +318,8 @@ const DashboardOverview = () => {
             />
           </Card>
         </Col>
+        
+        {/* Tổng số bệnh nhân */}
         <Col xs={24} sm={12} lg={8}>
           <Card>
             <Statistic
@@ -297,6 +330,8 @@ const DashboardOverview = () => {
             />
           </Card>
         </Col>
+        
+        {/* Đánh giá trung bình */}
         <Col xs={24} sm={12} lg={8}>
           <Card>
             <Statistic
@@ -304,14 +339,16 @@ const DashboardOverview = () => {
               value={dashboardStats.avgRating || 0}
               prefix={<StarFilled style={{ color: "#faad14" }} />}
               valueStyle={{ color: "#faad14" }}
-              precision={1}
+              precision={1}                                          // Hiển thị 1 số thập phân
             />
           </Card>
         </Col>
       </Row>
 
+      {/* ===== MAIN CONTENT SECTION ===== */}
       <Row gutter={[24, 24]}>
-        {/* Today's Appointments */}
+        {/* ===== TODAY'S APPOINTMENTS ===== */}
+        {/* Bảng hiển thị appointments hôm nay với infinite scroll */}
         <Col xs={24} lg={12}>
           <Card
             title={
@@ -323,18 +360,35 @@ const DashboardOverview = () => {
             }
           >
             <Table
-              columns={todayColumns}
-              dataSource={todayAppointments}
-              loading={loadingToday}
-              pagination={false}
-              rowKey="id"
-              size="small"
-              scroll={{ x: 600 }}
+              columns={todayColumns}                                 // Columns configuration
+              dataSource={todayAppointment}                          // Data từ infinite query
+              loading={loading}                                      // Loading state
+              pagination={false}                                     // Disable built-in pagination
+              rowKey="id"                                            // Unique key cho mỗi row
+              size="small"                                           // Compact table size
+              scroll={{ x: 600 }}                                   // Horizontal scroll
             />
+
+            {/* Load more button cho infinite scroll */}
+            {hasNextPage && (
+              <div className="text-center mt-4">
+                <Button
+                  onClick={() => {
+                    fetchNextPage();                                 // Trigger fetch next page
+                    console.log(appointments);                       // Debug log
+                  }}
+                  loading={isFetchingNextPage}                       // Loading state
+                  disabled={appointments.length === 0}              // Disable nếu không có appointments
+                >
+                  {isFetchingNextPage ? "Đang tải..." : "Xem thêm"}
+                </Button>
+              </div>
+            )}
           </Card>
         </Col>
 
-        {/* Weekly Schedule */}
+        {/* ===== WORK SCHEDULE CALENDAR ===== */}
+        {/* Calendar hiển thị lịch làm việc của doctor với month picker */}
         <Col xs={24} lg={12}>
           <Card
             title={
@@ -351,6 +405,8 @@ const DashboardOverview = () => {
                   <MedicineBoxOutlined />
                   <span>Lịch Làm Việc</span>
                 </Space>
+                
+                {/* Month picker với custom styling */}
                 <div
                   style={{
                     background: "#faf6ff",
@@ -363,11 +419,11 @@ const DashboardOverview = () => {
                   }}
                 >
                   <DatePicker
-                    picker="month"
-                    value={dayjs(selectedMonth + "-01")}
-                    onChange={(d) => setSelectedMonth(d.format("YYYY-MM"))}
-                    allowClear={false}
-                    format="[Tháng] MM/YYYY"
+                    picker="month"                                   // Chỉ cho chọn tháng
+                    value={dayjs(selectedMonth + "-01")}            // Current value
+                    onChange={(d) => setSelectedMonth(d.format("YYYY-MM"))}  // Handler khi đổi tháng
+                    allowClear={false}                              // Không cho phép clear
+                    format="[Tháng] MM/YYYY"                        // Format hiển thị
                     size="middle"
                     style={{
                       fontWeight: 600,
@@ -383,10 +439,12 @@ const DashboardOverview = () => {
             }
           >
             {loadingSchedule ? (
+              // Loading state với spinner
               <Spin tip="Đang tải lịch làm việc...">
                 <div style={{ minHeight: 200 }} />
               </Spin>
             ) : (
+              // Calendar grid container
               <div
                 style={{
                   background: "#fff",
@@ -394,12 +452,12 @@ const DashboardOverview = () => {
                   boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
                   padding: 12,
                   marginBottom: 12,
-                  minWidth: 400,
-                  maxWidth: 600,
                   width: "100%",
-                  overflowX: "auto",
+                  overflowX: "auto",                                 // Horizontal scroll cho responsive
                 }}
               >
+                {/* ===== CALENDAR TABLE ===== */}
+                {/* Table hiển thị calendar với lịch làm việc */}
                 <table
                   style={{
                     width: "100%",
@@ -407,6 +465,7 @@ const DashboardOverview = () => {
                     borderSpacing: 0,
                   }}
                 >
+                  {/* Table header với tên các ngày trong tuần */}
                   <thead>
                     <tr>
                       {weekdays.map((day) => (
@@ -427,12 +486,14 @@ const DashboardOverview = () => {
                       ))}
                     </tr>
                   </thead>
+                  
+                  {/* Table body với calendar cells */}
                   <tbody>
                     {getCalendarGrid(selectedMonth).map((week, i) => (
                       <tr key={i}>
                         {week.map((dateStr, j) => {
-                          const shift = schedule[dateStr];
-                          const bgColor = bgColorMap[shift] || undefined;
+                          const shift = schedule[dateStr];              // Lấy shift cho ngày này
+                          const bgColor = bgColorMap[shift] || undefined;  // Lấy background color theo shift
                           return (
                             <td
                               key={j}
@@ -445,13 +506,14 @@ const DashboardOverview = () => {
                                 background:
                                   bgColor ||
                                   (dateStr === dayjs().format("YYYY-MM-DD")
-                                    ? "#e6f7ff"
+                                    ? "#e6f7ff"                      // Highlight ngày hôm nay
                                     : "#fff"),
                                 borderRadius: 8,
                                 transition: "background 0.2s",
                                 position: "relative",
                               }}
                             >
+                              {/* Nội dung cell: shift text và số ngày */}
                               <div
                                 style={{
                                   display: "flex",
@@ -461,6 +523,7 @@ const DashboardOverview = () => {
                                   height: "100%",
                                 }}
                               >
+                                {/* Text hiển thị ca làm việc */}
                                 {dateStr && shift ? (
                                   <span
                                     style={{
@@ -473,6 +536,7 @@ const DashboardOverview = () => {
                                     {shiftMap[shift]?.text || "Nghỉ"}
                                   </span>
                                 ) : null}
+                                {/* Số ngày trong tháng */}
                                 <div
                                   style={{
                                     fontSize: 13,
@@ -499,4 +563,5 @@ const DashboardOverview = () => {
   );
 };
 
+// ===== EXPORT COMPONENT =====
 export default DashboardOverview;

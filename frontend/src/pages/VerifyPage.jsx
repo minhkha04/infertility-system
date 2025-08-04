@@ -6,6 +6,7 @@ import InputCustom from "../components/Input/InputCustom";
 import { authService } from "../service/auth.service";
 import { NotificationContext } from "../App";
 import { useNavigate } from "react-router-dom";
+import { path } from "framer-motion/client";
 
 const VerifyPage = () => {
   const navigate = useNavigate();
@@ -22,9 +23,9 @@ const VerifyPage = () => {
         authService
           .verify(values)
           .then((res) => {
-            showNotification("OTP xác nhận thành công", "success");
+            showNotification("OTP kiểm tra thành công", "success");
             setTimeout(() => {
-              navigate("/dang-nhap");
+              navigate(path.testLogin);
               localStorage.clear();
               window.location.reload();
             }, 1000);
@@ -38,20 +39,6 @@ const VerifyPage = () => {
       }),
     });
 
-  const resendOtp = async () => {
-    if (!infoUser) {
-      return;
-    }
-    try {
-      const res = await authService.resendOtp(infoUser.email);
-      showNotification("Đã gửi lại mã đến Email của bạn", "success");
-      console.log(res);
-    } catch (error) {
-      console.log(error);
-      showNotification(error.response.data.message, "error");
-    }
-  };
-
   return (
     <div>
       <div className="max-w-md mx-auto mt-20 p-8 border rounded-lg shadow-sm bg-white">
@@ -59,17 +46,17 @@ const VerifyPage = () => {
           Xác nhận tài khoản của bạn
         </h2>
         <p className="text-center text-gray-600 mb-6">
-          Vui lòng nhập mã code OTP chungs tôi đã gửi <br />
+          Vui lòng nhập mã xác nhận mà chúng tôi đã gửi đến <br />
           <span className="font-medium text-gray-900">{infoUser.email}</span> để
-          kích hoạt tài khoản này.
+          kích hoạt tài khoản của bạn.
         </p>
 
         <form className="space-y-5" onSubmit={handleSubmit}>
           <InputCustom
-            labelContent="Mã code xác nhận"
+            labelContent="Mã xác nhận của bạn"
             id="otp"
             name="otp"
-            placeholder="Nhập mã code OTP"
+            placeholder="Nhập mã OTP"
             typeInput="text"
             value={values.otp}
             onChange={handleChange}
@@ -81,14 +68,18 @@ const VerifyPage = () => {
             type="submit"
             className="w-full bg-blue-500 text-white font-semibold py-2 rounded-lg hover:bg-blue-600 transition"
           >
-            Xác nhận code
+            Xác nhận mã
           </button>
 
           <button
-            className="text-center text-sm mt-4 text-blue-500 cursor-pointer hover:underline"
-            onClick={resendOtp}
+            type="button"
+            onClick={async () => {
+              await authService.resendOtp({ email: infoUser.email });
+              showNotification("Đã gửi otp đến email của bạn", "success");
+            }}
+            className="text-sm mt-2 text-blue-500 hover:underline"
           >
-            Gửi lại code
+            Gửi lại mã OTP
           </button>
         </form>
       </div>

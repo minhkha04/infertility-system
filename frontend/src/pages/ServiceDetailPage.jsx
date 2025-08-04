@@ -43,42 +43,6 @@ const getServiceImage = (treatmentType) => {
   return imageMap[treatmentType] || "/images/features/pc4.jpg";
 };
 
-// Danh sách lợi ích dựa trên ID dịch vụ
-const getBenefitsByServiceId = (serviceId) => {
-  const benefitsMap = {
-    // IUI - ID 1
-    1: [
-      "Quy trình đơn giản, ít xâm lấn và không đau",
-      "Chi phí thấp hơn so với IVF",
-      "Không cần gây mê hay phẫu thuật",
-      "Có thể kết hợp với kích thích rụng trứng nhẹ",
-      "Thời gian điều trị ngắn, ít ảnh hưởng đến cuộc sống",
-      "Tỷ lệ thành công cao với các trường hợp vô sinh nhẹ",
-      "Phù hợp với các trường hợp vô sinh do yếu tố cổ tử cung",
-    ],
-    // IVF - ID 2
-    2: [
-      "Tỷ lệ thành công cao, đặc biệt với phụ nữ dưới 35 tuổi",
-      "Có thể điều trị nhiều nguyên nhân vô sinh khác nhau",
-      "Cho phép xét nghiệm di truyền phôi trước khi chuyển",
-      "Có thể đông lạnh phôi thừa để sử dụng sau này",
-      "Kiểm soát được số lượng phôi chuyển để giảm nguy cơ đa thai",
-      "Giải pháp hiệu quả cho các trường hợp tắc ống dẫn trứng",
-      "Phù hợp với các trường hợp vô sinh nam nặng",
-    ],
-  };
-
-  return (
-    benefitsMap[serviceId] || [
-      "Đánh giá toàn diện của tình trạng sinh sản",
-      "Tư vấn cá nhân hóa với chuyên gia",
-      "Kế hoạch điều trị phù hợp với nhu cầu của bạn",
-      "Sử dụng công nghệ và thiết bị hiện đại",
-      "Hỗ trợ tâm lý trong suốt quá trình điều trị",
-    ]
-  );
-};
-
 const ServiceDetailPage = () => {
   const { serviceId } = useParams();
   const navigate = useNavigate();
@@ -279,21 +243,6 @@ const ServiceDetailPage = () => {
       <UserHeader />
 
       {/* Hero Banner */}
-      <div className="relative h-[400px] w-full overflow-hidden">
-        <img
-          src={getServiceImage(service.treatmentTypeName)}
-          alt={service.name}
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-black opacity-40" />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center">
-            <h1 className="text-5xl font-bold text-white mb-4">
-              {service.name}
-            </h1>
-          </div>
-        </div>
-      </div>
 
       {/* Service Description Section */}
       <div className="py-16 bg-gradient-to-br from-[#fff7f3] to-[#ffe5db]">
@@ -321,8 +270,10 @@ const ServiceDetailPage = () => {
                       src={service.coverImageUrl}
                       alt={service.name}
                       className="max-h-64 rounded-lg shadow"
-                      style={{ maxWidth: '100%', objectFit: 'cover' }}
-                      onError={e => { e.target.style.display = 'none'; }}
+                      style={{ maxWidth: "100%", objectFit: "cover" }}
+                      onError={(e) => {
+                        e.target.style.display = "none";
+                      }}
                     />
                   </div>
                 )}
@@ -334,24 +285,43 @@ const ServiceDetailPage = () => {
               </div>
               {/* Tuyến trình điều trị */}
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <Title level={3} className="text-[#ff8460] font-bold mb-8 text-center tracking-wide flex items-center gap-2">
-                  <span><CalendarOutlined /></span> Tuyến trình điều trị
+                <Title
+                  level={3}
+                  className="text-[#ff8460] font-bold mb-8 text-center tracking-wide flex items-center gap-2"
+                >
+                  <span>
+                    <CalendarOutlined />
+                  </span>{" "}
+                  Tuyến trình điều trị
                 </Title>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {service.treatmentStageResponses && service.treatmentStageResponses.length > 0 ? (
+                  {service.treatmentStageResponses &&
+                  service.treatmentStageResponses.length > 0 ? (
                     service.treatmentStageResponses.map((stage) => (
-                      <div key={stage.id} className="bg-[#fff7f3] rounded-xl shadow border-l-4 border-[#ff8460] p-4 flex items-center gap-4 hover:shadow-lg transition-all">
+                      <div
+                        key={stage.id}
+                        className="bg-[#fff7f3] rounded-xl shadow border-l-4 border-[#ff8460] p-4 flex items-center gap-4 hover:shadow-lg transition-all"
+                      >
                         <div className="w-12 h-12 flex items-center justify-center rounded-full bg-gradient-to-br from-[#ff8460] to-[#ff6b40] text-white text-xl font-bold shadow">
                           {stage.orderIndex}
                         </div>
                         <div className="flex-1">
-                          <div className="text-[#ff6b40] font-semibold text-base mb-1">{stage.name}</div>
-                          <Tag color="#ff8460" className="rounded-full px-3 py-0.5 text-xs font-bold bg-[#fff3ed] border-none">Khoảng ngày: {stage.expectedDayRange}</Tag>
+                          <div className="text-[#ff6b40] font-semibold text-base mb-1">
+                            {stage.name}
+                          </div>
+                          <Tag
+                            color="#ff8460"
+                            className="rounded-full px-3 py-0.5 text-xs font-bold bg-[#fff3ed] border-none"
+                          >
+                            Khoảng ngày: {stage.expectedDayRange}
+                          </Tag>
                         </div>
                       </div>
                     ))
                   ) : (
-                    <div className="col-span-2 text-center text-gray-500">Chưa có dữ liệu các bước điều trị.</div>
+                    <div className="col-span-2 text-center text-gray-500">
+                      Chưa có dữ liệu các bước điều trị.
+                    </div>
                   )}
                 </div>
               </div>
@@ -364,8 +334,9 @@ const ServiceDetailPage = () => {
                   Đăng ký dịch vụ
                 </Title>
                 <Paragraph className="mb-6">
-                  Bạn muốn tìm hiểu thêm về {service.name ? service.name.toLowerCase() : ''}? 
-                  Đặt lịch tư vấn với một trong những chuyên gia của chúng tôi để thảo luận 
+                  Bạn muốn tìm hiểu thêm về{" "}
+                  {service.name ? service.name.toLowerCase() : ""}? Đặt lịch tư
+                  vấn với một trong những chuyên gia của chúng tôi để thảo luận
                   về tình huống và nhu cầu cụ thể của bạn.
                 </Paragraph>
                 <div className="mb-4">

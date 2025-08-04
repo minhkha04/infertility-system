@@ -7,12 +7,8 @@ import ProfileOverview from "../components/customer/ProfileOverview";
 import MyServices from "../components/customer/MyServices";
 import AppointmentSchedule from "../components/customer/AppointmentSchedule";
 import TreatmentProgress from "../components/customer/TreatmentProgress";
-import ServiceReview from "../components/customer/ServiceReview";
-import Notifications from "../components/customer/Notifications";
 import Feedback from "../components/customer/Feedback";
-import MedicalRecord from "../components/customer/MedicalRecord";
 import Payment from "../components/customer/Payment";
-import UpdateProfile from "../components/customer/UpdateProfile";
 import { authService } from "../service/auth.service";
 import { NotificationContext } from "../App";
 import { useSelector } from "react-redux";
@@ -198,13 +194,9 @@ const CustomerDashboard = () => {
             <Route path="services" element={<MyServices />} />
             <Route path="appointments" element={<AppointmentSchedule />} />
             <Route path="treatment" element={<TreatmentProgress />} />
-            <Route path="reviews" element={<ServiceReview />} />
-            <Route path="notifications" element={<Notifications />} />
             <Route path="feedback" element={<Feedback />} />
-            <Route path="medical-record" element={<MedicalRecord />} />
             <Route path="payment" element={<Payment />} />
             <Route path="payment/vnpay/return" element={<VnpayReturn />} />
-            <Route path="update-profile" element={<UpdateProfile />} />
             <Route path="my-blogs" element={<CustomerBlogManagement />} />
           </Routes>
         </Content>

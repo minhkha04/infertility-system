@@ -14,6 +14,7 @@ const VnpayReturnPage = () => {
 
     if (responseCode === "00") {
       showNotification("Thanh toán VNPAY thành công", "success");
+      sessionStorage.setItem("payment_success", "true"); // ✅ đặt cờ
     } else if (responseCode === "24") {
       showNotification("Bạn đã huỷ thanh toán VNPAY", "warning");
     } else {

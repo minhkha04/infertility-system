@@ -32,27 +32,35 @@ const { Option } = Select;
 const { Title, Text } = Typography;
 
 const TodayExaminations = () => {
-  const [loading, setLoading] = useState(true);
-  const [appointments, setAppointments] = useState([]);
-  const [searchText, setSearchText] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [filteredData, setFilteredData] = useState([]);
-  const navigate = useNavigate();
+  // ===== STATE MANAGEMENT =====
+  // State quản lý dữ liệu và UI
+  const [loading, setLoading] = useState(true);                      // Trạng thái loading
+  const [appointments, setAppointments] = useState([]);              // Danh sách appointments raw từ API
+  const [searchText, setSearchText] = useState("");                  // Text tìm kiếm
+  const [statusFilter, setStatusFilter] = useState("all");           // Filter theo trạng thái
+  const [filteredData, setFilteredData] = useState([]);              // Dữ liệu đã được filter
 
+  // ===== NAVIGATION =====
+  const navigate = useNavigate();                                    // Hook điều hướng
+
+  // ===== USEEFFECT: TẢI DỮ LIỆU APPOINTMENTS HÔM NAY =====
+  // useEffect này chạy khi component mount để tải appointments hôm nay
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const today = dayjs().format("YYYY-MM-DD");
+        const today = dayjs().format("YYYY-MM-DD");               // Format ngày hôm nay
+        
+        // Gọi API lấy appointments cho ngày hôm nay
         const res = await treatmentService.getAppointments({
-          date: today,
-          size: 100,
+          date: today,                                            // Filter theo ngày hôm nay
+          size: 100,                                             // Lấy tối đa 100 records
         });
         const data = res?.data?.result?.content || [];
-        setAppointments(data);
+        setAppointments(data);                                   // Set raw appointments data
       } catch (error) {
         message.error("Không thể tải dữ liệu lịch hẹn hôm nay!");
-        setAppointments([]);
+        setAppointments([]);                                     // Set empty array nếu lỗi
       } finally {
         setLoading(false);
       }
@@ -60,33 +68,41 @@ const TodayExaminations = () => {
     fetchData();
   }, []);
 
+  // ===== USEEFFECT: FILTER DỮ LIỆU =====
+  // useEffect này chạy khi filter hoặc search text thay đổi
   useEffect(() => {
-    let filtered = appointments;
+    let filtered = appointments;                                  // Bắt đầu với tất cả appointments
+    
+    // Filter theo status nếu không phải "all"
     if (statusFilter !== "all") {
       filtered = filtered.filter((item) => item.status === statusFilter);
     }
+    
+    // Filter theo search text (tìm trong tên bệnh nhân và bác sĩ)
     if (searchText) {
       filtered = filtered.filter(
         (item) =>
           (item.customerName &&
             item.customerName
               .toLowerCase()
-              .includes(searchText.toLowerCase())) ||
+              .includes(searchText.toLowerCase())) ||            // Tìm theo tên bệnh nhân
           (item.doctorName &&
-            item.doctorName.toLowerCase().includes(searchText.toLowerCase()))
+            item.doctorName.toLowerCase().includes(searchText.toLowerCase()))  // Tìm theo tên bác sĩ
       );
     }
-    setFilteredData(filtered);
+    setFilteredData(filtered);                                   // Update filtered data
   }, [statusFilter, searchText, appointments]);
 
+  // ===== UTILITY FUNCTION: STATUS TAG =====
+  // Hàm tạo Tag component với màu sắc cho các trạng thái appointment
   const getStatusTag = (status) => {
     const statusMap = {
       CONFIRMED: { color: "blue", text: "Đã xác nhận" },
       PENDING: { color: "orange", text: "Chờ xác nhận" },
-      REJECTED_CHANGE: { color: "red", text: "Từ chối thay đổi" },
+      REJECTED: { color: "volcano", text: "Từ chối yêu cầu đổi lịch" },
       CANCELLED: { color: "red", text: "Đã hủy" },
       COMPLETED: { color: "green", text: "Đã hoàn thành" },
-      INPROGRESS: { color: "blue", text: "Đang thực hiện" },
+      INPROGRESS: { color: "orange", text: "Đang điều trị" },
       PENDING_CHANGE: { color: "gold", text: "Chờ duyệt đổi lịch" },
     };
     return (
@@ -96,12 +112,15 @@ const TodayExaminations = () => {
     );
   };
 
+  // ===== HANDLER: XEM CHI TIẾT TREATMENT =====
+  // Hàm xử lý khi click để xem chi tiết treatment của appointment
   const handleDetail = async (record) => {
     try {
       if (!record.recordId) {
         message.error("Không tìm thấy recordId cho lịch hẹn này!");
         return;
       }
+      
       // Lấy chi tiết treatment record theo recordId
       const detailRes = await treatmentService.getTreatmentRecordById(
         record.recordId
@@ -111,15 +130,17 @@ const TodayExaminations = () => {
         message.error("Không lấy được chi tiết hồ sơ điều trị!");
         return;
       }
+      
+      // Navigate sang trang treatment stages view với state data
       navigate("/manager/treatment-stages-view", {
         state: {
-          patientInfo: {
+          patientInfo: {                                         // Thông tin patient
             customerId: detail.customerId,
             customerName: detail.customerName,
           },
-          treatmentData: detail,
-          sourcePage: "today-examinations",
-          appointmentData: record,
+          treatmentData: detail,                                 // Dữ liệu treatment chi tiết
+          sourcePage: "today-examinations",                     // Source page để biết đến từ đâu
+          appointmentData: record,                               // Dữ liệu appointment
         },
       });
     } catch (error) {
@@ -127,6 +148,8 @@ const TodayExaminations = () => {
     }
   };
 
+  // ===== TABLE COLUMNS CONFIGURATION =====
+  // Cấu hình các columns cho bảng danh sách appointments
   const columns = [
     {
       title: "Bệnh nhân",
@@ -134,16 +157,17 @@ const TodayExaminations = () => {
       key: "customerName",
       render: (name, record) => (
         <div style={{ display: "flex", alignItems: "center" }}>
+          {/* Avatar bệnh nhân */}
           <Avatar
             size={40}
             icon={<UserOutlined />}
             style={{ marginRight: 12, backgroundColor: "#1890ff" }}
           />
           <div>
-            <Text strong>{name}</Text>
+            <Text strong>{name}</Text>                           {/* Tên bệnh nhân */}
             <br />
             <Text type="secondary" style={{ fontSize: "12px" }}>
-              {record.customerEmail}
+              {record.customerEmail}                             {/* Email bệnh nhân */}
             </Text>
           </div>
         </div>
@@ -156,7 +180,7 @@ const TodayExaminations = () => {
       render: (name) => (
         <Space>
           <Avatar size="small" icon={<UserOutlined />} />
-          <Text>{name}</Text>
+          <Text>{name}</Text>                                    {/* Tên bác sĩ */}
         </Space>
       ),
     },
@@ -164,7 +188,7 @@ const TodayExaminations = () => {
       title: "Ngày hẹn",
       dataIndex: "appointmentDate",
       key: "appointmentDate",
-      render: (date) => dayjs(date).format("DD/MM/YYYY"),
+      render: (date) => dayjs(date).format("DD/MM/YYYY"),        // Format ngày hiển thị
     },
     {
       title: "Ca khám",
@@ -184,14 +208,18 @@ const TodayExaminations = () => {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      render: getStatusTag,
+      render: getStatusTag,                                      // Sử dụng utility function
     },
   ];
 
+  // ===== RENDER MAIN COMPONENT =====
   return (
     <div>
+      {/* ===== FILTER CONTROLS ===== */}
+      {/* Card chứa search và filter controls */}
       <Card style={{ marginBottom: 16 }}>
         <Row gutter={16} align="middle">
+          {/* Search input */}
           <Col span={6}>
             <Search
               placeholder="Tìm kiếm bệnh nhân, bác sĩ..."
@@ -201,6 +229,8 @@ const TodayExaminations = () => {
               allowClear
             />
           </Col>
+          
+          {/* Status filter dropdown */}
           <Col span={4}>
             <Select
               value={statusFilter}
@@ -217,16 +247,20 @@ const TodayExaminations = () => {
           </Col>
         </Row>
       </Card>
+
+      {/* ===== APPOINTMENTS TABLE ===== */}
+      {/* Bảng hiển thị danh sách appointments hôm nay với loading */}
       <Spin spinning={loading} tip="Đang tải...">
         <Table
-          columns={columns}
-          dataSource={filteredData}
-          rowKey="id"
-          pagination={{ pageSize: 10 }}
+          columns={columns}                                      // Columns configuration
+          dataSource={filteredData}                             // Data đã được filter
+          rowKey="id"                                            // Unique key cho mỗi row
+          pagination={{ pageSize: 10 }}                        // Pagination với 10 items/page
         />
       </Spin>
     </div>
   );
 };
 
+// ===== EXPORT COMPONENT =====
 export default TodayExaminations;

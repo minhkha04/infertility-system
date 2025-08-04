@@ -38,9 +38,15 @@ const LoginForm = ({ switchToRegister }) => {
 
             // thực hiên thông báo chuyển hướng người dùng
             showNotification("Đăng nhập thành công", "success");
-            setTimeout(() => {
-              navigate("/");
-            }, 1000);
+            const redirectUrl = localStorage.getItem("redirectAfterLogin");
+            if (redirectUrl) {
+              localStorage.removeItem("redirectAfterLogin"); // Xóa để tránh redirect lặp
+              navigate(redirectUrl, { replace: true });
+            } else {
+              setTimeout(() => {
+                navigate("/");
+              }, 1000);
+            }
           })
           .catch((error) => {
             if (error.response.data.code == 1014) {
@@ -49,8 +55,9 @@ const LoginForm = ({ switchToRegister }) => {
                 "Nếu bạn muốn xác nhận otp lại, hãy nhấn vào đây",
                 "warning"
               );
+            } else {
+              showNotification(error.response.data.message, "error"); // coi lai respone tu be tra ve
             }
-            showNotification(error.response.data.message, "error"); // coi lai respone tu be tra ve
           });
       },
       validationSchema: yup.object({
@@ -88,7 +95,7 @@ const LoginForm = ({ switchToRegister }) => {
           </div>
 
           <h2 className="text-2xl text-orange-500 font-bold">
-            Chào mừng đến đây
+            Chào mừng đến với chúng tôi
           </h2>
           <p className="text-sm text-gray-500">
             Vui lòng đăng nhập để tiếp tục
@@ -144,7 +151,7 @@ const LoginForm = ({ switchToRegister }) => {
 
           <button
             type="submit"
-            className="w-full py-2 bg-orange-600 hover:brightness-110 hover:scale-[1.02] transition-all duration-200 ease-in-out rounded-md text-white font-semibold"
+            className="w-full py-1 bg-orange-600 hover:brightness-110 hover:scale-[1.02] transition-all duration-200 ease-in-out rounded-md text-white font-semibold"
           >
             Đăng nhập
           </button>
@@ -169,8 +176,8 @@ const LoginForm = ({ switchToRegister }) => {
         <GoogleLogin />
 
         {isResend && (
-          <Link to={path.verify}>
-            <div className="mt-2 px-4 py-2 text-center text-white text-sm font-semibold bg-orange-500 rounded-lg hover:bg-orange-600 transition duration-200">
+          <Link to={path.resendOtp}>
+            <div className="px-4 py-1 text-center text-white text-sm font-semibold bg-orange-500 rounded-lg hover:bg-orange-600 transition duration-200">
               Nếu bạn muốn xác nhận OTP lại, hãy nhấn vào đây
             </div>
           </Link>

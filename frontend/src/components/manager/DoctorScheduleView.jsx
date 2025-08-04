@@ -10,11 +10,8 @@ import {
   Col,
   Avatar,
   Statistic,
-  Badge,
-  Space,
   Button,
   Tooltip,
-  Spin,
   Modal,
   Progress,
   notification,
@@ -27,50 +24,56 @@ import {
   TeamOutlined,
   CalendarOutlined,
   PhoneOutlined,
-  MailOutlined,
-  EnvironmentOutlined,
   CalendarOutlined as CalendarIcon,
   StarOutlined,
   TrophyOutlined,
   HeartOutlined,
 } from "@ant-design/icons";
-import dayjs from "dayjs";
 import { treatmentService } from "../../service/treatment.service";
 
-const { Title, Text } = Typography;
 const { Option } = Select;
 const { Search } = Input;
 
 const DoctorScheduleView = () => {
-  const [loading, setLoading] = useState(true);
-  const [doctorSchedules, setDoctorSchedules] = useState([]);
-  const [filteredData, setFilteredData] = useState([]);
-  const [shiftFilter, setShiftFilter] = useState("all");
-  const [searchText, setSearchText] = useState("");
-  const [selectedDoctor, setSelectedDoctor] = useState(null);
-  const [doctorModalVisible, setDoctorModalVisible] = useState(false);
-  const [doctorDetails, setDoctorDetails] = useState(null);
-  const [loadingDoctorDetails, setLoadingDoctorDetails] = useState(false);
+  // ===== STATE MANAGEMENT =====
+  // State quản lý loading và data
+  const [loading, setLoading] = useState(true);                              // Loading state chính
+  const [doctorSchedules, setDoctorSchedules] = useState([]);                // Danh sách lịch làm việc doctors
+  const [filteredData, setFilteredData] = useState([]);                      // Data đã được filter
+  
+  // State quản lý filters
+  const [shiftFilter, setShiftFilter] = useState("all");                     // Filter theo ca làm việc
+  const [searchText, setSearchText] = useState("");                          // Text tìm kiếm
+  
+  // State quản lý modal
+  const [selectedDoctor, setSelectedDoctor] = useState(null);                // Doctor được chọn trong modal
+  const [doctorModalVisible, setDoctorModalVisible] = useState(false);       // Hiển thị modal chi tiết doctor
+  
+  // State quản lý statistics
   const [workStats, setWorkStats] = useState({
-    totalDoctorsToday: 0,
-    totalPatientsToday: 0,
-    completedPatientsToday: 0,
+    totalDoctorsToday: 0,           // Tổng số bác sĩ hôm nay
+    totalPatientsToday: 0,          // Tổng số bệnh nhân hôm nay
+    completedPatientsToday: 0,      // Số bệnh nhân đã khám hôm nay
   });
 
+  // ===== USEEFFECT: INITIAL DATA LOAD =====
+  // useEffect này chạy khi component mount để load data
   useEffect(() => {
     fetchManagerDashboardData();
   }, []);
 
+  // ===== API FUNCTION: FETCH DASHBOARD DATA =====
+  // Hàm lấy dữ liệu dashboard bao gồm statistics và danh sách doctors
   const fetchManagerDashboardData = async () => {
     setLoading(true);
     try {
       // Fetch statistics using service
       const statsRes =
-        await treatmentService.getManagerWorkScheduleStatistics();
+        await treatmentService.getManagerWorkScheduleStatistics();          // Gọi API lấy statistics
       if (statsRes?.data?.result) {
-        setWorkStats(statsRes.data.result);
+        setWorkStats(statsRes.data.result);                                 // Set statistics nếu có data
       } else {
-        setWorkStats({
+        setWorkStats({                                                      // Fallback default statistics
           totalDoctorsToday: 0,
           totalPatientsToday: 0,
           completedPatientsToday: 0,
@@ -78,15 +81,16 @@ const DoctorScheduleView = () => {
       }
 
       // Fetch today's doctors using service
-      const doctorsRes = await treatmentService.getManagerDoctorsToday();
+      const doctorsRes = await treatmentService.getManagerDoctorsToday();   // Gọi API lấy danh sách doctors hôm nay
       if (doctorsRes?.data?.result) {
-        setDoctorSchedules(doctorsRes.data.result);
-        setFilteredData(doctorsRes.data.result);
+        setDoctorSchedules(doctorsRes.data.result);                         // Set raw doctor schedules
+        setFilteredData(doctorsRes.data.result);                           // Set filtered data
       } else {
-        setDoctorSchedules([]);
+        setDoctorSchedules([]);                                             // Fallback empty array
         setFilteredData([]);
       }
     } catch (error) {
+      // Error handling - set default values và hiển thị notification
       setWorkStats({
         totalDoctorsToday: 0,
         totalPatientsToday: 0,
@@ -105,26 +109,36 @@ const DoctorScheduleView = () => {
     }
   };
 
-  // No doctor details API in new spec, so just show modal with available info
+  // ===== MODAL HANDLER =====
+  // Hàm hiển thị modal chi tiết doctor (No API for details, just show available info)
   const showDoctorDetails = (doctor) => {
-    setSelectedDoctor(doctor);
-    setDoctorModalVisible(true);
+    setSelectedDoctor(doctor);                                              // Set doctor được chọn
+    setDoctorModalVisible(true);                                            // Mở modal
   };
 
-  // Filter schedules
+  // ===== USEEFFECT: AUTO FILTER =====
+  // useEffect này chạy khi filters thay đổi để auto filter data
   useEffect(() => {
     let filtered = doctorSchedules;
+    
+    // Filter theo ca làm việc
     if (shiftFilter !== "all") {
       filtered = filtered.filter((item) => item.shift === shiftFilter);
     }
+    
+    // Filter theo tên bác sĩ
     if (searchText) {
       filtered = filtered.filter((item) =>
         item.doctorName.toLowerCase().includes(searchText.toLowerCase())
       );
     }
-    setFilteredData(filtered);
+    
+    setFilteredData(filtered);                                              // Update filtered data
   }, [shiftFilter, searchText, doctorSchedules]);
 
+  // ===== UTILITY FUNCTIONS =====
+  
+  // Hàm tạo shift tag với màu sắc tương ứng
   const getShiftTag = (shift) => {
     if (shift === "FULL_DAY")
       return (
@@ -147,13 +161,16 @@ const DoctorScheduleView = () => {
     return <Tag>{shift}</Tag>;
   };
 
+  // Hàm lấy màu progress bar dựa trên tỉ lệ hoàn thành
   const getProgressColor = (completed, total) => {
     const percentage = total > 0 ? (completed / total) * 100 : 0;
-    if (percentage >= 80) return "#52c41a";
-    if (percentage >= 50) return "#faad14";
-    return "#ff4d4f";
+    if (percentage >= 80) return "#52c41a";                                 // Xanh lá >= 80%
+    if (percentage >= 50) return "#faad14";                                 // Vàng >= 50%
+    return "#ff4d4f";                                                       // Đỏ < 50%
   };
 
+  // ===== TABLE COLUMNS CONFIGURATION =====
+  // Cấu hình các columns cho bảng doctor schedules
   const columns = [
     {
       title: "Bác sĩ",
@@ -162,7 +179,7 @@ const DoctorScheduleView = () => {
       render: (_, record) => (
         <div
           className="flex items-center cursor-pointer hover:bg-blue-50 p-3 rounded-lg transition-all duration-200"
-          onClick={() => showDoctorDetails(record)}
+          onClick={() => showDoctorDetails(record)}                          // Click để xem chi tiết
         >
           <Avatar
             size={48}
@@ -172,11 +189,11 @@ const DoctorScheduleView = () => {
               backgroundColor: "#1890ff",
               border: "3px solid #e6f7ff",
             }}
-            src={record.avatarUrl}
+            src={record.avatarUrl}                                           // Avatar URL nếu có
           />
           <div>
             <div className="font-bold text-lg text-gray-800">
-              {record.doctorName}
+              {record.doctorName}                                            {/* Tên bác sĩ */}
             </div>
             <div className="text-sm text-gray-500 flex items-center">
               <StarOutlined style={{ color: "#faad14", marginRight: 4 }} />
@@ -192,13 +209,13 @@ const DoctorScheduleView = () => {
       align: "center",
       render: (_, record) => (
         <div className="text-center">
-          {getShiftTag(record.shift)}
+          {getShiftTag(record.shift)}                                        {/* Shift tag */}
           <div className="mt-2 text-xs text-gray-500">
             {record.shift === "FULL_DAY"
               ? "08:00 - 17:00"
               : record.shift === "MORNING"
               ? "08:00 - 12:00"
-              : "13:00 - 17:00"}
+              : "13:00 - 17:00"}                                             {/* Giờ làm việc */}
           </div>
         </div>
       ),
@@ -210,7 +227,7 @@ const DoctorScheduleView = () => {
       render: (_, record) => (
         <div className="text-center">
           <div className="font-bold text-lg">
-            {record.completedAppointments}/{record.totalAppointments}
+            {record.completedAppointments}/{record.totalAppointments}        {/* Số đã khám/tổng */}
           </div>
           <div className="text-sm text-gray-500 mb-2">Đã khám/Tổng</div>
           <Progress
@@ -237,6 +254,7 @@ const DoctorScheduleView = () => {
       dataIndex: "phoneNumber",
       key: "phoneNumber",
       align: "center",
+      // Render contact info với phone call button
       render: (phone) => (
         <div
           style={{
@@ -266,14 +284,17 @@ const DoctorScheduleView = () => {
     },
   ];
 
+  // ===== RENDER MAIN COMPONENT =====
   return (
     <div
       style={{
         minHeight: "30vh",
       }}
     >
-      {/* Statistics */}
+      {/* ===== STATISTICS SECTION ===== */}
+      {/* 3 cards hiển thị statistics tổng quan */}
       <Row gutter={24} style={{ marginBottom: 5 }}>
+        {/* Tổng bác sĩ hôm nay */}
         <Col span={8}>
           <Card
             style={{
@@ -304,6 +325,8 @@ const DoctorScheduleView = () => {
             />
           </Card>
         </Col>
+        
+        {/* Bệnh nhân đã khám */}
         <Col span={8}>
           <Card
             style={{
@@ -336,6 +359,8 @@ const DoctorScheduleView = () => {
             />
           </Card>
         </Col>
+        
+        {/* Tổng bệnh nhân hôm nay */}
         <Col span={8}>
           <Card
             style={{
@@ -368,7 +393,8 @@ const DoctorScheduleView = () => {
         </Col>
       </Row>
 
-      {/* Filters */}
+      {/* ===== FILTERS SECTION ===== */}
+      {/* Card chứa các filter controls */}
       <Card
         className="my-2"
         style={{
@@ -379,6 +405,7 @@ const DoctorScheduleView = () => {
         }}
       >
         <Row gutter={16} align="middle">
+          {/* Shift filter */}
           <Col span={8}>
             <Select
               value={shiftFilter}
@@ -393,6 +420,8 @@ const DoctorScheduleView = () => {
               <Option value="FULL_DAY">Cả ngày</Option>
             </Select>
           </Col>
+          
+          {/* Search input */}
           <Col span={12}>
             <Search
               placeholder="Tìm kiếm bác sĩ..."
@@ -402,6 +431,8 @@ const DoctorScheduleView = () => {
               allowClear
             />
           </Col>
+          
+          {/* Refresh button */}
           <Col span={4} className="text-right">
             <Button
               type="primary"
@@ -420,7 +451,8 @@ const DoctorScheduleView = () => {
         </Row>
       </Card>
 
-      {/* Schedule Table */}
+      {/* ===== SCHEDULE TABLE SECTION ===== */}
+      {/* Bảng hiển thị lịch làm việc của các bác sĩ */}
       <Card
         className="shadow-lg"
         style={{
@@ -431,15 +463,16 @@ const DoctorScheduleView = () => {
         }}
       >
         <Table
-          columns={columns}
-          dataSource={filteredData}
-          pagination={false}
-          scroll={{ x: 1200 }}
-          loading={loading}
+          columns={columns}                                                  // Columns configuration
+          dataSource={filteredData}                                         // Data đã được filter
+          pagination={false}                                                 // Disable pagination
+          scroll={{ x: 1200 }}                                              // Horizontal scroll
+          loading={loading}                                                  // Loading state
           locale={{
             emptyText: loading ? (
               ""
             ) : (
+              // Custom empty state
               <div className="text-center py-8">
                 <HeartOutlined
                   style={{
@@ -460,6 +493,8 @@ const DoctorScheduleView = () => {
           rowClassName={() => "doctor-table-row"}
           style={{ verticalAlign: "middle" }}
         />
+        
+        {/* Custom CSS cho table styling */}
         <style>{`
           .doctor-table-row .ant-table-cell {
             vertical-align: middle !important;
@@ -469,7 +504,8 @@ const DoctorScheduleView = () => {
         `}</style>
       </Card>
 
-      {/* Doctor Details Modal */}
+      {/* ===== DOCTOR DETAILS MODAL ===== */}
+      {/* Modal hiển thị chi tiết thông tin bác sĩ */}
       <Modal
         title={
           <div className="flex items-center">
@@ -483,12 +519,14 @@ const DoctorScheduleView = () => {
         }
         open={doctorModalVisible}
         onCancel={() => setDoctorModalVisible(false)}
-        footer={null}
+        footer={null}                                                        // Custom footer
         width={600}
         style={{ borderRadius: 16 }}
       >
         {selectedDoctor ? (
           <div className="space-y-6">
+            {/* ===== DOCTOR HEADER INFO ===== */}
+            {/* Phần header với avatar và tên bác sĩ */}
             <div className="flex items-center space-x-6">
               <Avatar
                 size={80}
@@ -513,9 +551,12 @@ const DoctorScheduleView = () => {
 
             <Divider />
 
+            {/* ===== DOCTOR DETAILS GRID ===== */}
+            {/* Grid hiển thị thông tin chi tiết */}
             <Row gutter={24}>
               <Col span={12}>
                 <div className="space-y-4">
+                  {/* Số điện thoại */}
                   <div className="flex items-center p-3 bg-blue-50 rounded-lg">
                     <PhoneOutlined className="mr-3 text-blue-500 text-lg" />
                     <div>
@@ -528,6 +569,7 @@ const DoctorScheduleView = () => {
                     </div>
                   </div>
 
+                  {/* Ca làm việc */}
                   <div className="flex items-center p-3 bg-green-50 rounded-lg">
                     <CalendarOutlined className="mr-3 text-green-500 text-lg" />
                     <div>
@@ -542,6 +584,7 @@ const DoctorScheduleView = () => {
 
               <Col span={12}>
                 <div className="space-y-4">
+                  {/* Tổng lịch hẹn */}
                   <div className="flex items-center p-3 bg-orange-50 rounded-lg">
                     <TrophyOutlined className="mr-3 text-orange-500 text-lg" />
                     <div>
@@ -554,6 +597,7 @@ const DoctorScheduleView = () => {
                     </div>
                   </div>
 
+                  {/* Đã khám */}
                   <div className="flex items-center p-3 bg-purple-50 rounded-lg">
                     <CheckCircleOutlined className="mr-3 text-purple-500 text-lg" />
                     <div>
@@ -568,6 +612,7 @@ const DoctorScheduleView = () => {
             </Row>
           </div>
         ) : (
+          // Empty state khi không có selectedDoctor
           <div className="text-center py-8">
             <UserOutlined
               style={{ fontSize: "3rem", color: "#d9d9d9", marginBottom: 16 }}
@@ -580,4 +625,5 @@ const DoctorScheduleView = () => {
   );
 };
 
+// ===== EXPORT COMPONENT =====
 export default DoctorScheduleView;

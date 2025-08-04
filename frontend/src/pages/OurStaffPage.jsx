@@ -17,16 +17,18 @@ import { doctorService } from "../service/doctor.service";
 import StarRatings from "react-star-ratings";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { path } from "../common/path";
+import banner1 from "../../public/images/features/09ccadac-cfb8-4b09-9880-e62e779e02c3.png";
 
-const { Title, Paragraph, Text } = Typography;
-
+const { Title, Paragraph } = Typography;
 const OurStaffPage = () => {
+  const [doctorExpand, setDoctorExpand] = useState([]);
+
   const navigate = useNavigate();
 
   // Fetch doctors data from API
   const fetchDoctor = async ({ pageParam = 0 }) => {
     const res = await doctorService.getDoctorForCard(pageParam, 3);
-    console.log(res);
+    setDoctorExpand(res.data.result.content);
     return res.data.result;
   };
 
@@ -44,6 +46,11 @@ const OurStaffPage = () => {
       // Kiểm tra xem còn trang tiếp theo không dựa trên totalPages
       return lastPage.page < lastPage.totalPages - 1 ? pages.length : undefined;
     },
+
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchInterval: false,
+    staleTime: Infinity, // hoặc vài phút nếu muốn
   });
 
   const doctors = data?.pages.flatMap((page) => page.content) || [];
@@ -55,11 +62,11 @@ const OurStaffPage = () => {
     <div className="w-full min-h-screen bg-orange-50">
       <UserHeader />
       {/* Hero Banner */}
-      <div className="relative h-[400px] w-full overflow-hidden mb-0">
+      <div className="relative h-[660px] w-full overflow-hidden mb-0">
         <img
-          src="/images/features/pc7.jpg"
+          src={banner1}
           alt="Băng rôn Blog"
-          className="w-full h-full object-cover object-top"
+          className="w-full h-full bg-cover bg-top"
         />
         <div className="absolute inset-0 bg-black opacity-40" />
         <div className="absolute inset-0 flex items-center justify-center">
@@ -141,6 +148,7 @@ const OurStaffPage = () => {
               <Button
                 onClick={() => fetchNextPage()}
                 loading={isFetchingNextPage}
+                // disabled={doctorExpand.length === 0}
               >
                 {isFetchingNextPage ? "Đang tải..." : "Xem thêm"}
               </Button>

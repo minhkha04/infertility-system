@@ -12,7 +12,7 @@ dayjs.locale("vi");
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <Provider store={store}>
-    <BrowserRouter>
+    <BrowserRouter basename="/projects/infertility-system">
       <App />
     </BrowserRouter>
   </Provider>

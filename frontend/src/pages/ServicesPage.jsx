@@ -6,6 +6,7 @@ import UserHeader from "../components/UserHeader";
 import UserFooter from "../components/UserFooter";
 import { serviceService } from "../service/service.service";
 import RecommendationSection from "../components/RecommendationSection";
+import banner1 from "../../public/images/features/pc4.jpg";
 
 const { Title, Text } = Typography;
 
@@ -54,9 +55,9 @@ const ServicesPage = () => {
       <UserHeader />
 
       {/* Hero Banner */}
-      <div className="relative h-[400px] w-full overflow-hidden mb-0">
+      <div className="relative h-[660px] w-full overflow-hidden mb-0">
         <img
-          src="/images/features/pc4.jpg"
+          src={banner1}
           alt="Băng rôn Dịch vụ"
           className="w-full h-full object-cover"
         />

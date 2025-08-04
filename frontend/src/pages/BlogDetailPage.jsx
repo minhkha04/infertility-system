@@ -44,7 +44,7 @@ const BlogDetailPage = () => {
       try {
         setLoading(true);
         setError(null);
-        const response = await blogService.getBlogById(blogSlug); // Use blogSlug as blogId
+        const response = await blogService.getBlogPublicId(blogSlug); // Use blogSlug as blogId
         if (response.data && response.data.result) {
           setBlogPost(response.data.result);
           // For related posts, you might need another API call or backend logic to fetch them.
@@ -118,16 +118,15 @@ const BlogDetailPage = () => {
             <Col xs={24} lg={16}>
               {/* Author Info */}
               <div className="flex items-center mb-8">
-                <Avatar
-                  src={blogPost.authorImage || "/images/default-avatar.jpg"}
-                  size={64}
-                  icon={<UserOutlined />}
-                  className="mr-4"
-                />
                 <div>
                   <Text strong className="block text-lg">
-                    {blogPost.authorName}
+                    Tác giả: {blogPost.authorName}
                   </Text>
+                  <Text strong className="block font-bold text-lg">
+                    Nguồn tham khảo:{" "}
+                    {blogPost.sourceReference || "Không có tham khảo nguồn"}
+                  </Text>
+
                   <Text type="secondary" className="flex items-center">
                     <CalendarOutlined className="mr-2" />{" "}
                     {dayjs(blogPost.createdAt).format("DD/MM/YYYY")}

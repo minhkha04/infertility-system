@@ -2,16 +2,6 @@ import { http } from "./config";
 import { getLocgetlStorage } from "../utils/util";
 
 export const serviceService = {
-  // Lấy danh sách tất cả dịch vụ
-  getAllServices: async () => {
-    try {
-      const response = await http.get("treatment-service");
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  },
-  
   // Lấy danh sách dịch vụ chưa bị xóa
   getAllNonRemovedServices: async () => {
     try {
@@ -21,7 +11,7 @@ export const serviceService = {
       throw error;
     }
   },
-  
+
   // Lấy chi tiết dịch vụ theo ID
   getServiceById: async (serviceId) => {
     try {
@@ -31,7 +21,7 @@ export const serviceService = {
       throw error;
     }
   },
-  
+
   // Lấy danh sách loại điều trị
   getAllTreatmentTypes: async () => {
     try {
@@ -41,7 +31,7 @@ export const serviceService = {
       throw error;
     }
   },
-  
+
   // Tìm loại điều trị theo tên
   getTreatmentTypeByName: async (name) => {
     try {
@@ -51,7 +41,7 @@ export const serviceService = {
       throw error;
     }
   },
-  
+
   // Lấy danh sách các giai đoạn điều trị
   getAllTreatmentStages: async () => {
     try {
@@ -61,11 +51,13 @@ export const serviceService = {
       throw error;
     }
   },
-  
+
   // Lấy giai đoạn điều trị theo loại
   getTreatmentStagesByTypeId: async (typeId) => {
     try {
-      const response = await http.get(`treatment-stages/find-by-type/${typeId}`);
+      const response = await http.get(
+        `treatment-stages/find-by-type/${typeId}`
+      );
       return response;
     } catch (error) {
       throw error;
@@ -78,8 +70,8 @@ export const serviceService = {
       const token = getLocgetlStorage("token");
       const response = await http.post("treatment-service", data, {
         headers: {
-          Authorization: `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
       return response;
     } catch (error) {
@@ -93,8 +85,8 @@ export const serviceService = {
       const token = getLocgetlStorage("token");
       const response = await http.put(`treatment-service/${serviceId}`, data, {
         headers: {
-          Authorization: `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
       return response;
     } catch (error) {
@@ -108,8 +100,8 @@ export const serviceService = {
       const token = getLocgetlStorage("token");
       const response = await http.delete(`treatment-service/${serviceId}`, {
         headers: {
-          Authorization: `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
       return response;
     } catch (error) {
@@ -118,11 +110,17 @@ export const serviceService = {
   },
 
   // Lấy danh sách dịch vụ public (API mới)
-  getPublicServices: async ({ page = 0, size = 10, name = '' } = {}) => {
+  getPublicServices: async ({ page = 0, size = 10, name = "" } = {}) => {
     try {
       const url = "v1/public/services";
       const params = { page, size, name };
-      const response = await http.get(url, { params });
+      const response = await http.get(
+        url,
+        { params },
+        {
+          skipAuth: true,
+        }
+      );
       return response;
     } catch (error) {
       throw error;
@@ -133,10 +131,12 @@ export const serviceService = {
   getPublicServiceById: async (id) => {
     try {
       const url = `v1/public/services/${id}`;
-      const response = await http.get(url);
+      const response = await http.get(url, {
+        skipAuth: true,
+      });
       return response;
     } catch (error) {
       throw error;
     }
-  }
-}; 
+  },
+};

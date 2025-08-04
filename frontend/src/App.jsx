@@ -1,13 +1,13 @@
-import React, { useEffect } from "react";
+import React from "react";
 import UseRoutesCustom from "./hooks/UseRoutesCustom";
 import { Bounce, ToastContainer, toast } from "react-toastify";
-import { Content } from "antd/es/layout/layout";
 // 1.Khởi tạo 1 context
 export const NotificationContext = React.createContext();
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 function App() {
   const routes = UseRoutesCustom();
   const queryClient = new QueryClient();
+
   const showNotification = (Content, type) => {
     toast[type](Content, {
       position: "top-right",

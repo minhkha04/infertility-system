@@ -140,7 +140,7 @@ const DoctorDashboard = () => {
         collapsed={collapsed}
         onCollapse={setCollapsed}
         theme="light"
-        width={280}
+        width={250}
       >
         <DoctorSidebar
           selectedMenuItem={selectedMenuItem}
@@ -152,7 +152,7 @@ const DoctorDashboard = () => {
       <Layout>
         <Header
           style={{
-            background: "#fff",
+            background: "white",
             padding: "0 24px",
             boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
             display: "flex",
@@ -167,9 +167,9 @@ const DoctorDashboard = () => {
 
         <Content
           style={{
-            margin: "24px",
-            background: "#f0f2f5",
+            background: "white",
             minHeight: "calc(100vh - 112px)",
+            padding: "0 24px",
           }}
         >
           <Routes>

@@ -35,11 +35,17 @@ const RegisterForm = ({ switchToLogin }) => {
             setLocalStorage("user", res.data.result);
             dispatch(getInfoUser(res.data.result));
 
-            showNotification("Register successful", "success");
-            setTimeout(() => {
-              navigate("/verify-otp");
-              window.location.reload();
-            }, 1000);
+            showNotification("Đăng kí thành công", "success");
+            const redirectUrl = localStorage.getItem("redirectAfterLogin");
+            if (redirectUrl) {
+              localStorage.removeItem("redirectAfterLogin"); // Xóa để tránh redirect lặp
+              navigate(redirectUrl, { replace: true });
+            } else {
+              setTimeout(() => {
+                navigate("/verify-otp");
+                window.location.reload();
+              }, 1000);
+            }
           })
           .catch((errors) => {
             showNotification(errors.response.data.message, "error");
@@ -164,7 +170,7 @@ const RegisterForm = ({ switchToLogin }) => {
           <div>
             <label
               htmlFor="gender"
-              className="block mb-2 text-sm font-medium text-gray-900"
+              className="block text-sm font-medium text-gray-900"
             >
               Giới tính
             </label>
@@ -174,7 +180,7 @@ const RegisterForm = ({ switchToLogin }) => {
               value={values.gender}
               onChange={handleChange}
               onBlur={handleBlur}
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 focus:ring-blue-500 focus:border-blue-500"
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">-- Chọn giới tính --</option>
               <option value="male">Nam</option>

@@ -35,6 +35,10 @@ export const managerService = {
     return http.get(`v1/treatment-stages/${serviceId}/find-by-service`);
   },
 
+  updateTreatmentStage(id, data) {
+    return http.put(`v1/treatment-stages/${id}`, data);
+  },
+
   getTreatmentServiceDetail: (id) => {
     return http.get(`v1/treatment-services/${id}`);
   },

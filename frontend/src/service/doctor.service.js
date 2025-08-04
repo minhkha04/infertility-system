@@ -15,6 +15,7 @@ export const doctorService = {
           page,
           size,
         },
+        skipAuth: true,
       });
 
       // Log để debug
@@ -29,7 +30,9 @@ export const doctorService = {
   // Lấy thông tin chi tiết một bác sĩ theo ID - UPDATED TO V1
   getDoctorById: async (id) => {
     try {
-      const response = await http.get(`v1/public/doctors/${id}`);
+      const response = await http.get(`v1/public/doctors/${id}`, {
+        skipAuth: true,
+      });
       return response;
     } catch (error) {
       throw error;
@@ -47,6 +50,7 @@ export const doctorService = {
       params: {
         isPublic,
       },
+      skipAuth: true,
     });
   },
 
@@ -57,6 +61,7 @@ export const doctorService = {
         page,
         size,
       },
+      skipAuth: true,
     });
   },
 
@@ -78,6 +83,7 @@ export const doctorService = {
         page,
         size,
       },
+      skipAuth: true,
     });
   },
 
@@ -197,7 +203,7 @@ export const doctorService = {
   },
 
   // Lấy appointments hôm nay - API mới
-  getAppointmentsToday: async (page = 0, size = 10) => {
+  getAppointmentsToday: async (page = 0, size = 100) => {
     try {
       // Thử API mới trước
       try {

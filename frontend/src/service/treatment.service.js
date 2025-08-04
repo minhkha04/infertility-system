@@ -1,9 +1,10 @@
 import { http } from "./config";
-import axios from "axios";
 
 export const treatmentService = {
-  getTreatmentRecordsByDoctor: async (doctorId) => {
-    return await http.get(`v1/treatment-records?doctorId=${doctorId}`);
+  getTreatmentRecordsByDoctor: async (doctorId, size = 1000) => {
+    return await http.get(
+      `v1/treatment-records?doctorId=${doctorId}&size=${size}`
+    );
   },
 
   getTreatmentRecordById: async (id) => {
@@ -142,10 +143,11 @@ export const treatmentService = {
     }
   },
 
-  getAppointmentBycustomer: (customerId, page, size) => {
+  getAppointmentBycustomer: (customerId, status, page, size) => {
     return http.get(`v1/appointments`, {
       params: {
         customerId,
+        status,
         page,
         size,
       },
@@ -160,13 +162,13 @@ export const treatmentService = {
     return await http.get(`v1/appointments?doctorId=${doctorId}&date=${date}`);
   },
 
-  updateAppointmentStatus: async (appointmentId, status) => {
+  updateAppointmentStatus: async (appointmentId, status, note) => {
     // Sử dụng format giống như confirmAppointmentChange
     const response = await http.put(
       `v1/appointments/${appointmentId}/status`,
       {
         status: status,
-        note: "Cập nhật trạng thái từ doctor dashboard",
+        note: note,
       },
       {
         headers: {
@@ -176,6 +178,10 @@ export const treatmentService = {
       }
     );
     return response;
+  },
+
+  updateAppointmentStatusCustomer: (appointmentId, data) => {
+    return http.put(`v1/appointments/${appointmentId}/status`, data);
   },
 
   updateTreatmentStep: async (id, data) => {
@@ -233,34 +239,32 @@ export const treatmentService = {
   },
 
   getAppointmentsByStepId: async (stepId) => {
-    return await http.get(`v1/appointments?stepId=${stepId}`);
+    return await http.get(`v1/appointments/get-by-step/${stepId}`);
   },
 
-  updateTreatmentStatus: async (recordId, status) => {
-    // Thử API mới với query params
+  updateTreatmentStatus: async (recordId, status, result) => {
     try {
-      const response = await http.put(
-        `v1/treatment-records/${recordId}/status?status=${status}`,
-        null,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-        }
-      );
-      console.log("✅ API mới với query params thành công:", response);
+      let url = `v1/treatment-records/${recordId}/status?status=${status}`;
+      if (result) url += `&result=${result}`;
+      const response = await http.put(url, null, {
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      });
       return response;
-    } catch (queryError) {
+    } catch (error) {
       console.warn(
-        "❌ API mới với query params cũng không hoạt động:",
-        queryError.response?.data
+        "❌ API updateTreatmentStatus error:",
+        error?.response?.data
       );
+      throw error;
     }
   },
 
   // Gửi yêu cầu đổi lịch hẹn (customer)
   requestChangeAppointment: async (appointmentId, data) => {
+    console.log("first");
     const response = await http.put(
       `v1/appointments/${appointmentId}/customer-change`,
       data,
@@ -325,8 +329,7 @@ export const treatmentService = {
       throw error;
     }
   },
-
-  // Lấy danh sách treatment records - API mới
+  // hàm get của lâm
   getTreatmentRecords: async (params = {}) => {
     try {
       const queryParams = new URLSearchParams();
@@ -348,6 +351,39 @@ export const treatmentService = {
     }
   },
 
+  // Lấy danh sách treatment records - API mới
+  getTreatmentRecordsPagination: async ({
+    customerId,
+    doctorId,
+    page = 0,
+    size = 10,
+  }) => {
+    const queryParams = new URLSearchParams();
+    if (customerId) queryParams.append("customerId", customerId);
+    if (doctorId) queryParams.append("doctorId", doctorId);
+    queryParams.append("page", page);
+    queryParams.append("size", size);
+
+    const url = `v1/treatment-records/dashboard?${queryParams.toString()}`;
+    return await http.get(url);
+  },
+
+  getTreatmentRecordsExpand: async ({
+    customerId,
+    doctorId,
+    page = 0,
+    size = 10,
+  }) => {
+    const params = new URLSearchParams();
+    if (customerId) params.append("customerId", customerId);
+    if (doctorId) params.append("doctorId", doctorId);
+    params.append("page", page);
+    params.append("size", size);
+
+    const url = `v1/treatment-records?${params.toString()}`;
+    return await http.get(url);
+  },
+
   // Cập nhật ngày CD1 - API mới
   updateCd1Date: async (recordId, cd1Date) => {
     try {
@@ -359,13 +395,19 @@ export const treatmentService = {
   },
 
   // Hủy treatment record - API mới
-  cancelTreatmentRecord: async (recordId) => {
+  cancelTreatmentRecord: async (recordId, notes) => {
     try {
       const response = await http.delete(
-        `v1/treatment-records/${recordId}/cancel`
+        `v1/treatment-records/${recordId}/cancel`,
+        {
+          params: { notes },
+        }
       );
       return response;
-    } catch (error) {}
+    } catch (error) {
+      // Throw lại lỗi để phía trên bắt được và show message BE
+      throw error;
+    }
   },
 
   // Lấy chi tiết appointment theo ID - API mới
@@ -521,8 +563,7 @@ export const treatmentService = {
   getDoctorWorkSchedule: async (doctorId, date) => {
     try {
       const response = await http.get(
-        `v1/doctors/${doctorId}/work-schedule?date=${date}`
-      );
+        `v1/doctors/${doctorId}/work-schedule?date=${date}`      );
       return response;
     } catch (error) {
       console.error("Error fetching doctor work schedule:", error);
@@ -638,3 +679,4 @@ export const treatmentService = {
     }
   },
 };
+

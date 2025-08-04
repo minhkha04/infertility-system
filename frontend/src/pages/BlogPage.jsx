@@ -16,12 +16,16 @@ import UserFooter from "../components/UserFooter";
 import { blogService } from "../service/blog.service";
 import dayjs from "dayjs";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import banner1 from "../../public/images/features/pc8.jpg";
 
 const { Title, Paragraph } = Typography;
 
 const BlogPage = () => {
+  const [blogExpand, setBlogExpand] = useState([]);
+
   const fetchBlogs = async ({ pageParam = 0 }) => {
     const res = await blogService.getBlogPublic("", pageParam, 3);
+    setBlogExpand(res.data.result.content);
     return res.data.result;
   };
 
@@ -40,6 +44,10 @@ const BlogPage = () => {
       // Nếu lastPage.last === true thì đã hết data (chuẩn theo Spring pagination)
       return lastPage.last ? undefined : pages.length;
     },
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchInterval: false,
+    staleTime: Infinity, // hoặc vài phút nếu muốn
   });
 
   const blogPosts = data?.pages.flatMap((page) => page.content) || [];
@@ -48,9 +56,9 @@ const BlogPage = () => {
     <div className="min-h-screen bg-orange-50">
       <UserHeader />
       {/* Hero Banner */}
-      <div className="relative h-[400px] w-full overflow-hidden mb-0">
+      <div className="relative h-[660px] w-full overflow-hidden mb-0">
         <img
-          src="/images/features/pc8.jpg"
+          src={banner1}
           alt="Băng rôn Blog"
           className="w-full h-full object-cover"
         />
@@ -221,6 +229,7 @@ const BlogPage = () => {
             <Button
               onClick={() => fetchNextPage()}
               loading={isFetchingNextPage}
+              disabled={blogExpand.length === 0}
             >
               {isFetchingNextPage ? "Đang tải..." : "Xem thêm"}
             </Button>

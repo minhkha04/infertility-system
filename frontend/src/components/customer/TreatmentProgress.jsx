@@ -1,16 +1,13 @@
 import React, { useState, useEffect, useContext } from "react";
 import {
   Card,
-  Steps,
   Row,
   Col,
   Typography,
   Descriptions,
   Tag,
-  Timeline,
   Space,
   Divider,
-  Progress,
   Collapse,
   Spin,
   message,
@@ -22,77 +19,100 @@ import {
   Input,
   Alert,
   Table,
+  Timeline,
 } from "antd";
 import {
-  CheckCircleOutlined,
-  ClockCircleOutlined,
-  HeartOutlined,
   MedicineBoxOutlined,
-  ExperimentOutlined,
   CalendarOutlined,
-  FileTextOutlined,
   UserOutlined,
-  ClockCircleOutlined as ClockIcon,
-  CheckCircleOutlined as CheckIcon,
-  InfoCircleOutlined,
-  AppstoreOutlined,
-  DeploymentUnitOutlined,
+  ClockCircleOutlined,
+  CheckCircleOutlined,
   ExperimentOutlined as TestTubeIcon,
   ArrowLeftOutlined,
   EditOutlined,
   RightOutlined,
+  FileTextOutlined,
+  CloseOutlined,
+  ExclamationCircleOutlined,
+  SwapOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { treatmentService } from "../../service/treatment.service";
 import { authService } from "../../service/auth.service";
 import { useNavigate, useLocation } from "react-router-dom";
-import { path } from "../../common/path";
 import { NotificationContext } from "../../App";
 
-const { Title, Text, Paragraph } = Typography;
-const { Panel } = Collapse;
+const { Title, Text } = Typography;
+const {} = Collapse;
 const { Option } = Select;
 
 const TreatmentProgress = () => {
-  const [loading, setLoading] = useState(true);
-  const [treatmentData, setTreatmentData] = useState(null);
-  const [error, setError] = useState(null);
-  const [selectedPhase, setSelectedPhase] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [changeModalVisible, setChangeModalVisible] = useState(false);
-  const [changeStep, setChangeStep] = useState(null);
-  const [changeAppointment, setChangeAppointment] = useState(null);
-  const [changeForm] = Form.useForm();
-  const [changeLoading, setChangeLoading] = useState(false);
-  const [selectedAppointment, setSelectedAppointment] = useState(null);
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [viewMode, setViewMode] = useState("list");
-  const [treatments, setTreatments] = useState([]);
-  const { showNotification } = useContext(NotificationContext);
+  // ===== KHAI BÁO CÁC STATE CHÍNH =====
+  
+  // State quản lý loading và dữ liệu chính
+  const [loading, setLoading] = useState(true);                    // Trạng thái loading tổng thể
+  const [treatmentData, setTreatmentData] = useState(null);        // Dữ liệu điều trị chi tiết hiện tại
+  const [error, setError] = useState(null);                        // Thông báo lỗi nếu có
+  const [treatments, setTreatments] = useState([]);                // Danh sách tất cả treatments của khách hàng
+  
+  // State quản lý view mode và navigation
+  const [viewMode, setViewMode] = useState("list");               // Chế độ hiển thị: "list" hoặc "detail"
+  const [currentPage, setCurrentPage] = useState(0);              // Trang hiện tại (0-based) cho pagination
+  const [totalPages, setTotalPages] = useState(1);                // Tổng số trang
 
+  // State quản lý modal chi tiết phase
+  const [selectedPhase, setSelectedPhase] = useState(null);       // Phase được chọn để xem chi tiết
+  const [modalOpen, setModalOpen] = useState(false);              // Hiển thị modal chi tiết phase
+
+  // State quản lý modal yêu cầu đổi lịch
+  const [changeModalVisible, setChangeModalVisible] = useState(false);   // Hiển thị modal đổi lịch
+  const [changeStep, setChangeStep] = useState(null);                    // Step được chọn để đổi lịch
+  const [changeAppointment, setChangeAppointment] = useState(null);      // Danh sách appointments của step
+  const [changeForm] = Form.useForm();                                   // Form instance cho đổi lịch
+  const [changeLoading, setChangeLoading] = useState(false);             // Loading khi xử lý đổi lịch
+  const [selectedAppointment, setSelectedAppointment] = useState(null);  // Appointment được chọn để đổi
+
+  // State quản lý modal xem lịch hẹn
+  const [showScheduleModal, setShowScheduleModal] = useState(false);     // Hiển thị modal xem lịch hẹn
+  const [scheduleStep, setScheduleStep] = useState(null);                // Step được chọn để xem lịch
+  const [stepAppointments, setStepAppointments] = useState({});          // Object chứa appointments theo stepId
+  const [showAllAppointments, setShowAllAppointments] = useState(false); // Hiển thị tất cả appointments hay chỉ 3 cái đầu
+
+  // ===== HOOKS VÀ CONTEXT =====
+  const location = useLocation();                                         // Hook lấy thông tin route và state
+  const { showNotification } = useContext(NotificationContext);           // Context hiển thị thông báo
+  
+  // ===== USEEFFECT: KHỞI TẠO VÀ TẢI DỮ LIỆU =====
+  // useEffect này chạy khi component mount để kiểm tra có dữ liệu từ navigation không
   useEffect(() => {
+    // Kiểm tra xem có được navigate từ trang khác với dữ liệu treatment không
     if (location.state?.treatmentRecord && location.state?.treatmentId) {
-      setViewMode("detail");
+      setViewMode("detail");  // Chuyển sang chế độ detail nếu có dữ liệu
     }
 
-    fetchData();
+    fetchData();  // Tải dữ liệu ban đầu
   }, []);
 
-  const fetchData = async () => {
+  // ===== HÀM TẢI DỮ LIỆU CHÍNH =====
+  // Hàm này xử lý cả việc tải danh sách treatments và chi tiết treatment cụ thể
+  const fetchData = async (page = 0) => {
     try {
       setLoading(true);
 
+      // Lấy dữ liệu từ location.state (nếu được navigate từ trang khác)
       const treatmentRecord = location.state?.treatmentRecord;
       const treatmentId = location.state?.treatmentId;
 
+      // ===== XỬ LÝ CHẾ ĐỘ DETAIL - Khi có treatmentId cụ thể =====
       if (treatmentRecord && treatmentId) {
+        // Gọi API lấy chi tiết treatment record với đầy đủ steps
         const detailResponse = await treatmentService.getTreatmentRecordById(
           treatmentId
         );
         const detailData = detailResponse?.data?.result;
 
         if (detailData) {
+          // Tính toán progress dựa trên số steps hoàn thành
           const totalSteps = detailData.treatmentSteps?.length || 0;
           const completedSteps =
             detailData.treatmentSteps?.filter(
@@ -103,34 +123,39 @@ const TreatmentProgress = () => {
               ? Math.round((completedSteps / totalSteps) * 100)
               : 0;
 
+          // Format dữ liệu để hiển thị trong UI
           setTreatmentData({
             id: detailData.id,
-            type: detailData.treatmentServiceName,
-            startDate: detailData.startDate,
-            currentPhase:
+            type: detailData.treatmentServiceName,             // Tên dịch vụ điều trị
+            startDate: detailData.startDate,                   // Ngày bắt đầu
+            currentPhase:                                      // Phase hiện tại (tính từ số steps hoàn thành)
               detailData.treatmentSteps?.findIndex(
                 (step) => step.status === "COMPLETED"
               ) + 1 || 1,
-            doctor: detailData.doctorName,
-            status: detailData.status.toLowerCase(),
-            estimatedCompletion:
+            doctor: detailData.doctorName,                     // Tên bác sĩ
+            status: detailData.status.toLowerCase(),           // Trạng thái (lowercase)
+            estimatedCompletion:                               // Ngày dự kiến hoàn thành
               detailData.endDate ||
               dayjs(detailData.startDate).add(45, "days").format("YYYY-MM-DD"),
-            nextAppointment: null,
-            overallProgress: overallProgress,
-            customerId: detailData.customerId,
+            nextAppointment: null,                             // Lịch hẹn tiếp theo (để null)
+            overallProgress: overallProgress,                  // Phần trăm hoàn thành tổng thể
+            customerId: detailData.customerId,                 // ID khách hàng
+            result: detailData.result,                         // Kết quả điều trị
+            notes: detailData.notes || "",                     // Ghi chú
+            // Chuyển đổi treatmentSteps thành phases để hiển thị
             phases:
               detailData.treatmentSteps?.map((step, index) => ({
                 id: step.id,
-                name: step.name,
-                statusRaw: step.status,
-                status: step.status,
-                displayDate: step.scheduledDate || null,
-                hasDate: !!step.scheduledDate,
-                startDate: step.scheduledDate,
-                endDate: step.actualDate,
-                notes: step.notes || "",
-                appointment: null,
+                name: step.name,                               // Tên bước điều trị
+                statusRaw: step.status,                        // Trạng thái gốc
+                status: step.status,                           // Trạng thái hiển thị
+                displayDate: step.scheduledDate || null,       // Ngày hiển thị
+                hasDate: !!step.scheduledDate,                 // Có ngày không
+                startDate: step.scheduledDate,                 // Ngày bắt đầu
+                endDate: step.actualDate,                      // Ngày kết thúc thực tế
+                notes: step.notes || "",                       // Ghi chú
+                appointment: null,                             // Appointment (để null, sẽ load riêng)
+                // Activities cho từng bước
                 activities: [
                   {
                     name: step.name,
@@ -143,6 +168,9 @@ const TreatmentProgress = () => {
           });
         }
       } else {
+        // ===== XỬ LÝ CHẾ ĐỘ LIST - Tải danh sách tất cả treatments =====
+        
+        // Lấy thông tin user hiện tại
         const userResponse = await authService.getMyInfo();
 
         if (!userResponse?.data?.result?.id) {
@@ -154,30 +182,35 @@ const TreatmentProgress = () => {
 
         const customerId = userResponse.data.result.id;
 
-        // Tạm thời cho phép sử dụng test data
+        // Validation customerId
         if (!customerId) {
           message.error("ID người dùng không hợp lệ. Vui lòng đăng nhập lại.");
           return;
         }
 
-        // Cảnh báo nếu đang sử dụng test data
-        // (Đã xóa thông báo demo, chỉ dùng dữ liệu thật)
-
+        // Gọi API lấy danh sách treatment records với pagination
         const response = await treatmentService.getTreatmentRecords({
           customerId: customerId,
-          page: 0,
-          size: 100,
+          page,                     // Trang hiện tại
+          size: 10,                // Số items per page
         });
-
+        
+        // Cập nhật pagination info
+        setCurrentPage(page);
+        setTotalPages(response.data.result.totalPages);
+        
+        // Xử lý và format dữ liệu treatments
         if (response?.data?.code === 1000 && response.data.result?.content) {
           const treatmentRecords = response.data.result.content
-            .filter((treatment) => treatment.status !== "CANCELLED")
+            .filter((treatment) => treatment.status !== "CANCELLED")  // Loại bỏ treatments đã hủy
             .sort(
+              // Sắp xếp theo ngày tạo mới nhất
               (a, b) =>
                 new Date(b.createdDate || b.startDate) -
                 new Date(a.createdDate || a.startDate)
             );
 
+          // Map dữ liệu để hiển thị trong table
           setTreatments(
             treatmentRecords.map((treatment) => {
               const totalSteps = treatment.totalSteps || 0;
@@ -190,14 +223,16 @@ const TreatmentProgress = () => {
               return {
                 key: treatment.id,
                 id: treatment.id,
-                serviceName: treatment.serviceName,
-                doctorName: treatment.doctorName,
-                startDate: treatment.startDate,
-                status: treatment.status,
-                progress: progress,
-                totalSteps: treatment.totalSteps,
-                completedSteps: treatment.completedSteps,
-                customerId: customerId,
+                serviceName: treatment.serviceName,             // Tên dịch vụ
+                doctorName: treatment.doctorName,               // Tên bác sĩ
+                startDate: treatment.startDate,                 // Ngày bắt đầu
+                status: treatment.status,                       // Trạng thái
+                progress: progress,                             // Phần trăm tiến độ
+                totalSteps: treatment.totalSteps,               // Tổng số bước
+                completedSteps: treatment.completedSteps,       // Số bước đã hoàn thành
+                customerId: customerId,                         // ID khách hàng
+                result: treatment.result,                       // Kết quả điều trị
+                notes: treatment.notes,                         // Ghi chú
               };
             })
           );
@@ -206,6 +241,8 @@ const TreatmentProgress = () => {
     } catch (error) {
       console.error("Error fetching data:", error);
       setError("Có lỗi xảy ra khi tải dữ liệu");
+      
+      // Xử lý các loại lỗi cụ thể
       if (error.response?.status === 401) {
         message.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
       }
@@ -214,30 +251,20 @@ const TreatmentProgress = () => {
     }
   };
 
+  // ===== HÀM XỬ LÝ YÊU CẦU ĐỔI LỊCH HẸN =====
+  // Hàm mở modal đổi lịch hẹn và tải danh sách appointments của step
   const handleOpenChangeModal = async (step) => {
-    setChangeStep(step);
-    setChangeAppointment(null);
-    setChangeModalVisible(true);
-    setChangeLoading(true);
+    setChangeStep(step);                // Set step cần đổi lịch
+    setChangeAppointment(null);         // Reset danh sách appointments
+    setChangeModalVisible(true);        // Hiển thị modal
+    setChangeLoading(true);             // Bắt đầu loading
 
     try {
-      // Lấy appointments thật cho step này
-      if (step.appointment?.id) {
-        // Nếu đã có appointment, sử dụng luôn
-        setChangeAppointment([step.appointment]);
-      } else {
-        // Lấy appointments theo step ID
-        const appointmentsResponse = await treatmentService.getAppointments({
-          stepId: step.id,
-          customerId: treatmentData.customerId,
-          status: "CONFIRMED,PENDING", // Chỉ lấy appointments có thể đổi
-          page: 0,
-          size: 10,
-        });
-
-        const appointments = appointmentsResponse?.data?.result?.content || [];
-        setChangeAppointment(appointments);
-      }
+      // Gọi API lấy appointments thật cho step này
+      const appointmentsResponse =
+        await treatmentService.getAppointmentsByStepId(step.id);
+      const appointments = appointmentsResponse?.data?.result || [];
+      setChangeAppointment(appointments);
     } catch (error) {
       console.error("Lỗi khi mở modal đổi lịch:", error);
       message.error("Không thể mở form đổi lịch hẹn");
@@ -247,6 +274,7 @@ const TreatmentProgress = () => {
     }
   };
 
+  // Hàm submit yêu cầu thay đổi lịch hẹn
   const handleSubmitChange = async () => {
     if (!selectedAppointment) {
       showNotification("Vui lòng chọn lịch hẹn để thay đổi", "error");
@@ -255,8 +283,11 @@ const TreatmentProgress = () => {
 
     try {
       setChangeLoading(true);
+      
+      // Validate form trước khi submit
       const values = await changeForm.validateFields();
 
+      // Debug logging
       console.log("=== CHANGE REQUEST DEBUG ===");
       console.log("Selected appointment:", selectedAppointment);
       console.log(
@@ -278,22 +309,40 @@ const TreatmentProgress = () => {
         notes: values.notes || "",
       });
 
+      // Gọi API gửi yêu cầu thay đổi lịch hẹn
       const response = await treatmentService.requestChangeAppointment(
         selectedAppointment.id,
         {
-          requestedDate: values.requestedDate.format("YYYY-MM-DD"),
-          requestedShift: values.requestedShift,
-          notes: values.notes || "",
+          requestedDate: values.requestedDate.format("YYYY-MM-DD"),  // Ngày mới
+          requestedShift: values.requestedShift,                     // Ca mới
+          notes: values.notes || "",                                 // Lý do đổi lịch
         }
       );
 
       console.log("Change request response:", response);
 
+      // Kiểm tra response thành công
       if (response?.data?.code === 1000 || response?.status === 200) {
         showNotification("Đã gửi yêu cầu thay đổi lịch hẹn!", "success");
+        
+        // Cleanup modal
         setChangeModalVisible(false);
         setSelectedAppointment(null);
         changeForm.resetFields();
+        
+        // Reload lại lịch hẹn cho step vừa đổi
+        try {
+          const res = await treatmentService.getAppointmentsByStepId(
+            changeStep.id
+          );
+          setStepAppointments((prev) => ({
+            ...prev,
+            [changeStep.id]: res?.data?.result || [],
+          }));
+        } catch (error) {
+          setStepAppointments((prev) => ({ ...prev, [changeStep.id]: [] }));
+        }
+        
         // Cập nhật trực tiếp trạng thái appointment trong treatmentData
         setTreatmentData((prev) => {
           if (!prev) return prev;
@@ -306,7 +355,7 @@ const TreatmentProgress = () => {
                 ...phase,
                 appointment: {
                   ...phase.appointment,
-                  status: "PENDING_CHANGE",
+                  status: "PENDING_CHANGE",                      // Trạng thái chờ duyệt
                   requestedDate: values.requestedDate.format("YYYY-MM-DD"),
                   requestedShift: values.requestedShift,
                   notes: values.notes || "",
@@ -334,6 +383,7 @@ const TreatmentProgress = () => {
         message: err?.message,
       });
 
+      // Xử lý các mã lỗi cụ thể
       if (err?.response?.status === 404) {
         showNotification(
           "Không tìm thấy lịch hẹn với ID: " + selectedAppointment.id,
@@ -358,42 +408,57 @@ const TreatmentProgress = () => {
     }
   };
 
+  // ===== HÀM XỬ LÝ EXPAND PHASE =====
+  // Hàm tải appointments khi expand một phase (nếu chưa có)
+  const handleExpandPhase = async (phase) => {
+    if (!stepAppointments[phase.id]) {
+      try {
+        // Gọi API lấy appointments cho phase này
+        const res = await treatmentService.getAppointmentsByStepId(phase.id);
+        setStepAppointments((prev) => ({
+          ...prev,
+          [phase.id]: res?.data?.result || [],
+        }));
+      } catch (error) {
+        setStepAppointments((prev) => ({ ...prev, [phase.id]: [] }));
+      }
+    }
+  };
+
+  // ===== UTILITY FUNCTIONS - HÀM TIỆN ÍCH =====
+  
+  // Hàm lấy Tag component với màu sắc cho trạng thái
   const getStatusTag = (status) => {
     switch ((status || "").toUpperCase()) {
       case "COMPLETED":
         return <Tag color="success">Hoàn thành</Tag>;
       case "INPROGRESS":
-      case "IN_PROGRESS":
-        return <Tag color="#1890ff">Đang thực hiện</Tag>;
+        return <Tag color="processing">Đang điều trị</Tag>;
       case "CONFIRMED":
-        return <Tag color="#1890ff">Đã xác nhận</Tag>;
+        return <Tag color="processing">Đã xác nhận</Tag>;
       case "PENDING":
-      case "PLANNED":
-        return <Tag color="orange">Đang chờ</Tag>;
+      case "PLANED":
+        return <Tag color="warning">Đã đặt lịch</Tag>;
       case "CANCELLED":
         return <Tag color="error">Đã hủy</Tag>;
       case "PENDING_CHANGE":
         return <Tag color="purple">Chờ duyệt đổi lịch</Tag>;
-      case "REJECTED_CHANGE":
-        return <Tag color="red">Từ chối đổi lịch</Tag>;
       case "REJECTED":
-        return <Tag color="red">Đã từ chối</Tag>;
+        return <Tag color="volcano">Từ chối yêu cầu đổi lịch</Tag>;
       default:
         return <Tag color="default">{status}</Tag>;
     }
   };
 
+  // Hàm lấy Tag component cho trạng thái step
   const getStepStatusTag = (status) => {
     switch (status) {
       case "COMPLETED":
         return <Tag color="success">Hoàn thành</Tag>;
       case "INPROGRESS":
-      case "IN_PROGRESS":
+        return <Tag color="orange">Đang điều trị</Tag>;
       case "CONFIRMED":
-        return <Tag color="#1890ff">Đang điều trị</Tag>;
-      case "PENDING":
-      case "PLANNED":
-        return <Tag color="warning">Đang chờ điều trị</Tag>;
+        return <Tag color="processing">Đã xác nhận</Tag>;
       case "CANCELLED":
         return <Tag color="error">Đã hủy</Tag>;
       default:
@@ -401,9 +466,91 @@ const TreatmentProgress = () => {
     }
   };
 
+  // Hàm lấy màu sắc cho trạng thái treatment step
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "CONFIRMED":
+        return "processing";
+      case "PLANED":
+        return "warning";
+      case "COMPLETED":
+        return "success";
+      case "CANCELLED":
+        return "error";
+      case "INPROGRESS":
+        return "orange";
+      default:
+        return "processing";
+    }
+  };
+
+  // Hàm lấy text hiển thị cho trạng thái
+  const getStatusText = (status) => {
+    switch (status) {
+      case "CONFIRMED":
+        return "Đã xác nhận";
+      case "PLANED":
+        return "Chờ xếp lịch";
+      case "COMPLETED":
+        return "Hoàn thành";
+      case "CANCELLED":
+        return "Đã hủy";
+      case "INPROGRESS":
+        return "Đang điều trị";
+      case "PENDING_CHANGE":
+        return "Chờ duyệt đổi lịch";
+      default:
+        return status;
+    }
+  };
+
+  // Hàm lấy màu sắc cho trạng thái appointment
+  const getAppointmentStatusColor = (status) => {
+    switch (status) {
+      case "PENDING":
+        return "orange";
+      case "CONFIRMED":
+        return "blue";
+      case "COMPLETED":
+        return "green";
+      case "CANCELLED":
+        return "red";
+      case "PLANED":
+        return "yellow";
+      case "PENDING_CHANGE":
+        return "gold";
+      default:
+        return "default";
+    }
+  };
+
+  // Hàm lấy text hiển thị cho trạng thái appointment
+  const getAppointmentStatusText = (status) => {
+    switch (status) {
+      case "CONFIRMED":
+        return "Đã xác nhận";
+      case "COMPLETED":
+        return "Hoàn thành";
+      case "INPROGRESS":
+        return "Đang điều trị";
+      case "PLANED":
+        return "Đã lên lịch";
+      case "CANCELLED":
+        return "Đã hủy";
+      case "PENDING_CHANGE":
+        return "Chờ duyệt đổi lịch";
+      case "REJECTED":
+        return "Từ chối yêu cầu đổi lịch";
+      default:
+        return status;
+    }
+  };
+
+  // Hàm lấy thông tin phase hiện tại
   const getCurrentPhase = () => {
     if (!treatmentData?.phases) return null;
 
+    // Tìm phase đầu tiên chưa hoàn thành
     const currentPhase = treatmentData.phases.find(
       (phase) => phase.statusRaw !== "COMPLETED"
     );
@@ -416,6 +563,7 @@ const TreatmentProgress = () => {
       };
     }
 
+    // Nếu tất cả đã hoàn thành, lấy phase cuối cùng
     const lastPhase = treatmentData.phases[treatmentData.phases.length - 1];
     return {
       name: lastPhase.name,
@@ -424,6 +572,8 @@ const TreatmentProgress = () => {
     };
   };
 
+  // ===== HÀM RENDER CÁC PHASES =====
+  // Hàm tạo cấu trúc dữ liệu cho Collapse component hiển thị các phases
   const renderPhases = () => {
     return (
       treatmentData &&
@@ -438,51 +588,55 @@ const TreatmentProgress = () => {
         ),
         children: (
           <div>
-            <Descriptions column={2} size="small" bordered>
-              <Descriptions.Item label="Trạng thái">
-                {getStepStatusTag(phase.statusRaw)}
+            {/* Bảng thông tin chi tiết của phase */}
+            <Descriptions size="small" column={3} bordered>
+              <Descriptions.Item label="Ngày bắt đầu">
+                {phase.startDate
+                  ? dayjs(phase.startDate).format("DD/MM/YYYY")
+                  : "-"}
               </Descriptions.Item>
-              {(idx === 0 || phase.hasDate) && (
-                <Descriptions.Item label="Ngày dự kiến">
-                  {phase.displayDate
-                    ? dayjs(phase.displayDate).format("DD/MM/YYYY")
-                    : "-"}
-                </Descriptions.Item>
-              )}
-              {phase.endDate && (
-                <Descriptions.Item label="Ngày thực hiện">
-                  {dayjs(phase.endDate).format("DD/MM/YYYY")}
-                </Descriptions.Item>
-              )}
+              <Descriptions.Item label="Ngày hoàn thành">
+                {phase.endDate
+                  ? dayjs(phase.endDate).format("DD/MM/YYYY")
+                  : "-"}
+              </Descriptions.Item>
+              <Descriptions.Item label="Ghi chú">
+                {phase.notes || "-"}
+              </Descriptions.Item>
             </Descriptions>
 
-            {phase.appointment && phase.statusRaw !== "COMPLETED" && (
-              <div style={{ marginTop: 16 }}>
-                {phase.appointment.status !== "PENDING_CHANGE" &&
-                  phase.appointment.status !== "REJECTED_CHANGE" && (
-                    <Button
-                      type="primary"
-                      icon={<EditOutlined />}
-                      onClick={() => handleOpenChangeModal(phase)}
-                      style={{
-                        backgroundColor: "#1890ff",
-                        borderColor: "#1890ff",
-                      }}
-                    >
-                      Gửi yêu cầu thay đổi lịch hẹn
-                    </Button>
-                  )}
-                {phase.appointment.appointmentDate && (
-                  <div style={{ marginTop: 16 }}>
-                    <Text strong>Lịch hẹn:</Text>
+            {/* Nút gửi yêu cầu đổi lịch hẹn: chỉ hiển thị cho phases chưa hoàn thành */}
+            {phase.statusRaw !== "COMPLETED" && (
+              <Button
+                type="primary"
+                icon={<EditOutlined />}
+                style={{
+                  marginBottom: 12,
+                  backgroundColor: "#1890ff",
+                  borderColor: "#1890ff",
+                }}
+                onClick={() => handleOpenChangeModal(phase)}
+              >
+                Gửi yêu cầu thay đổi lịch hẹn
+              </Button>
+            )}
+            
+            {/* Danh sách lịch hẹn của phase này */}
+            {Array.isArray(stepAppointments[phase.id]) &&
+              stepAppointments[phase.id].length > 0 && (
+                <div style={{ marginTop: 4 }}>
+                  <Text strong>Lịch hẹn:</Text>
+                  {stepAppointments[phase.id].map((appointment, idx) => (
                     <div
+                      key={appointment.id || idx}
                       style={{
-                        marginTop: 8,
                         display: "flex",
                         alignItems: "center",
                         gap: 8,
+                        marginTop: 8,
                       }}
                     >
+                      {/* Dot indicator theo màu trạng thái */}
                       <span
                         style={{
                           display: "inline-block",
@@ -490,63 +644,40 @@ const TreatmentProgress = () => {
                           height: 12,
                           borderRadius: "50%",
                           background:
-                            phase.appointment.status === "CONFIRMED"
+                            appointment.status === "CONFIRMED"
                               ? "#1890ff"
-                              : phase.appointment.status === "PENDING"
+                              : appointment.status === "PENDING"
                               ? "#faad14"
-                              : phase.appointment.status === "COMPLETED"
+                              : appointment.status === "COMPLETED"
                               ? "#52c41a"
-                              : phase.appointment.status === "CANCELLED"
+                              : appointment.status === "CANCELLED"
                               ? "#ff4d4f"
-                              : phase.appointment.status === "PENDING_CHANGE"
-                              ? "#722ed1"
-                              : phase.appointment.status === "REJECTED_CHANGE"
-                              ? "#ff7875"
-                              : phase.appointment.status === "REJECTED"
-                              ? "#ff7875"
                               : "#d9d9d9",
                           marginRight: 4,
                         }}
                       />
-                      <span style={{ fontWeight: 500 }}>{phase.name}</span>
-                      {getStatusTag(phase.appointment.status)}
+                      <span style={{ fontWeight: 500 }}>
+                        {appointment.purpose || phase.name}
+                      </span>
+                      {getStatusTag(appointment.status)}
                       <CalendarOutlined
                         style={{ marginLeft: 8, marginRight: 4 }}
                       />
                       <span>
-                        {dayjs(phase.appointment.appointmentDate).format(
+                        {dayjs(appointment.appointmentDate).format(
                           "DD/MM/YYYY"
                         )}
                       </span>
-                      {phase.appointment.shift && (
-                        <span style={{ marginLeft: 8 }}>
-                          - Ca:{" "}
-                          {phase.appointment.shift === "MORNING"
-                            ? "Sáng"
-                            : "Chiều"}
-                        </span>
-                      )}
-                      {/* Nếu có requestedDate (đang chờ duyệt đổi lịch), hiển thị thêm */}
-                      {phase.appointment.status === "PENDING_CHANGE" &&
-                        phase.appointment.requestedDate && (
-                          <span style={{ marginLeft: 16, color: "#722ed1" }}>
-                            (Yêu cầu đổi sang:{" "}
-                            {dayjs(phase.appointment.requestedDate).format(
-                              "DD/MM/YYYY"
-                            )}{" "}
-                            - Ca:{" "}
-                            {phase.appointment.requestedShift === "MORNING"
-                              ? "Sáng"
-                              : "Chiều"}
-                            )
-                          </span>
-                        )}
+                      <span style={{ marginLeft: 8 }}>
+                        - Ca:{" "}
+                        {appointment.shift === "MORNING" ? "Sáng" : "Chiều"}
+                      </span>
                     </div>
-                  </div>
-                )}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
 
+            {/* Message khi phase không có activities */}
             {phase.activities.length === 0 && (
               <div style={{ marginTop: 16, color: "#666" }}>
                 Chưa có hoạt động được lên lịch
@@ -554,10 +685,13 @@ const TreatmentProgress = () => {
             )}
           </div>
         ),
+        onClick: () => handleExpandPhase(phase),  // Load appointments khi expand
       }))
     );
   };
 
+  // ===== TÍNH TOÁN STATISTICS =====
+  // Các hàm tính toán thống kê về treatment progress
   const totalSteps =
     treatmentData && treatmentData.phases ? treatmentData.phases.length : 0;
   const completedSteps =
@@ -574,11 +708,49 @@ const TreatmentProgress = () => {
       : -1;
   const currentPhase = getCurrentPhase();
 
+  // ===== HANDLER CHO CLICK STEP =====
   const handleStepClick = (phase) => {
     setSelectedPhase(phase);
     setModalOpen(true);
   };
 
+  // ===== HÀM MỞ MODAL XEM LỊCH HẸN =====
+  // Hàm mở modal xem lịch hẹn của bước điều trị
+  const handleShowScheduleModal = async (step) => {
+    setScheduleStep(step);                  // Set step để xem lịch
+    setShowScheduleModal(true);             // Hiển thị modal
+    setShowAllAppointments(false);          // Reset về hiển thị 3 lịch hẹn đầu
+    
+    try {
+      // Gọi API lấy lịch hẹn của step
+      const response = await treatmentService.getAppointmentsByStepId(step.id);
+      
+      // Xử lý response có thể có nhiều format khác nhau
+      let appointments = [];
+      if (response?.data?.result?.content) {
+        appointments = response.data.result.content;  // Paginated response
+      } else if (Array.isArray(response?.data?.result)) {
+        appointments = response.data.result;          // Array response
+      } else if (Array.isArray(response)) {
+        appointments = response;                      // Direct array
+      }
+      
+      // Reset showAll state cho tất cả appointments
+      const appointmentsWithState = appointments.map((app) => ({
+        ...app,
+        showAll: false,
+      }));
+      
+      setStepAppointments((prev) => ({
+        ...prev,
+        [step.id]: appointmentsWithState,
+      }));
+    } catch (error) {
+      setStepAppointments((prev) => ({ ...prev, [step.id]: [] }));
+    }
+  };
+
+  // ===== HÀM XÁC ĐỊNH TRẠNG THÁI TỔNG THỂ =====
   const getOverallStatus = (status, progress) => {
     if (status === "CANCELLED") {
       return { text: "Đã hủy", color: "error" };
@@ -595,12 +767,30 @@ const TreatmentProgress = () => {
     return { text: "Đang chờ điều trị", color: "warning" };
   };
 
+  // Hàm lấy màu progress bar theo phần trăm
   const getProgressColor = (progress) => {
-    if (progress === 0) return "#faad14";
-    if (progress === 100) return "#52c41a";
-    return "#1890ff";
+    if (progress === 0) return "#faad14";     // Vàng cho 0%
+    if (progress === 100) return "#52c41a";   // Xanh cho 100%
+    return "#1890ff";                         // Xanh dương cho progress khác
   };
 
+  // ===== HÀM CHUYỂN ĐỔI KẾT QUẢ ĐIỀU TRỊ =====
+  // Hàm chuyển đổi result code thành text tiếng Việt
+  const getResultText = (result) => {
+    switch ((result || "").toUpperCase()) {
+      case "SUCCESS":
+        return "Thành công";
+      case "FAILURE":
+        return "Thất bại";
+      case "UNDETERMINED":
+        return "Chưa xác định";
+      default:
+        return "Chưa có";
+    }
+  };
+
+  // ===== COMPONENT RENDER TREATMENT OVERVIEW =====
+  // Component hiển thị thông tin tổng quan về treatment
   const renderTreatmentOverview = () => (
     <Card
       style={{
@@ -612,127 +802,260 @@ const TreatmentProgress = () => {
       hoverable
       styles={{ body: { padding: "24px" } }}
     >
-      <Row gutter={[24, 24]}>
-        <Col xs={24} md={12}>
-          <Title level={4} style={{ color: "#1890ff", marginBottom: 24 }}>
-            <MedicineBoxOutlined style={{ marginRight: 8 }} />
-            Quá trình điều trị hiện tại
-          </Title>
-          <Descriptions
-            column={1}
-            style={{
-              background: "#fafafa",
-              padding: "16px",
-              borderRadius: "8px",
-              boxShadow: "inset 0 2px 8px rgba(0,0,0,0.05)",
-            }}
-          >
-            <Descriptions.Item label="Gói điều trị">
-              <MedicineBoxOutlined
-                style={{ marginRight: 8, color: "#1890ff" }}
-              />
-              <Text strong>{treatmentData.type}</Text>
-            </Descriptions.Item>
-            <Descriptions.Item label="Bác sĩ phụ trách">
-              <UserOutlined style={{ marginRight: 8, color: "#1890ff" }} />
-              <Text strong>{treatmentData.doctor}</Text>
-            </Descriptions.Item>
-            <Descriptions.Item label="Ngày bắt đầu">
-              <CalendarOutlined style={{ marginRight: 8, color: "#1890ff" }} />
-              {dayjs(treatmentData.startDate).format("DD/MM/YYYY")}
-            </Descriptions.Item>
-            <Descriptions.Item label="Trạng thái">
-              {getStatusTag(treatmentData.status)}
-            </Descriptions.Item>
-          </Descriptions>
-        </Col>
-        <Col xs={24} md={12}>
-          <div style={{ marginBottom: 24 }}>
-            <Title level={5} style={{ color: "#1890ff", marginBottom: 16 }}>
-              <CheckIcon style={{ marginRight: 8 }} />
-              Tiến độ tổng thể
-            </Title>
-            <Progress
-              percent={progress}
-              status="active"
-              strokeColor={{
-                from: getProgressColor(progress),
-                to: getProgressColor(progress),
-              }}
-              size={12}
-              style={{ marginBottom: 8 }}
-            />
-            <Text type="secondary" style={{ fontSize: "14px" }}>
-              {progress}% hoàn thành
-            </Text>
-          </div>
-          <div>
-            <Title level={5} style={{ color: "#1890ff", marginBottom: 16 }}>
-              <HeartOutlined style={{ marginRight: 8 }} />
-              Giai đoạn hiện tại
-            </Title>
-            <div
-              style={{
-                background: "linear-gradient(135deg, #e6f7ff 0%, #f0f7ff 100%)",
-                padding: 20,
-                borderRadius: 12,
-                border: "1px solid #91d5ff",
-                transition: "all 0.3s ease",
-              }}
-            >
-              <Space align="baseline">
-                <HeartOutlined style={{ fontSize: 28, color: "#1890ff" }} />
-                <div>
-                  <div
-                    style={{
-                      fontSize: 18,
-                      fontWeight: "bold",
-                      color: "#1890ff",
-                    }}
-                  >
-                    {currentPhase ? currentPhase.name : "Thăm khám ban đầu"}
-                  </div>
-                  <div style={{ color: "#666", marginTop: 4 }}>
-                    {currentPhase
-                      ? currentPhase.notes
-                      : "Chuẩn bị thăm khám ban đầu"}
-                  </div>
-                </div>
+      <Row gutter={[24, 16]}>
+        <Col xs={24} md={24}>
+          <Row gutter={[16, 16]}>
+            <Col xs={24} md={12}>
+              <Space>
+                <Text strong style={{ fontSize: 16 }}>
+                  Gói điều trị:
+                </Text>
+                <Text style={{ fontSize: 16 }}>{treatmentData.type}</Text>
               </Space>
-            </div>
-          </div>
+            </Col>
+            <Col xs={24} md={12}>
+              <Space>
+                <Text strong>Bác sĩ:</Text>
+                <Text>{treatmentData.doctor}</Text>
+              </Space>
+            </Col>
+            <Col xs={24} md={12}>
+              <Space>
+                <Text strong>Ngày bắt đầu:</Text>
+                <Text>
+                  {dayjs(treatmentData.startDate).format("DD/MM/YYYY")}
+                </Text>
+              </Space>
+            </Col>
+            <Col xs={24} md={12}>
+              <Space>
+                <Text strong>Ngày đầu chu kì:</Text>
+                <Text>{dayjs(treatmentData.cd1Date).format("DD/MM/YYYY")}</Text>
+              </Space>
+            </Col>
+            <Col xs={24} md={12}>
+              <Space>
+                <Text strong>Trạng thái:</Text>
+                <Tag
+                  color={getStatusColor(treatmentData.status)}
+                  style={{ fontSize: 15, padding: "4px 16px" }}
+                >
+                  {getStatusText(treatmentData.status)}
+                </Tag>
+              </Space>
+            </Col>
+            <Col xs={24} md={12}>
+              <Space>
+                <Text strong>Kết quả:</Text>
+                <Tag
+                  color={
+                    treatmentData.result === "SUCCESS"
+                      ? "green"
+                      : treatmentData.result === "FAILURE"
+                      ? "red"
+                      : treatmentData.result === "UNDETERMINED"
+                      ? "orange"
+                      : "default"
+                  }
+                  style={{ fontSize: 15, padding: "4px 16px" }}
+                >
+                  {getResultText(treatmentData.result)}
+                </Tag>
+              </Space>
+            </Col>
+          </Row>
         </Col>
       </Row>
     </Card>
   );
 
+  // ===== COMPONENT RENDER TREATMENT PROGRESS =====
+  // Component hiển thị timeline tiến độ điều trị
   const renderTreatmentProgress = () => (
     <Card
       title={
-        <Space>
-          <DeploymentUnitOutlined
-            style={{ color: "#1890ff", fontSize: "20px" }}
-          />
-          <span>Tiến trình điều trị</span>
-        </Space>
+        <span style={{ fontWeight: 700, fontSize: 20, color: "#1890ff" }}>
+          Các bước điều trị
+        </span>
       }
       style={{
-        marginBottom: 24,
-        borderRadius: "12px",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-        transition: "all 0.3s ease",
+        marginBottom: 32,
+        borderRadius: 18,
+        boxShadow: "0 4px 16px rgba(24,144,255,0.08)",
+        background: "#fff",
       }}
-      hoverable
+      styles={{ body: { padding: 32 } }}
     >
-      <Collapse
-        defaultActiveKey={["0"]}
-        style={{ background: "transparent" }}
-        expandIconPosition="end"
-        items={renderPhases()}
-      />
+      <Timeline style={{ marginLeft: 16 }}>
+        {treatmentData.phases.map((step, index) => (
+          <Timeline.Item
+            key={step.id}
+            color={getStatusColor(step.statusRaw)}
+            dot={
+              // Custom dot với số thứ tự và màu sắc theo trạng thái
+              <div
+                style={{
+                  width: 30,
+                  height: 30,
+                  borderRadius: "50%",
+                  background:
+                    getStatusColor(step.statusRaw) === "success"
+                      ? "#e6fffb"
+                      : getStatusColor(step.statusRaw) === "error"
+                      ? "#fff1f0"
+                      : getStatusColor(step.statusRaw) === "processing"
+                      ? "#e6f7ff"
+                      : getStatusColor(step.statusRaw) === "orange"
+                      ? "#fff7e6"
+                      : "#f5f5f5",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  border: `3px solid ${
+                    getStatusColor(step.statusRaw) === "success"
+                      ? "#52c41a"
+                      : getStatusColor(step.statusRaw) === "error"
+                      ? "#ff4d4f"
+                      : getStatusColor(step.statusRaw) === "processing"
+                      ? "#1890ff"
+                      : getStatusColor(step.statusRaw) === "orange"
+                      ? "#fa8c16"
+                      : "#d9d9d9"
+                  }`,
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: 22,
+                    color:
+                      getStatusColor(step.statusRaw) === "success"
+                        ? "#52c41a"
+                        : getStatusColor(step.statusRaw) === "error"
+                        ? "#ff4d4f"
+                        : getStatusColor(step.statusRaw) === "processing"
+                        ? "#1890ff"
+                        : getStatusColor(step.statusRaw) === "orange"
+                        ? "#fa8c16"
+                        : "#bfbfbf",
+                    fontWeight: 700,
+                  }}
+                >
+                  {index + 1}
+                </span>
+              </div>
+            }
+          >
+            {/* Card chi tiết cho từng step */}
+            <Card
+              size="small"
+              style={{
+                marginBottom: 24,
+                borderRadius: 16,
+                boxShadow: "0 2px 8px rgba(24,144,255,0.08)",
+                background: index === 0 ? "#fafdff" : "#fff",  // Step đầu tiên có màu khác
+                transition: "box-shadow 0.2s",
+                border: `1.5px solid ${
+                  getStatusColor(step.statusRaw) === "success"
+                    ? "#52c41a"
+                    : getStatusColor(step.statusRaw) === "error"
+                    ? "#ff4d4f"
+                    : getStatusColor(step.statusRaw) === "processing"
+                    ? "#1890ff"
+                    : getStatusColor(step.statusRaw) === "orange"
+                    ? "#fa8c16"
+                    : "#d9d9d9"
+                }`,
+              }}
+              styles={{ body: { padding: 24 } }}
+              hoverable
+            >
+              <Row gutter={[16, 16]} align="middle">
+                <Col xs={24} md={16}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 12,
+                      marginBottom: 8,
+                    }}
+                  >
+                    <Text strong style={{ fontSize: 18, color: "#1890ff" }}>
+                      Bước {index + 1}: {step.name}
+                    </Text>
+                    <Tag
+                      color={getStatusColor(step.statusRaw)}
+                      style={{ fontSize: 15, padding: "4px 16px" }}
+                    >
+                      {getStatusText(step.statusRaw)}
+                    </Tag>
+                  </div>
+                  
+                  {/* Bảng thông tin chi tiết */}
+                  <Descriptions
+                    column={2}
+                    size="small"
+                    style={{ background: "transparent" }}
+                  >
+                    <Descriptions.Item label="Ngày bắt đầu">
+                      {step.startDate
+                        ? dayjs(step.startDate).format("DD/MM/YYYY")
+                        : "Chưa có lịch"}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Ngày kết thúc">
+                      {step.endDate
+                        ? dayjs(step.endDate).format("DD/MM/YYYY")
+                        : "Chưa thực hiện"}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Ghi chú">
+                      {step.notes || "Không có ghi chú"}
+                    </Descriptions.Item>
+                  </Descriptions>
+                </Col>
+                
+                {/* Cột action buttons */}
+                <Col xs={24} md={8} style={{ textAlign: "right" }}>
+                  <Space direction="vertical" size="small">
+                    <Button
+                      type="primary"
+                      ghost
+                      icon={<FileTextOutlined />}
+                      style={{
+                        borderRadius: 8,
+                        fontWeight: 600,
+                        minWidth: 140,
+                      }}
+                      onClick={() => handleShowScheduleModal(step)}
+                    >
+                      Xem lịch hẹn
+                    </Button>
+                    {/* Nút gửi yêu cầu đổi lịch: chỉ hiển thị cho steps chưa hoàn thành */}
+                    {(step.statusRaw !== "COMPLETED" ||
+                      step.statusRaw !== "PENDING_CHANGE") && (
+                      <Button
+                        type="default"
+                        icon={<EditOutlined />}
+                        style={{
+                          borderRadius: 8,
+                          fontWeight: 600,
+                          minWidth: 140,
+                        }}
+                        onClick={() => handleOpenChangeModal(step)}
+                      >
+                        Gửi yêu cầu đổi hẹn
+                      </Button>
+                    )}
+                  </Space>
+                </Col>
+              </Row>
+            </Card>
+          </Timeline.Item>
+        ))}
+      </Timeline>
     </Card>
   );
 
+  // ===== CẤU HÌNH COLUMNS CHO TABLE =====
+  // Cấu hình các cột cho bảng danh sách treatments
   const columns = [
     {
       title: "Gói điều trị",
@@ -774,15 +1097,23 @@ const TreatmentProgress = () => {
       render: (status) => getStatusTag(status),
     },
     {
-      title: "Tiến độ",
-      dataIndex: "progress",
-      key: "progress",
-      render: (progress) => (
-        <Progress
-          percent={progress}
-          size="small"
-          status={progress === 100 ? "success" : "active"}
-        />
+      title: "Kết quả",
+      dataIndex: "result",
+      key: "result",
+      render: (result) => (
+        <Tag
+          color={
+            result === "SUCCESS"
+              ? "green"
+              : result === "FAILURE"
+              ? "red"
+              : result === "UNDETERMINED"
+              ? "orange"
+              : "default"
+          }
+        >
+          {getResultText(result)}
+        </Tag>
       ),
     },
     {
@@ -800,11 +1131,13 @@ const TreatmentProgress = () => {
     },
   ];
 
+  // ===== HÀM XEM CHI TIẾT TREATMENT =====
+  // Hàm xử lý khi click vào nút "Chi tiết" trong table
   const handleViewDetail = async (record) => {
     try {
       setLoading(true);
 
-      // Lấy chi tiết treatment record bằng API mới
+      // Lấy chi tiết treatment record bằng API
       const detailResponse = await treatmentService.getTreatmentRecordById(
         record.id
       );
@@ -824,20 +1157,13 @@ const TreatmentProgress = () => {
       const overallProgress =
         totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0;
 
-      // Lấy appointments cho từng step
+      // Lấy appointments cho từng step song song
       const stepsWithAppointments = await Promise.all(
         treatmentSteps.map(async (step) => {
           try {
-            const appointmentsResponse = await treatmentService.getAppointments(
-              {
-                stepId: step.id,
-                customerId: detailData.customerId,
-                page: 0,
-                size: 10,
-              }
-            );
-            const appointments =
-              appointmentsResponse?.data?.result?.content || [];
+            const appointmentsResponse =
+              await treatmentService.getAppointmentsByStepId(step.id);
+            const appointments = appointmentsResponse?.data?.result || [];
             return {
               ...step,
               appointments: appointments,
@@ -855,6 +1181,7 @@ const TreatmentProgress = () => {
         })
       );
 
+      // Set dữ liệu đã format cho detail view
       setTreatmentData({
         id: detailData.id,
         type: detailData.treatmentServiceName || detailData.serviceName,
@@ -870,21 +1197,21 @@ const TreatmentProgress = () => {
         nextAppointment: null,
         overallProgress: overallProgress,
         customerId: detailData.customerId,
+        result: detailData.result,
+        notes: detailData.notes || "",
         phases: stepsWithAppointments.map((step, index) => ({
           id: step.id,
           name: step.name,
           statusRaw: step.status,
           status: step.status,
-          displayDate: step.scheduledDate || null,
-          hasDate: !!step.scheduledDate,
-          startDate: step.scheduledDate,
-          endDate: step.actualDate,
+          startDate: step.startDate,
+          endDate: step.endDate,
           notes: step.notes || "",
-          appointment: step.appointments[0] || null, // Lấy appointment đầu tiên
+          appointment: step.appointments[0] || null,  // Lấy appointment đầu tiên
           activities: [
             {
               name: step.name,
-              date: step.scheduledDate,
+              date: step.startDate,
               status: step.status,
               notes: step.notes || "",
             },
@@ -892,8 +1219,8 @@ const TreatmentProgress = () => {
         })),
       });
 
-      setViewMode("detail");
-      setSelectedPhase(null);
+      setViewMode("detail");       // Chuyển sang chế độ detail
+      setSelectedPhase(null);      // Reset selected phase
     } catch (error) {
       console.error("Lỗi khi lấy chi tiết điều trị:", error);
       message.error("Không thể lấy thông tin chi tiết điều trị");
@@ -902,25 +1229,43 @@ const TreatmentProgress = () => {
     }
   };
 
+  // ===== COMPONENT RENDER LIST VIEW =====
+  // Component hiển thị danh sách treatments trong table
   const renderListView = () => (
     <div style={{ padding: "24px" }}>
       <Card>
-        <Title level={3}>
-          <Space>
-            <MedicineBoxOutlined />
-            Tiến trình điều trị
-          </Space>
-        </Title>
         <Table
           columns={columns}
           dataSource={treatments}
           loading={loading}
-          pagination={false}
+          pagination={false}  // Disable built-in pagination
         />
+        
+        {/* Custom pagination controls */}
+        <div className="flex justify-end mt-4">
+          <Button
+            disabled={currentPage === 0}
+            onClick={() => fetchData(currentPage - 1)}
+            className="mr-2"
+          >
+            Trang trước
+          </Button>
+          <span className="px-4 py-1 bg-gray-100 rounded text-sm">
+            Trang {currentPage + 1} / {totalPages}
+          </span>
+          <Button
+            disabled={currentPage + 1 >= totalPages}
+            onClick={() => fetchData(currentPage + 1)}
+            className="ml-2"
+          >
+            Trang tiếp
+          </Button>
+        </div>
       </Card>
     </div>
   );
 
+  // ===== RENDER LOADING STATE =====
   if (loading) {
     return (
       <div style={{ textAlign: "center", padding: "50px" }}>
@@ -929,6 +1274,7 @@ const TreatmentProgress = () => {
     );
   }
 
+  // ===== RENDER ERROR STATE =====
   if (error) {
     return (
       <div style={{ textAlign: "center", padding: "50px" }}>
@@ -937,10 +1283,14 @@ const TreatmentProgress = () => {
     );
   }
 
+  // ===== RENDER LIST VIEW =====
+  // Nếu đang ở chế độ list, hiển thị bảng danh sách
   if (viewMode === "list") {
     return renderListView();
   }
 
+  // ===== RENDER EMPTY STATE =====
+  // Nếu không có dữ liệu treatment trong detail view
   if (!treatmentData || !treatmentData.phases) {
     return (
       <div style={{ textAlign: "center", padding: "50px" }}>
@@ -949,8 +1299,11 @@ const TreatmentProgress = () => {
     );
   }
 
+  // ===== RENDER MAIN DETAIL VIEW =====
   return (
-    <div style={{ padding: "24px", background: "#f0f2f5", minHeight: "100vh" }}>
+    <div>
+      {/* ===== HEADER SECTION ===== */}
+      {/* Header với nút quay lại và title */}
       <div
         style={{
           display: "flex",
@@ -967,8 +1320,8 @@ const TreatmentProgress = () => {
           <Button
             icon={<ArrowLeftOutlined />}
             onClick={() => {
-              setViewMode("list");
-              setTreatmentData(null); // dọn data chi tiết
+              setViewMode("list");         // Chuyển về list view
+              setTreatmentData(null);      // Clear data chi tiết
             }}
             style={{ border: "none", boxShadow: "none" }}
           />
@@ -978,9 +1331,12 @@ const TreatmentProgress = () => {
         </div>
       </div>
 
-      {renderTreatmentOverview()}
-      {renderTreatmentProgress()}
+      {/* ===== MAIN CONTENT ===== */}
+      {renderTreatmentOverview()}     {/* Thông tin tổng quan */}
+      {renderTreatmentProgress()}     {/* Timeline tiến độ */}
 
+      {/* ===== MODAL CHI TIẾT PHASE ===== */}
+      {/* Modal hiển thị thông tin chi tiết của một phase */}
       <Modal
         open={modalOpen}
         onCancel={() => setModalOpen(false)}
@@ -1014,19 +1370,27 @@ const TreatmentProgress = () => {
         )}
       </Modal>
 
+      {/* ===== MODAL ĐỔI LỊCH HẸN ===== */}
+      {/* Modal để customer gửi yêu cầu thay đổi lịch hẹn */}
       <Modal
         title={`Gửi yêu cầu thay đổi lịch hẹn: ${changeStep?.name || ""}`}
         open={changeModalVisible}
-        onCancel={() => {
-          setChangeModalVisible(false);
-          setSelectedAppointment(null);
-          changeForm.resetFields();
-        }}
+        onCancel={() => setChangeModalVisible(false)}
         onOk={handleSubmitChange}
         okText="Gửi yêu cầu"
         confirmLoading={changeLoading}
         destroyOnHidden
         width={800}
+        footer={[
+          <Button
+            key="submit"
+            type="primary"
+            loading={changeLoading}
+            onClick={handleSubmitChange}
+          >
+            Gửi yêu cầu
+          </Button>,
+        ]}
       >
         {changeLoading ? (
           <Spin />
@@ -1035,6 +1399,8 @@ const TreatmentProgress = () => {
             <div style={{ marginBottom: 16 }}>
               <Text strong>Chọn lịch hẹn muốn thay đổi:</Text>
             </div>
+            
+            {/* Table hiển thị danh sách appointments để chọn */}
             <Table
               dataSource={changeAppointment}
               columns={[
@@ -1060,25 +1426,27 @@ const TreatmentProgress = () => {
                         return <Tag color="#1890ff">Đã xác nhận</Tag>;
                       case "PENDING":
                         return <Tag color="orange">Đang chờ</Tag>;
+                      case "PLANED":
+                        return <Tag color="orange">Đã đặt lịch</Tag>;
                       case "PENDING_CHANGE":
                         return <Tag color="purple">Chờ duyệt đổi lịch</Tag>;
-                      case "REJECTED_CHANGE":
-                        return <Tag color="red">Từ chối đổi lịch</Tag>;
                       case "REJECTED":
-                        return <Tag color="red">Đã từ chối</Tag>;
+                        return (
+                          <Tag color="volcano">Từ chối yêu cầu đổi lịch</Tag>
+                        );
                       case "COMPLETED":
                         return <Tag color="green">Đã hoàn thành</Tag>;
                       case "CANCELLED":
                         return <Tag color="error">Đã hủy</Tag>;
                       case "INPROGRESS":
-                        return <Tag color="#1890ff">Đang thực hiện</Tag>;
+                        return <Tag color="#1890ff">Đang điều trị</Tag>;
                       default:
                         return <Tag color="default">{status}</Tag>;
                     }
                   },
                 },
                 {
-                  title: "Ghi chú",
+                  title: "Lí do",
                   dataIndex: "notes",
                   key: "notes",
                   render: (notes) => notes || "-",
@@ -1096,6 +1464,7 @@ const TreatmentProgress = () => {
                       size="small"
                       onClick={() => {
                         setSelectedAppointment(record);
+                        // Pre-fill form với dữ liệu appointment hiện tại
                         changeForm.setFieldsValue({
                           requestedDate: record.appointmentDate
                             ? dayjs(record.appointmentDate)
@@ -1117,6 +1486,7 @@ const TreatmentProgress = () => {
               rowKey="id"
             />
 
+            {/* Form nhập thông tin lịch hẹn mới */}
             {selectedAppointment && (
               <div style={{ marginTop: 16 }}>
                 <Divider />
@@ -1143,10 +1513,10 @@ const TreatmentProgress = () => {
                       <Option value="AFTERNOON">Chiều</Option>
                     </Select>
                   </Form.Item>
-                  <Form.Item label="Ghi chú" name="notes">
+                  <Form.Item label="Lí do" name="notes">
                     <Input.TextArea
                       rows={2}
-                      placeholder="Ghi chú thêm (nếu có)"
+                      placeholder="Nhập lí do (nếu có)"
                     />
                   </Form.Item>
                 </Form>
@@ -1154,14 +1524,371 @@ const TreatmentProgress = () => {
             )}
           </div>
         ) : (
+          // Alert hiển thị khi không có appointments
           <Alert
             type="warning"
             message="Không tìm thấy lịch hẹn tương ứng cho bước này!"
           />
         )}
       </Modal>
+
+      {/* ===== MODAL XEM LỊCH HẸN CỦA BƯỚC ĐIỀU TRỊ ===== */}
+      {/* Modal hiển thị danh sách appointments của một treatment step */}
+      <Modal
+        title={
+          <div style={{ textAlign: "center" }}>Lịch hẹn của bước điều trị</div>
+        }
+        open={showScheduleModal}
+        onCancel={() => {
+          setShowScheduleModal(false);
+          setScheduleStep(null);
+        }}
+        footer={null}
+        width={700}
+        centered
+      >
+        <div style={{ marginTop: 0, borderTop: "none", paddingTop: 0 }}>
+          <div style={{ fontWeight: 600, marginBottom: 16, fontSize: 16 }}>
+            Các lần hẹn đã đăng ký cho bước này:
+          </div>
+          
+          {!stepAppointments[scheduleStep?.id] ||
+          stepAppointments[scheduleStep?.id].length === 0 ? (
+            // Empty state khi không có appointments
+            <div
+              style={{
+                color: "#888",
+                textAlign: "center",
+                padding: 20,
+                background: "#f5f5f5",
+                borderRadius: 8,
+              }}
+            >
+              Chưa có lịch hẹn nào cho bước này.
+            </div>
+          ) : (
+            <>
+              {/* Hiển thị 3 appointments đầu tiên */}
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 16,
+                  justifyContent: "center",
+                }}
+              >
+                {stepAppointments[scheduleStep?.id]
+                  ?.slice(0, 3)
+                  .map((appointment, idx) => {
+                    const statusColor = getAppointmentStatusColor(
+                      appointment.status
+                    );
+                    
+                    // Icon theo trạng thái
+                    const statusIcon = (() => {
+                      switch (appointment.status) {
+                        case "COMPLETED":
+                          return (
+                            <CheckCircleOutlined style={{ color: "#52c41a" }} />
+                          );
+                        case "CONFIRMED":
+                          return (
+                            <ClockCircleOutlined style={{ color: "#1890ff" }} />
+                          );
+                        case "CANCELLED":
+                          return <CloseOutlined style={{ color: "#ff4d4f" }} />;
+                        case "PENDING":
+                          return (
+                            <ExclamationCircleOutlined
+                              style={{ color: "#faad14" }}
+                            />
+                          );
+                        case "PENDING_CHANGE":
+                          return <SwapOutlined style={{ color: "#faad14" }} />;
+                        default:
+                          return (
+                            <ClockCircleOutlined style={{ color: "#d9d9d9" }} />
+                          );
+                      }
+                    })();
+                    
+                    return (
+                      <Card
+                        key={appointment.id}
+                        size="small"
+                        style={{
+                          width: 200,
+                          border: `2px solid ${
+                            statusColor === "default" ? "#d9d9d9" : statusColor
+                          }`,
+                          borderRadius: 14,
+                          boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
+                          position: "relative",
+                          marginBottom: 8,
+                          background: "#fff",
+                          minHeight: 180,
+                        }}
+                        styles={{ body: { padding: 16 } }}
+                      >
+                        {/* Icon trạng thái */}
+                        <div
+                          style={{ position: "absolute", top: 10, right: 10 }}
+                        >
+                          {statusIcon}
+                        </div>
+                        
+                        {/* Thông tin appointment */}
+                        <div style={{ marginBottom: 8 }}>
+                          <Text strong>Ngày hẹn:</Text>
+                          <br />
+                          <Text>
+                            {dayjs(appointment.appointmentDate).format(
+                              "DD/MM/YYYY"
+                            )}
+                          </Text>
+                        </div>
+                        <div style={{ marginBottom: 8 }}>
+                          <Text strong>Ca khám:</Text>
+                          <br />
+                          <Tag color="cyan">
+                            {appointment.shift === "MORNING"
+                              ? "Sáng"
+                              : appointment.shift === "AFTERNOON"
+                              ? "Chiều"
+                              : appointment.shift}
+                          </Tag>
+                        </div>
+                        <div style={{ marginBottom: 8 }}>
+                          <Text strong>Trạng thái:</Text>
+                          <br />
+                          <Tag color={statusColor}>
+                            {getAppointmentStatusText(appointment.status)}
+                          </Tag>
+                        </div>
+                        <div style={{ marginBottom: 8 }}>
+                          <Text strong>Ghi chú:</Text>
+                          <br />
+                          <Text
+                            style={{
+                              maxWidth: "100%",
+                              overflow: "hidden",
+                              whiteSpace: "nowrap",
+                              textOverflow: "ellipsis",
+                              display: "inline-block",
+                              verticalAlign: "top",
+                            }}
+                            title={appointment.notes} // tooltip đầy đủ khi hover
+                          >
+                            {appointment.notes || "Không có ghi chú"}
+                          </Text>
+                        </div>
+                        {appointment.purpose && (
+                          <div style={{ marginTop: 8 }}>
+                            <Text strong>Mục đích:</Text>
+                            <br />
+                            <Text>{appointment.purpose}</Text>
+                          </div>
+                        )}
+                      </Card>
+                    );
+                  })}
+              </div>
+
+              {/* Hiển thị các appointments còn lại khi click "Xem thêm" */}
+              {stepAppointments[scheduleStep?.id]?.some(
+                (app) => app.showAll
+              ) && (
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 16,
+                    justifyContent: "center",
+                    marginTop: 16,
+                  }}
+                >
+                  {stepAppointments[scheduleStep?.id]
+                    ?.slice(3)
+                    .map((appointment, idx) => {
+                      const statusColor = getAppointmentStatusColor(
+                        appointment.status
+                      );
+                      const statusIcon = (() => {
+                        switch (appointment.status) {
+                          case "COMPLETED":
+                            return (
+                              <CheckCircleOutlined
+                                style={{ color: "#52c41a" }}
+                              />
+                            );
+                          case "CONFIRMED":
+                            return (
+                              <ClockCircleOutlined
+                                style={{ color: "#1890ff" }}
+                              />
+                            );
+                          case "CANCELLED":
+                            return (
+                              <CloseOutlined style={{ color: "#ff4d4f" }} />
+                            );
+                          case "PENDING":
+                            return (
+                              <ExclamationCircleOutlined
+                                style={{ color: "#faad14" }}
+                              />
+                            );
+                          case "PENDING_CHANGE":
+                            return (
+                              <SwapOutlined style={{ color: "#faad14" }} />
+                            );
+                          default:
+                            return (
+                              <ClockCircleOutlined
+                                style={{ color: "#d9d9d9" }}
+                              />
+                            );
+                        }
+                      })();
+                      return (
+                        <Card
+                          key={appointment.id}
+                          size="small"
+                          style={{
+                            width: 200,
+                            border: `2px solid ${
+                              statusColor === "default"
+                                ? "#d9d9d9"
+                                : statusColor
+                            }`,
+                            borderRadius: 14,
+                            boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
+                            position: "relative",
+                            marginBottom: 8,
+                            background: "#fff",
+                            minHeight: 180,
+                          }}
+                          styles={{ body: { padding: 16 } }}
+                        >
+                          <div
+                            style={{ position: "absolute", top: 10, right: 10 }}
+                          >
+                            {statusIcon}
+                          </div>
+                          <div style={{ marginBottom: 8 }}>
+                            <Text strong>Ngày hẹn:</Text>
+                            <br />
+                            <Text>
+                              {dayjs(appointment.appointmentDate).format(
+                                "DD/MM/YYYY"
+                              )}
+                            </Text>
+                          </div>
+                          <div style={{ marginBottom: 8 }}>
+                            <Text strong>Ca khám:</Text>
+                            <br />
+                            <Tag color="cyan">
+                              {appointment.shift === "MORNING"
+                                ? "Sáng"
+                                : appointment.shift === "AFTERNOON"
+                                ? "Chiều"
+                                : appointment.shift}
+                            </Tag>
+                          </div>
+                          <div style={{ marginBottom: 8 }}>
+                            <Text strong>Trạng thái:</Text>
+                            <br />
+                            <Tag color={statusColor}>
+                              {getAppointmentStatusText(appointment.status)}
+                            </Tag>
+                          </div>
+                          <div style={{ marginBottom: 8 }}>
+                            <Text strong>Ghi chú:</Text>
+                            <br />
+                            <Text
+                              style={{
+                                maxWidth: "100%",
+                                overflow: "hidden",
+                                whiteSpace: "nowrap",
+                                textOverflow: "ellipsis",
+                                display: "inline-block",
+                                verticalAlign: "top",
+                              }}
+                              title={appointment.notes} // tooltip đầy đủ khi hover
+                            >
+                              {appointment.notes || "Không có ghi chú"}
+                            </Text>
+                          </div>
+                          {appointment.purpose && (
+                            <div style={{ marginTop: 8 }}>
+                              <Text strong>Mục đích:</Text>
+                              <br />
+                              <Text>{appointment.purpose}</Text>
+                            </div>
+                          )}
+                        </Card>
+                      );
+                    })}
+                </div>
+              )}
+
+              {/* Nút "Xem thêm" / "Ẩn bớt" */}
+              {stepAppointments[scheduleStep?.id]?.length > 3 && (
+                <div style={{ textAlign: "center", marginTop: 16 }}>
+                  {stepAppointments[scheduleStep?.id]?.some(
+                    (app) => app.showAll
+                  ) ? (
+                    <Button
+                      type="default"
+                      icon={<FileTextOutlined />}
+                      onClick={() => {
+                        setStepAppointments((prev) => {
+                          if (prev[scheduleStep?.id]) {
+                            return {
+                              ...prev,
+                              [scheduleStep?.id]: prev[scheduleStep?.id].map(
+                                (app) => ({ ...app, showAll: false })
+                              ),
+                            };
+                          }
+                          return prev;
+                        });
+                      }}
+                      style={{ borderRadius: 8, minWidth: 140 }}
+                    >
+                      Ẩn bớt
+                    </Button>
+                  ) : (
+                    <Button
+                      type="default"
+                      icon={<FileTextOutlined />}
+                      onClick={() => {
+                        setStepAppointments((prev) => {
+                          if (prev[scheduleStep?.id]) {
+                            return {
+                              ...prev,
+                              [scheduleStep?.id]: prev[scheduleStep?.id].map(
+                                (app) => ({ ...app, showAll: true })
+                              ),
+                            };
+                          }
+                          return prev;
+                        });
+                      }}
+                      style={{ borderRadius: 8, minWidth: 140 }}
+                    >
+                      Xem thêm ({stepAppointments[scheduleStep?.id]?.length - 3}
+                      )
+                    </Button>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </Modal>
     </div>
   );
 };
 
+// ===== EXPORT COMPONENT =====
 export default TreatmentProgress;

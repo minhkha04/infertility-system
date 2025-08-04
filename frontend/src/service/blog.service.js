@@ -5,11 +5,11 @@ export const blogService = {
   getAllBlogs: async (params = {}) => {
     try {
       const queryParams = new URLSearchParams();
-      
-      if (params.status) queryParams.append('status', params.status);
-      if (params.keyword) queryParams.append('keyword', params.keyword);
-      if (params.page !== undefined) queryParams.append('page', params.page);
-      if (params.size !== undefined) queryParams.append('size', params.size);
+
+      if (params.status) queryParams.append("status", params.status);
+      if (params.keyword) queryParams.append("keyword", params.keyword);
+      if (params.page !== undefined) queryParams.append("page", params.page);
+      if (params.size !== undefined) queryParams.append("size", params.size);
 
       const url = `v1/blogs?${queryParams.toString()}`;
       const response = await http.get(url);
@@ -83,7 +83,7 @@ export const blogService = {
   uploadBlogImage: async (id, file) => {
     try {
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append("file", file);
 
       const response = await http.put(`v1/blogs/${id}/image`, formData, {
         headers: {
@@ -180,6 +180,12 @@ export const blogService = {
         page,
         size,
       },
+      skipAuth: true,
+    });
+  },
+  getBlogPublicId: (id) => {
+    return http.get(`v1/public/blogs/${id}`, {
+      skipAuth: true,
     });
   },
 };

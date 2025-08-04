@@ -8,28 +8,33 @@ import {
 } from "@ant-design/icons";
 import UserHeader from "../components/UserHeader";
 import UserFooter from "../components/UserFooter";
-
+import { href } from "react-router-dom";
+import banner1 from "../../public/images/features/pc7.jpg";
 const { Title, Paragraph, Text } = Typography;
 
 const contactInfo = [
   {
     title: "Địa chỉ",
-    content: "123 Đường New Life, Trung tâm Thành phố",
+    content: "D1, Long Thạnh Mỹ\nThủ Đức, Hồ Chí Minh\nViệt Nam",
     icon: <EnvironmentOutlined style={{ fontSize: 24, color: "#15A1AC" }} />,
   },
   {
     title: "Email",
-    content: "info@newlife.com",
+    content: (
+      <a href="mailto:infertilitytreatmentmonitoring@gmail.com">
+        infertilitytreatmentmonitoring@gmail.com
+      </a>
+    ),
     icon: <MailOutlined style={{ fontSize: 24, color: "#15A1AC" }} />,
   },
   {
     title: "Điện thoại",
-    content: "+1 858 794 6363",
+    content: <a href="tel:0346810167">+84 0346810167</a>,
     icon: <PhoneOutlined style={{ fontSize: 24, color: "#15A1AC" }} />,
   },
   {
     title: "Giờ làm việc",
-    content: "Thứ Hai - Thứ Bảy: 8:00 - 17:00",
+    content: "Thứ Hai - Chủ nhật: 8:00 - 12:00\n 13:00 - 17:00",
     icon: <ClockCircleOutlined style={{ fontSize: 24, color: "#15A1AC" }} />,
   },
 ];
@@ -40,11 +45,11 @@ const ContactsPage = () => {
       <UserHeader />
 
       {/* Hero Banner */}
-      <div className="relative h-[400px] w-full overflow-hidden">
+      <div className="relative h-[660px] w-full overflow-hidden">
         <img
-          src="/images/features/pc7.jpg"
+          src={banner1}
           alt="Băng rôn Liên hệ"
-          className="w-full h-full object-cover"
+          className="w-full h-full  bg-top"
         />
         <div className="absolute inset-0 bg-black opacity-40" />
         <div className="absolute inset-0 flex items-center justify-center">
@@ -70,7 +75,7 @@ const ContactsPage = () => {
               <div className="w-full h-[500px] bg-gray-200 mb-8">
                 {/* Google Map sẽ được hiển thị tại đây */}
                 <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3724.0951782923237!2d105.77960851476353!3d21.028774785998286!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135ab4cd0c66f05%3A0xea31563511af2e54!2sFPT%20University!5e0!3m2!1sen!2s!4v1652103525381!5m2!1sen!2s"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d7861022.200665203!2d100.88622862839156!3d15.836100067798924!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752731176b07b1%3A0xb752b24b379bae5e!2zVHLGsOG7nW5nIMSQ4bqhaSBo4buNYyBGUFQgVFAuIEhDTQ!5e0!3m2!1svi!2sus!4v1752825958791!5m2!1svi!2sus"
                   className="w-full h-full"
                   style={{ border: 0 }}
                   allowFullScreen=""

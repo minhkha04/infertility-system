@@ -1,7 +1,7 @@
 // src/components/GoogleLogin.jsx
 import { useContext, useEffect } from "react";
 import { authService } from "../service/auth.service";
-import { getLocgetlStorage, setLocalStorage } from "../utils/util";
+import { setLocalStorage } from "../utils/util";
 import { useNavigate } from "react-router-dom";
 import { NotificationContext } from "../App";
 import { useDispatch } from "react-redux";
@@ -52,7 +52,7 @@ export default function GoogleLogin() {
         setLocalStorage("token", res.data.result.token); // coi lai phia be tra du lieu theo format nao.
         dispatch(setToken(res.data.result.token));
 
-        showNotification("Dăng nhập thành công", "success");
+        showNotification("Đăng nhập thành công", "success");
         setTimeout(() => {
           navigate("/");
           window.location.reload();

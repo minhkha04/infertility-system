@@ -111,7 +111,7 @@ const AdminPage = () => {
       />
 
       <Layout>
-        <Header style={{ background: "#fff", padding: "0 24px" }}>
+        <Header style={{ background: "#fff" }}>
           <div
             style={{
               display: "flex",
@@ -142,10 +142,7 @@ const AdminPage = () => {
 
         <Content
           style={{
-            margin: "24px 16px",
-            padding: 24,
             background: "#f0f2f5",
-            minHeight: "calc(100vh - 112px)",
             marginLeft: 250,
           }}
         >

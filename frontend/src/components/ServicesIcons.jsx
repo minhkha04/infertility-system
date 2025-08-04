@@ -24,7 +24,7 @@ const ServicesIcons = () => {
   ];
 
   return (
-    <div className="w-full bg-orange-200 py-16">
+    <div className="w-full bg-orange-200 py-5">
       <div className="container mx-auto px-4">
         <div className="flex justify-center items-center">
           <div className="grid grid-cols-2 gap-16 max-w-2xl mx-auto">
