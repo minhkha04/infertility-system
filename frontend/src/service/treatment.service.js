@@ -674,7 +674,74 @@ export const treatmentService = {
       const response = await http.get(`v1/treatment-steps/${stepId}`);
       return response;
     } catch (error) {
-      console.error("Error fetching treatment step by id:", error);
+      console.error("Error fetching treatment step details:", error);
+      throw error;
+    }
+  },
+
+  // ===== LAB TEST APIs =====
+  
+  // Lấy danh sách lab tests của một treatment step
+  getLabTestsByStepId: async (stepId) => {
+    try {
+      const response = await http.get(`v1/treatment-test-labs/${stepId}`);
+      return response;
+    } catch (error) {
+      console.error("Error fetching lab tests by stepId:", error);
+      throw error;
+    }
+  },
+
+  // Tạo lab test mới
+  createLabTest: async (data) => {
+    try {
+      const response = await http.post("v1/treatment-test-labs", data, {
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      });
+      return response;
+    } catch (error) {
+      console.error("Error creating lab test:", error);
+      throw error;
+    }
+  },
+
+  // Cập nhật lab test
+  updateLabTest: async (labTestId, data) => {
+    try {
+      const response = await http.put(`v1/treatment-test-labs/${labTestId}`, data, {
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      });
+      return response;
+    } catch (error) {
+      console.error("Error updating lab test:", error);
+      throw error;
+    }
+  },
+
+  // Xóa lab test
+  deleteLabTest: async (labTestId) => {
+    try {
+      const response = await http.delete(`v1/treatment-test-labs/${labTestId}`);
+      return response;
+    } catch (error) {
+      console.error("Error deleting lab test:", error);
+      throw error;
+    }
+  },
+
+  // Lấy danh sách loại xét nghiệm có sẵn (để bác sĩ chọn)
+  getLabTestTypes: async () => {
+    try {
+      const response = await http.get("v1/treatment-test-labs/lab-tests");
+      return response;
+    } catch (error) {
+      console.error("Error fetching lab test types:", error);
       throw error;
     }
   },

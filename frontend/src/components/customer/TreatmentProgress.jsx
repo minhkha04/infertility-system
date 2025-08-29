@@ -78,10 +78,36 @@ const TreatmentProgress = () => {
   const [stepAppointments, setStepAppointments] = useState({});          // Object chứa appointments theo stepId
   const [showAllAppointments, setShowAllAppointments] = useState(false); // Hiển thị tất cả appointments hay chỉ 3 cái đầu
 
+  // State quản lý Lab Tests (read-only for customer)
+  const [showLabTestModal, setShowLabTestModal] = useState(false);       // Modal xem lab tests
+  const [labTestStep, setLabTestStep] = useState(null);                  // Step được chọn để xem lab tests
+  const [labTests, setLabTests] = useState([]);                          // Danh sách lab tests
+  const [loadingLabTests, setLoadingLabTests] = useState(false);         // Loading lab tests
+
   // ===== HOOKS VÀ CONTEXT =====
   const location = useLocation();                                         // Hook lấy thông tin route và state
   const { showNotification } = useContext(NotificationContext);           // Context hiển thị thông báo
   
+  // ===== LAB TEST HANDLERS (READ-ONLY FOR CUSTOMER) =====
+  // Hàm xem lab tests của step (chỉ đọc, UI thân thiện cho customer)
+  const handleShowLabTestModal = async (step) => {
+    setLabTestStep(step);
+    setShowLabTestModal(true);
+    setLoadingLabTests(true);
+    
+    try {
+      const response = await treatmentService.getLabTestsByStepId(step.id);
+      const tests = response?.data?.result || [];
+      setLabTests(tests);
+    } catch (error) {
+      console.error("❌ Error fetching lab tests:", error);
+      setLabTests([]);
+      showNotification("Không thể tải danh sách xét nghiệm", "error");
+    } finally {
+      setLoadingLabTests(false);
+    }
+  };
+
   // ===== USEEFFECT: KHỞI TẠO VÀ TẢI DỮ LIỆU =====
   // useEffect này chạy khi component mount để kiểm tra có dữ liệu từ navigation không
   useEffect(() => {
@@ -1028,6 +1054,21 @@ const TreatmentProgress = () => {
                     >
                       Xem lịch hẹn
                     </Button>
+                    <Button
+                      type="default"
+                      icon={<TestTubeIcon />}
+                      style={{
+                        borderRadius: 8,
+                        fontWeight: 600,
+                        minWidth: 140,
+                        background: "#f6ffed",
+                        borderColor: "#52c41a",
+                        color: "#52c41a",
+                      }}
+                      onClick={() => handleShowLabTestModal(step)}
+                    >
+                      Kết quả xét nghiệm
+                    </Button>
                     {/* Nút gửi yêu cầu đổi lịch: chỉ hiển thị cho steps chưa hoàn thành */}
                     {(step.statusRaw !== "COMPLETED" ||
                       step.statusRaw !== "PENDING_CHANGE") && (
@@ -1882,6 +1923,202 @@ const TreatmentProgress = () => {
                   )}
                 </div>
               )}
+            </>
+          )}
+        </div>
+      </Modal>
+
+      {/* ===== LAB TESTS MODAL (READ-ONLY FOR CUSTOMER) ===== */}
+      <Modal
+        title={
+          <div style={{ textAlign: "center" }}>
+            <TestTubeIcon
+              style={{ fontSize: 24, color: "#52c41a", marginRight: 8 }}
+            />
+            Kết quả xét nghiệm của bạn
+          </div>
+        }
+        open={showLabTestModal}
+        onCancel={() => {
+          setShowLabTestModal(false);
+          setLabTestStep(null);
+          setLabTests([]);
+        }}
+        footer={null}
+        width={700}
+        centered
+      >
+        <div style={{ marginTop: 16 }}>
+          <div style={{ 
+            fontWeight: 600, 
+            marginBottom: 16, 
+            fontSize: 16,
+            color: "#1890ff",
+            textAlign: "center"
+          }}>
+            Xét nghiệm cho giai đoạn: {labTestStep?.name}
+          </div>
+          
+          {loadingLabTests ? (
+            <div style={{ textAlign: "center", padding: 20 }}>
+              <Spin size="large" />
+              <div style={{ marginTop: 12, color: "#666" }}>
+                Đang tải kết quả xét nghiệm...
+              </div>
+            </div>
+          ) : labTests.length === 0 ? (
+            <div
+              style={{
+                color: "#888",
+                textAlign: "center",
+                padding: 30,
+                background: "#f9f9f9",
+                borderRadius: 12,
+                border: "2px dashed #d9d9d9",
+              }}
+            >
+              <TestTubeIcon style={{ fontSize: 48, color: "#d9d9d9", marginBottom: 12 }} />
+              <div style={{ fontSize: 16, marginBottom: 8 }}>
+                Chưa có kết quả xét nghiệm
+              </div>
+              <div style={{ fontSize: 14, color: "#999" }}>
+                Kết quả sẽ được cập nhật sau khi bác sĩ hoàn tất
+              </div>
+            </div>
+          ) : (
+            <>
+              <div style={{ 
+                background: "#e6f7ff", 
+                padding: 12, 
+                borderRadius: 8, 
+                marginBottom: 16,
+                textAlign: "center"
+              }}>
+                <Text style={{ color: "#1890ff" }}>
+                  📋 Có {labTests.length} kết quả xét nghiệm
+                </Text>
+              </div>
+              
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 16,
+                  justifyContent: "center",
+                }}
+              >
+                {labTests.map((test, index) => (
+                  <Card
+                    key={test.id}
+                    size="small"
+                    style={{
+                      width: 300,
+                      border: `3px solid ${
+                        test.result === "SUCCESS"
+                          ? "#52c41a"
+                          : test.result === "FAILURE"
+                          ? "#ff4d4f"
+                          : test.result === "UNDETERMINED"
+                          ? "#faad14"
+                          : "#e6f7ff"
+                      }`,
+                      borderRadius: 16,
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                      marginBottom: 8,
+                      background: test.result === "SUCCESS" 
+                        ? "#f6ffed" 
+                        : test.result === "FAILURE" 
+                        ? "#fff1f0"
+                        : test.result === "UNDETERMINED"
+                        ? "#fffbe6"
+                        : "#f0f8ff",
+                    }}
+                    bodyStyle={{ padding: 24 }}
+                  >
+                    {/* Icon kết quả lớn hơn */}
+                    <div style={{ textAlign: "center", marginBottom: 16 }}>
+                      {test.result === "SUCCESS" && (
+                        <div>
+                          <CheckCircleOutlined 
+                            style={{ color: "#52c41a", fontSize: 32 }} 
+                          />
+                          <div style={{ color: "#52c41a", fontWeight: "bold", marginTop: 4 }}>
+                            KẾT QUẢ TỐT
+                          </div>
+                        </div>
+                      )}
+                      {test.result === "FAILURE" && (
+                        <div>
+                          <CloseOutlined 
+                            style={{ color: "#ff4d4f", fontSize: 32 }} 
+                          />
+                          <div style={{ color: "#ff4d4f", fontWeight: "bold", marginTop: 4 }}>
+                            CẦN THEO DÕI
+                          </div>
+                        </div>
+                      )}
+                      {test.result === "UNDETERMINED" && (
+                        <div>
+                          <ExclamationCircleOutlined 
+                            style={{ color: "#faad14", fontSize: 32 }} 
+                          />
+                          <div style={{ color: "#faad14", fontWeight: "bold", marginTop: 4 }}>
+                            ĐANG ĐÁNH GIÁ
+                          </div>
+                        </div>
+                      )}
+                      {!test.result && (
+                        <div>
+                          <ClockCircleOutlined 
+                            style={{ color: "#1890ff", fontSize: 32 }} 
+                          />
+                          <div style={{ color: "#1890ff", fontWeight: "bold", marginTop: 4 }}>
+                            CHỜ KẾT QUẢ
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Tên xét nghiệm */}
+                    <div style={{ marginBottom: 16, textAlign: "center" }}>
+                      <Text strong style={{ fontSize: 18, color: "#262626" }}>
+                        {test.testName}
+                      </Text>
+                    </div>
+
+                    {/* Ghi chú từ bác sĩ */}
+                    {test.notes && (
+                      <div style={{ 
+                        background: "#fafafa", 
+                        padding: 12, 
+                        borderRadius: 8,
+                        border: "1px solid #f0f0f0"
+                      }}>
+                        <Text strong style={{ color: "#1890ff" }}>
+                          💬 Lời nhắn từ bác sĩ:
+                        </Text>
+                        <div style={{ marginTop: 8, fontSize: 14, lineHeight: 1.5 }}>
+                          {test.notes}
+                        </div>
+                      </div>
+                    )}
+                  </Card>
+                ))}
+              </div>
+
+              {/* Lời khuyên chung */}
+              <div style={{ 
+                marginTop: 20, 
+                padding: 16, 
+                background: "#f6ffed", 
+                borderRadius: 8,
+                border: "1px solid #b7eb8f",
+                textAlign: "center"
+              }}>
+                <Text style={{ color: "#52c41a", fontWeight: "500" }}>
+                  💡 Hãy liên hệ với bác sĩ nếu bạn có thắc mắc về kết quả
+                </Text>
+              </div>
             </>
           )}
         </div>

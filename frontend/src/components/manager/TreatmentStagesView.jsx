@@ -47,6 +47,26 @@ const TreatmentStagesView = () => {
   const navigate = useNavigate();                                            // Hook điều hướng
   const { showNotification } = useContext(NotificationContext);              // Context hiển thị thông báo
 
+  // ===== LAB TEST HANDLERS (READ-ONLY FOR MANAGER) =====
+  // Hàm xem lab tests của step (chỉ đọc)
+  const handleShowLabTestModal = async (step) => {
+    setLabTestStep(step);
+    setShowLabTestModal(true);
+    setLoadingLabTests(true);
+    
+    try {
+      const response = await treatmentService.getLabTestsByStepId(step.id);
+      const tests = response?.data?.result || [];
+      setLabTests(tests);
+    } catch (error) {
+      console.error("❌ Error fetching lab tests:", error);
+      setLabTests([]);
+      showNotification("Không thể tải danh sách xét nghiệm", "error");
+    } finally {
+      setLoadingLabTests(false);
+    }
+  };
+
   // ===== STATE MANAGEMENT =====
   // State quản lý data
   const [loading, setLoading] = useState(true);                              // Loading state chính
@@ -58,6 +78,12 @@ const TreatmentStagesView = () => {
   const [showScheduleModal, setShowScheduleModal] = useState(false);         // Modal lên lịch appointment
   const [scheduleStep, setScheduleStep] = useState(null);                    // Step được chọn để lên lịch
   const [showAllAppointments, setShowAllAppointments] = useState(false);     // Flag hiển thị tất cả appointments
+
+  // State quản lý Lab Tests (read-only for manager)
+  const [showLabTestModal, setShowLabTestModal] = useState(false);           // Modal xem lab tests
+  const [labTestStep, setLabTestStep] = useState(null);                      // Step được chọn để xem lab tests
+  const [labTests, setLabTests] = useState([]);                              // Danh sách lab tests
+  const [loadingLabTests, setLoadingLabTests] = useState(false);             // Loading lab tests
 
   // ===== USEEFFECT: DEBUG LOG TREATMENT DATA =====
   // useEffect để debug log khi treatmentData thay đổi
@@ -627,20 +653,37 @@ const TreatmentStagesView = () => {
                         </Descriptions>
                       </Col>
                       <Col xs={24} md={8} style={{ textAlign: "right" }}>
-                        <Button
-                          type="primary"
-                          ghost
-                          icon={<FileTextOutlined />}
-                          style={{
-                            borderRadius: 8,
-                            fontWeight: 600,
-                            minWidth: 140,
-                            marginTop: 8,
-                          }}
-                          onClick={() => handleShowScheduleModal(step)}
-                        >
-                          Xem lịch hẹn
-                        </Button>
+                        <Space direction="vertical" size="small">
+                          <Button
+                            type="primary"
+                            ghost
+                            icon={<FileTextOutlined />}
+                            style={{
+                              borderRadius: 8,
+                              fontWeight: 600,
+                              minWidth: 140,
+                              marginTop: 8,
+                            }}
+                            onClick={() => handleShowScheduleModal(step)}
+                          >
+                            Xem lịch hẹn
+                          </Button>
+                          <Button
+                            type="default"
+                            icon={<ExperimentOutlined />}
+                            style={{
+                              borderRadius: 8,
+                              fontWeight: 600,
+                              minWidth: 140,
+                              background: "#e6f7ff",
+                              borderColor: "#1890ff",
+                              color: "#1890ff",
+                            }}
+                            onClick={() => handleShowLabTestModal(step)}
+                          >
+                            Xét nghiệm
+                          </Button>
+                        </Space>
                       </Col>
                     </Row>
                   </Card>
@@ -985,6 +1028,154 @@ const TreatmentStagesView = () => {
                 </div>
               )}
             </>
+          )}
+        </div>
+      </Modal>
+
+      {/* ===== LAB TESTS MODAL (READ-ONLY FOR MANAGER) ===== */}
+      <Modal
+        title={
+          <div style={{ textAlign: "center" }}>
+            <ExperimentOutlined
+              style={{ fontSize: 24, color: "#1890ff", marginRight: 8 }}
+            />
+            Kết quả xét nghiệm
+          </div>
+        }
+        open={showLabTestModal}
+        onCancel={() => {
+          setShowLabTestModal(false);
+          setLabTestStep(null);
+          setLabTests([]);
+        }}
+        footer={null}
+        width={700}
+        centered
+      >
+        <div style={{ marginTop: 16 }}>
+          <div style={{ fontWeight: 600, marginBottom: 16, fontSize: 16 }}>
+            Danh sách xét nghiệm cho bước: {labTestStep?.stageName || labTestStep?.name}
+          </div>
+          
+          {loadingLabTests ? (
+            <div style={{ textAlign: "center", padding: 20 }}>
+              <Spin size="large" />
+            </div>
+          ) : labTests.length === 0 ? (
+            <div
+              style={{
+                color: "#888",
+                textAlign: "center",
+                padding: 20,
+                background: "#f5f5f5",
+                borderRadius: 8,
+              }}
+            >
+              Chưa có xét nghiệm nào cho bước này.
+            </div>
+          ) : (
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 16,
+                justifyContent: "center",
+              }}
+            >
+              {labTests.map((test, index) => (
+                <Card
+                  key={test.id}
+                  size="small"
+                  style={{
+                    width: 280,
+                    border: `2px solid ${
+                      test.result === "SUCCESS"
+                        ? "#52c41a"
+                        : test.result === "FAILURE"
+                        ? "#ff4d4f"
+                        : test.result === "UNDETERMINED"
+                        ? "#faad14"
+                        : "#d9d9d9"
+                    }`,
+                    borderRadius: 14,
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
+                    marginBottom: 8,
+                    background: "#fff",
+                  }}
+                  bodyStyle={{ padding: 20 }}
+                >
+                  {/* Icon kết quả */}
+                  <div style={{ textAlign: "right", marginBottom: 12 }}>
+                    {test.result === "SUCCESS" && (
+                      <CheckCircleOutlined 
+                        style={{ color: "#52c41a", fontSize: 20 }} 
+                      />
+                    )}
+                    {test.result === "FAILURE" && (
+                      <CloseOutlined 
+                        style={{ color: "#ff4d4f", fontSize: 20 }} 
+                      />
+                    )}
+                    {test.result === "UNDETERMINED" && (
+                      <ExclamationCircleOutlined 
+                        style={{ color: "#faad14", fontSize: 20 }} 
+                      />
+                    )}
+                    {!test.result && (
+                      <ClockCircleOutlined 
+                        style={{ color: "#d9d9d9", fontSize: 20 }} 
+                      />
+                    )}
+                  </div>
+
+                  {/* Tên xét nghiệm */}
+                  <div style={{ marginBottom: 12 }}>
+                    <Text strong style={{ fontSize: 16 }}>
+                      {test.testName}
+                    </Text>
+                  </div>
+
+                  {/* Kết quả */}
+                  <div style={{ marginBottom: 12 }}>
+                    <Text strong>Kết quả: </Text>
+                    <Tag
+                      color={
+                        test.result === "SUCCESS"
+                          ? "green"
+                          : test.result === "FAILURE"
+                          ? "red"
+                          : test.result === "UNDETERMINED"
+                          ? "orange"
+                          : "default"
+                      }
+                      style={{ fontSize: 13 }}
+                    >
+                      {test.result === "SUCCESS"
+                        ? "Thành công"
+                        : test.result === "FAILURE"
+                        ? "Thất bại"
+                        : test.result === "UNDETERMINED"
+                        ? "Chưa xác định"
+                        : "Chưa có"}
+                    </Tag>
+                  </div>
+
+                  {/* Ghi chú */}
+                  <div>
+                    <Text strong>Ghi chú: </Text>
+                    <Text
+                      style={{
+                        display: "block",
+                        marginTop: 4,
+                        wordWrap: "break-word",
+                      }}
+                    >
+                      {test.notes || "Không có ghi chú"}
+                    </Text>
+                  </div>
+                </Card>
+              ))}
+            </div>
           )}
         </div>
       </Modal>

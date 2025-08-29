@@ -43,6 +43,42 @@ const getServiceImage = (treatmentType) => {
   return imageMap[treatmentType] || "/images/features/pc4.jpg";
 };
 
+// Danh sách lợi ích dựa trên ID dịch vụ
+const getBenefitsByServiceId = (serviceId) => {
+  const benefitsMap = {
+    // IUI - ID 1
+    1: [
+      "Quy trình đơn giản, ít xâm lấn và không đau",
+      "Chi phí thấp hơn so với IVF",
+      "Không cần gây mê hay phẫu thuật",
+      "Có thể kết hợp với kích thích rụng trứng nhẹ",
+      "Thời gian điều trị ngắn, ít ảnh hưởng đến cuộc sống",
+      "Tỷ lệ thành công cao với các trường hợp vô sinh nhẹ",
+      "Phù hợp với các trường hợp vô sinh do yếu tố cổ tử cung",
+    ],
+    // IVF - ID 2
+    2: [
+      "Tỷ lệ thành công cao, đặc biệt với phụ nữ dưới 35 tuổi",
+      "Có thể điều trị nhiều nguyên nhân vô sinh khác nhau",
+      "Cho phép xét nghiệm di truyền phôi trước khi chuyển",
+      "Có thể đông lạnh phôi thừa để sử dụng sau này",
+      "Kiểm soát được số lượng phôi chuyển để giảm nguy cơ đa thai",
+      "Giải pháp hiệu quả cho các trường hợp tắc ống dẫn trứng",
+      "Phù hợp với các trường hợp vô sinh nam nặng",
+    ],
+  };
+
+  return (
+    benefitsMap[serviceId] || [
+      "Đánh giá toàn diện của tình trạng sinh sản",
+      "Tư vấn cá nhân hóa với chuyên gia",
+      "Kế hoạch điều trị phù hợp với nhu cầu của bạn",
+      "Sử dụng công nghệ và thiết bị hiện đại",
+      "Hỗ trợ tâm lý trong suốt quá trình điều trị",
+    ]
+  );
+};
+
 const ServiceDetailPage = () => {
   const { serviceId } = useParams();
   const navigate = useNavigate();

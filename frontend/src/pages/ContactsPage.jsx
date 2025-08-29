@@ -9,7 +9,7 @@ import {
 import UserHeader from "../components/UserHeader";
 import UserFooter from "../components/UserFooter";
 import { href } from "react-router-dom";
-import banner1 from "../../public/images/features/pc7.jpg";
+
 const { Title, Paragraph, Text } = Typography;
 
 const contactInfo = [
@@ -47,7 +47,7 @@ const ContactsPage = () => {
       {/* Hero Banner */}
       <div className="relative h-[660px] w-full overflow-hidden">
         <img
-          src={banner1}
+          src="/images/features/pc7.jpg"
           alt="Băng rôn Liên hệ"
           className="w-full h-full  bg-top"
         />

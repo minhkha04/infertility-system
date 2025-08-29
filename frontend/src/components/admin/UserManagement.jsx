@@ -20,23 +20,23 @@ const UserManagement = () => {
   const [users, setUsers] = useState([]);                               // Danh sách users
   const [searchText, setSearchText] = useState("");                     // Text tìm kiếm
   const [showRemoved, setShowRemoved] = useState(false);                // Hiển thị user đã xóa hay active
-
+  
   // State quản lý modal chi tiết user
   const [isDetailModalOpen, setDetailModalOpen] = useState(false);      // Modal chi tiết user
   const [userDetail, setUserDetail] = useState(null);                   // Chi tiết user được chọn
-
+  
   // State quản lý pagination
   const [currentPage, setCurrentPage] = useState(0);                    // Trang hiện tại (0-based)
   const [totalPages, setTotalPages] = useState(1);                      // Tổng số trang
   const [isFetched, setIsFetched] = useState(false);                    // Đã fetch data chưa
-
+  
   // State quản lý modal cập nhật password
   const [isEditModalOpen, setEditModalOpen] = useState(false);          // Modal cập nhật password
   const [selectedUser, setSelectedUser] = useState(null);               // User được chọn để update password
   const [newPassword, setNewPassword] = useState("");                   // Password mới
 
   // ===== UTILITY FUNCTIONS =====
-
+  
   // Hàm dịch role từ English sang Tiếng Việt
   const translateRole = (role) => {
     switch (role) {
@@ -82,7 +82,6 @@ const UserManagement = () => {
       setCurrentPage(page);                                           // Set trang hiện tại
       setShowRemoved(isRemove);                                       // Set trạng thái hiển thị (active/removed)
       setIsFetched(true);                                             // Đánh dấu đã fetch
-
     } catch (err) {
       console.log(err);
       showNotification(err.response?.data?.message, "error");
@@ -111,7 +110,7 @@ const UserManagement = () => {
   }, [token]);
 
   // ===== USER ACTIONS HANDLERS =====
-
+  
   // Hàm xử lý xóa (disable) user
   const handleDelete = (id) => {
     adminService
@@ -143,7 +142,7 @@ const UserManagement = () => {
   };
 
   // ===== MODAL HANDLERS =====
-
+  
   // Hàm mở modal cập nhật password
   const openEditModal = (user) => {
     setSelectedUser(user);       // Set user được chọn
@@ -233,13 +232,13 @@ const UserManagement = () => {
             <tr key={user.id} className="border-t">
               {/* Username column */}
               <td className="p-2">{user.username}</td>
-
+              
               {/* Full name column */}
               <td className="p-2">{user.fullName}</td>
-
+              
               {/* Email column */}
               <td className="p-2">{user.email}</td>
-
+              
               {/* Role column với badge màu */}
               <td className="p-2">
                 <span
@@ -250,19 +249,20 @@ const UserManagement = () => {
                   {translateRole(user.roleName)}
                 </span>
               </td>
-
+              
               {/* Status column */}
               <td className="p-2">
                 <span
-                  className={`px-2 py-1 text-xs rounded ${user.removed
-                    ? "bg-red-100 text-red-600"         // Màu đỏ cho removed
-                    : "bg-green-100 text-green-600"     // Màu xanh cho active
-                    }`}
+                  className={`px-2 py-1 text-xs rounded ${
+                    user.removed
+                      ? "bg-red-100 text-red-600"         // Màu đỏ cho removed
+                      : "bg-green-100 text-green-600"     // Màu xanh cho active
+                  }`}
                 >
                   {user.removed ? "Không hoạt động" : "Hoạt động"}
                 </span>
               </td>
-
+              
               {/* Actions column */}
               <td className="p-2 space-x-2">
                 {/* Button Chi tiết - chỉ hiển thị cho active users */}
@@ -399,7 +399,7 @@ const UserManagement = () => {
       >
         <h2 className="text-xl font-semibold mb-4">Cập nhật mật khẩu</h2>
         <label className="block mb-2 font-medium">Mật khẩu mới:</label>
-
+        
         {/* Input password mới */}
         <input
           type="password"
@@ -408,7 +408,7 @@ const UserManagement = () => {
           placeholder="Nhập mật khẩu mới"
           className="w-full border px-3 py-2 rounded mb-4"
         />
-
+        
         {/* Action buttons */}
         <div className="flex justify-end space-x-2">
           <button

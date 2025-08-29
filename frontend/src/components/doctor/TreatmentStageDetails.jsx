@@ -22,6 +22,9 @@ import {
   Dropdown,
   Timeline,
   Descriptions,
+  Table,
+  Popconfirm,
+  AutoComplete,
 } from "antd";
 import {
   ArrowLeftOutlined,
@@ -38,11 +41,13 @@ import {
   ExclamationCircleOutlined,
   SwapOutlined,
   FileTextOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
 import { treatmentService } from "../../service/treatment.service";
 import { authService } from "../../service/auth.service";
 import dayjs from "dayjs";
 import { NotificationContext } from "../../App";
+import { createLabTestHandlers } from "../../service/labTestHandlers";
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -82,6 +87,7 @@ const TreatmentStageDetails = () => {
   const [addStepLoading, setAddStepLoading] = useState(false);        // Loading khi thêm step
   const [stageOptions, setStageOptions] = useState([]);              // Danh sách giai đoạn có thể chọn
   const [editingStepStageId, setEditingStepStageId] = useState(null); // Stage ID của step đang edit
+  const [allStagesUsed, setAllStagesUsed] = useState(false);          // Tất cả stages đã được sử dụng
   
   // State quản lý modal thay đổi dịch vụ
   const [showChangeServiceModal, setShowChangeServiceModal] = useState(false); // Hiển thị modal đổi dịch vụ
@@ -104,11 +110,43 @@ const TreatmentStageDetails = () => {
   const [pendingStatusUpdate, setPendingStatusUpdate] = useState(null);       // Cập nhật trạng thái chờ xử lý { appointmentId, newStatus }
   const [note, setNote] = useState("");                                       // Ghi chú nhập từ modal
   
+  // ===== STATE QUẢN LÝ LAB TESTS =====
+  const [showLabTestModal, setShowLabTestModal] = useState(false);            // Hiển thị modal quản lý lab tests
+  const [labTestStep, setLabTestStep] = useState(null);                       // Step được chọn để xem lab tests
+  const [labTests, setLabTests] = useState([]);                               // Danh sách lab tests của step
+  const [loadingLabTests, setLoadingLabTests] = useState(false);              // Loading khi tải lab tests
+  const [showAddLabTestModal, setShowAddLabTestModal] = useState(false);      // Hiển thị modal thêm lab test
+  const [editingLabTest, setEditingLabTest] = useState(null);                 // Lab test đang được chỉnh sửa
+  const [labTestForm] = Form.useForm();                                       // Form instance cho lab test
+  const [labTestTypes, setLabTestTypes] = useState([]);                       // Danh sách loại xét nghiệm có sẵn
+  const [loadingLabTestTypes, setLoadingLabTestTypes] = useState(false);      // Loading khi tải loại xét nghiệm
+  
   // ===== HOOKS VÀ CONTEXT =====
   const location = useLocation();                                             // Hook lấy thông tin route hiện tại
   const navigate = useNavigate();                                             // Hook điều hướng
   const { showNotification } = useContext(NotificationContext);               // Context hiển thị thông báo
   const dataLoadedRef = React.useRef(false);                                  // Ref để tránh load dữ liệu trùng lặp
+  
+  // ===== LAB TEST HANDLERS =====
+  const labTestHandlers = createLabTestHandlers(
+    setLabTestStep,
+    setShowLabTestModal,
+    setLoadingLabTests,
+    setLabTests,
+    showNotification,
+    setEditingLabTest,
+    setShowAddLabTestModal,
+    labTestForm,
+    setLabTestTypes,
+    setLoadingLabTestTypes
+  );
+  
+  const {
+    handleShowLabTestModal,
+    handleLabTestSubmit,
+    handleDeleteLabTest,
+    handleShowAddLabTestModal
+  } = labTestHandlers;
   
   // ===== CÁC OPTION CHO SELECT =====
   const statusOptions = [
@@ -786,7 +824,35 @@ const TreatmentStageDetails = () => {
       treatmentService
         .getSelectableStagesByServiceId(treatmentData.treatmentServiceId)
         .then((res) => {
-          setStageOptions(res?.data?.result || []);  // Cập nhật danh sách stages
+          const allStages = res?.data?.result || [];
+          
+          // Lấy danh sách stageId đã được sử dụng trong treatmentSteps hiện tại
+          const usedStageIds = treatmentData?.treatmentSteps?.map(step => 
+            step.treatmentStageId || step.stageId
+          ) || [];
+          
+          console.log("🔍 All available stages:", allStages);
+          console.log("🔍 Used stage IDs:", usedStageIds);
+          
+          // Filter ra những stages chưa được sử dụng
+          const availableStages = allStages.filter(stage => 
+            !usedStageIds.includes(stage.id)
+          );
+          
+          console.log("✅ Available stages after filtering:", availableStages);
+          
+          // Hiển thị thông báo nếu không còn stage nào có thể thêm
+          if (availableStages.length === 0 && allStages.length > 0) {
+            setAllStagesUsed(true);  // Set flag tất cả stages đã dùng
+            showNotification(
+              "Tất cả các bước điều trị đã được tạo cho dịch vụ này", 
+              "info"
+            );
+          } else {
+            setAllStagesUsed(false); // Reset flag khi còn stages có thể dùng
+          }
+          
+          setStageOptions(availableStages);  // Chỉ set những stages chưa dùng
         })
         .catch(() => setStageOptions([]));  // Fallback nếu API lỗi
     }
@@ -796,8 +862,9 @@ const TreatmentStageDetails = () => {
       setAddStepAuto(false);      // Reset switch tự động tạo lịch hẹn
       setStageOptions([]);        // Clear danh sách stages
       addStepForm.resetFields();  // Reset form
+      setAllStagesUsed(false);    // Reset flag tất cả stages đã dùng
     }
-  }, [showAddStepModal, treatmentData?.treatmentServiceId]);
+  }, [showAddStepModal, treatmentData?.treatmentServiceId, treatmentData?.treatmentSteps]);
 
   // ===== USEEFFECT: TỰ ĐỘNG CẬP NHẬT SELECTED STEP =====
   // useEffect này đảm bảo selectedStep luôn có dữ liệu mới nhất khi treatmentData thay đổi
@@ -828,7 +895,7 @@ const TreatmentStageDetails = () => {
       case "FAILURE":
         return "Thất bại";      // Điều trị thất bại  
       case "UNDETERMINED":
-        return "Chưa xác định"; // Kết quả chưa rõ ràng
+        return "Đang kiểm tra"; // Kết quả chưa rõ ràng
       default:
         return "Chưa có";       // Chưa có kết quả
     }
@@ -1005,15 +1072,29 @@ const TreatmentStageDetails = () => {
               }}
             >
               {/* Nút thêm bước điều trị mới */}
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={() => setShowAddStepModal(true)}
-                size="large"
-                style={{ borderRadius: 8, minWidth: 180 }}
+              <Tooltip
+                title={
+                  allStagesUsed 
+                    ? "Tất cả các bước điều trị đã được tạo cho dịch vụ này" 
+                    : "Thêm bước điều trị mới vào quy trình"
+                }
               >
-                Thêm bước điều trị mới
-              </Button>
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={() => setShowAddStepModal(true)}
+                  disabled={allStagesUsed}
+                  size="large"
+                  style={{ 
+                    borderRadius: 8, 
+                    minWidth: 180,
+                    opacity: allStagesUsed ? 0.6 : 1,
+                    cursor: allStagesUsed ? "not-allowed" : "pointer"
+                  }}
+                >
+                  {allStagesUsed ? "Đã tạo hết các bước" : "Thêm bước điều trị mới"}
+                </Button>
+              </Tooltip>
               
               {/* Dropdown menu cập nhật trạng thái dịch vụ */}
               <Dropdown
@@ -1211,6 +1292,21 @@ const TreatmentStageDetails = () => {
                               </Button>
                               <Button
                                 type="default"
+                                icon={<ExperimentOutlined />}
+                                style={{
+                                  borderRadius: 8,
+                                  fontWeight: 600,
+                                  minWidth: 140,
+                                  background: "#e6f7ff",
+                                  borderColor: "#1890ff",
+                                  color: "#1890ff",
+                                }}
+                                onClick={() => handleShowLabTestModal(step)}
+                              >
+                                Xét nghiệm
+                              </Button>
+                              <Button
+                                type="default"
                                 icon={<EditOutlined />}
                                 style={{
                                   borderRadius: 8,
@@ -1367,6 +1463,25 @@ const TreatmentStageDetails = () => {
                   style={{ borderRadius: 8, minWidth: 120, marginRight: 16 }}
                 >
                   Xem lịch hẹn
+                </Button>
+                <Button
+                  type="default"
+                  icon={<ExperimentOutlined />}
+                  onClick={() => {
+                    setShowStepDetailModal(false);
+                    handleShowLabTestModal(selectedStep);
+                  }}
+                  size="large"
+                  style={{ 
+                    borderRadius: 8, 
+                    minWidth: 120, 
+                    marginRight: 16,
+                    background: "#e6f7ff",
+                    borderColor: "#1890ff",
+                    color: "#1890ff",
+                  }}
+                >
+                  Xét nghiệm
                 </Button>
                 <Button
                   type="default"
@@ -2313,6 +2428,454 @@ const TreatmentStageDetails = () => {
           onChange={(e) => setCancelReason(e.target.value)}
           style={{ marginTop: 16 }}
         />
+      </Modal>
+
+      {/* ===== MODAL XEM LAB TESTS ===== */}
+      {/* Modal hiển thị danh sách lab tests của một treatment step */}
+      <Modal
+        title="Xét nghiệm"
+        open={showLabTestModal}
+        onCancel={() => {
+          setShowLabTestModal(false);
+          setLabTestStep(null);
+        }}
+        footer={null}
+        width={700}
+        centered
+      >
+        <div style={{ marginTop: 0, borderTop: "none", paddingTop: 0 }}>
+          <div style={{ fontWeight: 600, marginBottom: 16, fontSize: 16 }}>
+            Danh sách xét nghiệm:
+          </div>
+          {loadingLabTests ? (
+            // Hiển thị loading spinner khi đang tải lab tests
+            <div style={{ textAlign: "center", padding: 20 }}>
+              <Spin size="large" />
+            </div>
+          ) : labTests.length === 0 ? (
+            // Hiển thị empty state khi không có lab tests
+            <div
+              style={{
+                color: "#888",
+                textAlign: "center",
+                padding: 20,
+                background: "#f5f5f5",
+                borderRadius: 8,
+              }}
+            >
+              Chưa có xét nghiệm nào cho bước này.
+            </div>
+          ) : (
+            <>
+              {/* ===== DANH SÁCH LAB TESTS - Hiển thị tối đa 3 lab tests đầu tiên ===== */}
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 16,
+                  justifyContent: "center",
+                }}
+              >
+                {Array.isArray(labTests) &&
+                  labTests.slice(0, 3).map((test, index) => (
+                    <Card
+                      key={test.id}
+                      size="small"
+                      style={{
+                        width: 200,
+                        border: `2px solid ${
+                          test.result === "SUCCESS"
+                            ? "#52c41a"
+                            : test.result === "FAILURE"
+                            ? "#ff4d4f"
+                            : test.result === "UNDETERMINED"
+                            ? "#faad14"
+                            : "#d9d9d9"
+                        }`,
+                        borderRadius: 14,
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
+                        position: "relative",
+                        marginBottom: 8,
+                        background: "#fff",
+                        minHeight: 180,
+                      }}
+                      bodyStyle={{ padding: 16 }}
+                    >
+                      {/* Icon trạng thái ở góc phải trên */}
+                      <div
+                        style={{ position: "absolute", top: 10, right: 10 }}
+                      >
+                        {test.result === "SUCCESS" && (
+                          <CheckCircleOutlined style={{ color: "#52c41a" }} />
+                        )}
+                        {test.result === "FAILURE" && (
+                          <CloseOutlined style={{ color: "#ff4d4f" }} />
+                        )}
+                        {test.result === "UNDETERMINED" && (
+                          <ExclamationCircleOutlined style={{ color: "#faad14" }} />
+                        )}
+                      </div>
+                      
+                      {/* Thông tin xét nghiệm */}
+                      <div style={{ marginBottom: 8 }}>
+                        <Text strong>Tên xét nghiệm:</Text>
+                        <br />
+                        <Text>{test.testName}</Text>
+                      </div>
+                      
+                      {/* Ghi chú với ellipsis overflow */}
+                      <div style={{ marginBottom: 8 }}>
+                        <Text strong>Ghi chú:</Text>
+                        <br />
+                        <Text
+                          style={{
+                            maxWidth: "100%",
+                            overflow: "hidden",
+                            whiteSpace: "nowrap",
+                            textOverflow: "ellipsis",
+                            display: "inline-block",
+                            verticalAlign: "top",
+                          }}
+                          title={test.notes} // tooltip đầy đủ khi hover
+                        >
+                          {test.notes || "Không có ghi chú"}
+                        </Text>
+                      </div>
+                      
+                      {/* Kết quả xét nghiệm */}
+                      <div style={{ marginBottom: 8 }}>
+                        <Text strong>Kết quả:</Text>
+                        <br />
+                        <Tag
+                          color={
+                            test.result === "SUCCESS"
+                              ? "green"
+                              : test.result === "FAILURE"
+                              ? "red"
+                              : test.result === "UNDETERMINED"
+                              ? "orange"
+                              : "default"
+                          }
+                        >
+                          {test.result === "SUCCESS"
+                            ? "Thành công"
+                            : test.result === "FAILURE"
+                            ? "Thất bại"
+                            : test.result === "UNDETERMINED"
+                            ? "Đang kiểm tra"
+                            : "Chưa có"}
+                        </Tag>
+                      </div>
+                      
+                      {/* Action buttons */}
+                      <div style={{ marginTop: 12, textAlign: "center" }}>
+                        <Space size="small">
+                          <Button
+                            type="primary"
+                            size="small"
+                            icon={<EditOutlined />}
+                            style={{
+                              background: "#1890ff",
+                              borderColor: "#1890ff",
+                              color: "#fff",
+                              borderRadius: 6,
+                              fontSize: 11,
+                              height: 24,
+                            }}
+                            onClick={() => {
+                              setShowLabTestModal(false);
+                              handleShowAddLabTestModal(test);
+                            }}
+                          >
+                            Sửa
+                          </Button>
+                          <Popconfirm
+                            title="Xóa xét nghiệm"
+                            description="Bạn có chắc chắn muốn xóa xét nghiệm này?"
+                            onConfirm={() => handleDeleteLabTest(test.id, labTestStep)}
+                            okText="Xóa"
+                            cancelText="Hủy"
+                            okType="danger"
+                          >
+                            <Button
+                              danger
+                              size="small"
+                              icon={<DeleteOutlined />}
+                              style={{
+                                borderRadius: 6,
+                                fontSize: 11,
+                                height: 24,
+                              }}
+                            >
+                              Xóa
+                            </Button>
+                          </Popconfirm>
+                        </Space>
+                      </div>
+                    </Card>
+                  ))}
+              </div>
+
+              {/* ===== HIỂN THỊ THÊM CÁC XÉT NGHIỆM CÒN LẠI ===== */}
+              {Array.isArray(labTests) &&
+                labTests.some((test) => test.showAll) && (
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: 16,
+                      justifyContent: "center",
+                      marginTop: 16,
+                    }}
+                  >
+                    {labTests.slice(3).map((test, index) => {
+                      return (
+                        <Card
+                          key={test.id}
+                          size="small"
+                          style={{
+                            width: 200,
+                            border: `2px solid ${
+                              test.result === "SUCCESS"
+                                ? "#52c41a"
+                                : test.result === "FAILURE"
+                                ? "#ff4d4f"
+                                : test.result === "UNDETERMINED"
+                                ? "#faad14"
+                                : "#d9d9d9"
+                            }`,
+                            borderRadius: 14,
+                            boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
+                            position: "relative",
+                            marginBottom: 8,
+                            background: "#fff",
+                            minHeight: 180,
+                          }}
+                          bodyStyle={{ padding: 16 }}
+                        >
+                          <div
+                            style={{ position: "absolute", top: 10, right: 10 }}
+                          >
+                            {test.result === "SUCCESS" && (
+                              <CheckCircleOutlined style={{ color: "#52c41a" }} />
+                            )}
+                            {test.result === "FAILURE" && (
+                              <CloseOutlined style={{ color: "#ff4d4f" }} />
+                            )}
+                            {test.result === "UNDETERMINED" && (
+                              <ExclamationCircleOutlined style={{ color: "#faad14" }} />
+                            )}
+                          </div>
+                          <div style={{ marginBottom: 8 }}>
+                            <Text strong>Tên xét nghiệm:</Text>
+                            <br />
+                            <Text>{test.testName}</Text>
+                          </div>
+                          <div style={{ marginBottom: 8 }}>
+                            <Text strong>Ghi chú:</Text>
+                            <br />
+                            <Text
+                              style={{
+                                maxWidth: "100%",
+                                overflow: "hidden",
+                                whiteSpace: "nowrap",
+                                textOverflow: "ellipsis",
+                                display: "inline-block",
+                                verticalAlign: "top",
+                              }}
+                              title={test.notes} // tooltip đầy đủ khi hover
+                            >
+                              {test.notes || "Không có ghi chú"}
+                            </Text>
+                          </div>
+                          {/* Nút cập nhật trạng thái cho lab tests từ thứ 4 trở đi */}
+                          <div style={{ marginTop: 12, textAlign: "center" }}>
+                            <Button
+                              type="primary"
+                              size="small"
+                              style={{
+                                background: "#fa8c16",
+                                borderColor: "#fa8c16",
+                                color: "#fff",
+                                borderRadius: 6,
+                                fontSize: 12,
+                                height: 28,
+                              }}
+                              onClick={() =>
+                                setLabTests((prev) =>
+                                  Array.isArray(prev)
+                                    ? prev.map((t, i) =>
+                                        i === index + 3
+                                          ? { ...t, showAll: !t.showAll }
+                                          : t
+                                      )
+                                    : []
+                                )
+                              }
+                            >
+                              {test.showAll ? "Ẩn bớt" : "Xem thêm"}
+                            </Button>
+                          </div>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                )}
+
+              {/* ===== NÚT "XEM THÊM" HOẶC "ẨN BỚT" ===== */}
+              {labTests.length > 3 && (
+                <div style={{ textAlign: "center", marginTop: 16 }}>
+                  {labTests.some((test) => test.showAll) ? (
+                    // Nút "Ẩn bớt" - chỉ hiển thị 3 lab tests đầu
+                    <Button
+                      type="default"
+                      icon={<DeleteOutlined />}
+                      onClick={() => {
+                        // Ẩn bớt - chỉ hiển thị 3 xét nghiệm đầu
+                        setLabTests((prev) => {
+                          if (Array.isArray(prev)) {
+                            return prev.map((test) => ({
+                              ...test,
+                              showAll: false,
+                            }));
+                          }
+                          return prev;
+                        });
+                      }}
+                      style={{ borderRadius: 8, minWidth: 140 }}
+                    >
+                      Ẩn bớt
+                    </Button>
+                  ) : (
+                    // Nút "Xem thêm" - hiển thị tất cả lab tests
+                    <Button
+                      type="default"
+                      icon={<PlusOutlined />}
+                      onClick={() => {
+                        // Hiển thị tất cả xét nghiệm
+                        setLabTests((prev) => {
+                          if (Array.isArray(prev)) {
+                            return prev.map((test) => ({
+                              ...test,
+                              showAll: true,
+                            }));
+                          }
+                          return prev;
+                        });
+                      }}
+                      style={{ borderRadius: 8, minWidth: 140 }}
+                    >
+                      Xem thêm ({labTests.length - 3})
+                    </Button>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+          
+          {/* Nút tạo xét nghiệm mới ở cuối modal */}
+          <div style={{ textAlign: "center", marginTop: 24 }}>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => {
+                setShowLabTestModal(false);
+                setLabTestStep(labTestStep);
+                handleShowAddLabTestModal();
+              }}
+              size="large"
+              style={{ borderRadius: 8, minWidth: 140 }}
+            >
+              Tạo xét nghiệm mới
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* ===== MODAL THÊM/SỬA LAB TEST ===== */}
+      {/* Modal thêm/sửa lab test cho một treatment step */}
+      <Modal
+        title={editingLabTest ? "Sửa xét nghiệm" : "Tạo xét nghiệm mới"}
+        open={showAddLabTestModal}
+        onCancel={() => {
+          setShowAddLabTestModal(false);
+          setEditingLabTest(null);
+        }}
+        footer={null}
+        width={400}
+        centered
+      >
+        <Form
+          form={labTestForm}
+          layout="vertical"
+          onFinish={(values) => handleLabTestSubmit(values, editingLabTest, labTestStep)}
+          initialValues={{
+            testName: editingLabTest?.testName,
+            notes: editingLabTest?.notes,
+            ...(editingLabTest && { result: editingLabTest?.result }),
+          }}
+        >
+          <Form.Item
+            name="testName"
+            label="Tên xét nghiệm"
+            rules={[{ required: true, message: "Nhập tên xét nghiệm" }]}
+          >
+            <AutoComplete
+              placeholder="Chọn hoặc nhập tên xét nghiệm"
+              options={labTestTypes.map(type => ({ value: type, label: type }))}
+              style={{ width: "100%" }}
+              allowClear
+              showSearch
+              filterOption={(inputValue, option) =>
+                option.value.toLowerCase().includes(inputValue.toLowerCase())
+              }
+              notFoundContent={loadingLabTestTypes ? <Spin size="small" /> : "Không tìm thấy"}
+            />
+          </Form.Item>
+          
+          <Form.Item name="notes" label="Ghi chú">
+            <TextArea rows={2} placeholder="Ghi chú (nếu có)" />
+          </Form.Item>
+          
+          {/* Hiển thị trường kết quả chỉ khi đang sửa lab test */}
+          {editingLabTest && (
+            <Form.Item name="result" label="Kết quả">
+              <Select
+                style={{ width: "100%" }}
+                placeholder="Chọn kết quả"
+                defaultValue={editingLabTest?.result}
+              >
+                <Select.Option value="SUCCESS">Thành công</Select.Option>
+                <Select.Option value="FAILURE">Thất bại</Select.Option>
+                <Select.Option value="UNDETERMINED">Đang kiểm tra</Select.Option>
+              </Select>
+            </Form.Item>
+          )}
+          
+          <Form.Item style={{ textAlign: "right" }}>
+            <Space>
+              <Button
+                type="primary"
+                htmlType="submit"
+                style={{
+                  background: editingLabTest ? "#fa8c16" : "#1890ff",
+                  borderColor: editingLabTest ? "#fa8c16" : "#1890ff",
+                  color: "#fff",
+                }}
+              >
+                {editingLabTest ? "Cập nhật" : "Thêm"}
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowAddLabTestModal(false);
+                  setEditingLabTest(null);
+                }}
+              >
+                Hủy
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
       </Modal>
     </div>
   );
